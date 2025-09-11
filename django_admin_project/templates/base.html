@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" class="{% if request.COOKIES.theme == 'dark' %}dark{% endif %}">
+<head>
+  <!-- Meta tags for responsive design -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ APP_NAME }}{% block title %}{% endblock %}</title>
+  {% load static %}
+  <!-- Ensure dark class is present ASAP to avoid mismatch (before Tailwind loads) -->
+  <script>
+    (function(){
+      try {
+        var t = localStorage.getItem('theme');
+        var isDark = (t === 'dark') || (t !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) document.documentElement.classList.add('dark');
+      } catch(_){}
+    })();
+  </script>
+  <!-- Tailwind CSS CDN -->
+  <script src="{% static 'js/tailwind-config.js' %}"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.13"></script>
+  <!-- Basic favicon (optional) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' ry='12' fill='%231e293b'/%3E%3Ctext x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Segoe UI,Roboto,Helvetica,Arial,sans-serif' font-size='28' fill='%23ffffff'%3E𝙵%3C/text%3E%3C/svg%3E" />
+  <!-- Open Sans font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&display=swap" rel="stylesheet">
+  <style>
+    /* Apply Open Sans globally with sensible fallbacks */
+    html, body, button, input, select, textarea { font-family: 'Open Sans', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; }
+
+    /* Design tokens: color system (HSL) and typography scale */
+    :root {
+      --color-primary: 245 75% 55%; /* Professional blue */
+      --color-success: 145 70% 45%; /* Approval green */
+      --color-warning: 45 85% 55%;  /* Pending amber */
+      --color-danger: 0 75% 55%;    /* Rejection red */
+      --color-bg: 220 20% 97%;      /* Clean neutral */
+    }
+    .dark:root {
+      /* Optionally tweak lightness in dark mode if needed */
+    }
+
+    /* Typography helpers tied to the requested scale */
+    .typo-h1 { font-size: 2rem; line-height: 1.2; font-weight: 600; }
+    .typo-h2 { font-size: 1.5rem; line-height: 1.3; font-weight: 600; }
+    .typo-body { font-size: 1rem; line-height: 1.5; }
+
+    /* Notification dropdown smooth transition */
+    #notifMenu { transform-origin: top right; transition: opacity 160ms ease, transform 160ms ease; }
+    #notifMenu.is-closed { opacity: 0; transform: scale(0.98); pointer-events: none; }
+    #notifMenu.is-open { opacity: 1; transform: scale(1); pointer-events: auto; }
+    /* Ensure scroll area shows ~5+ items nicely (already has max-h-96) */
+    #notifList { -webkit-overflow-scrolling: touch; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200">
+  <a href="#content-root" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 px-3 py-2 rounded shadow">Skip to main content</a>
+  {% include 'partials/_header.html' %}
+  {% if request.user.is_authenticated %}
+    {% include 'partials/sidebar.html' %}
+    <!-- Right-hand Online Admins Sidebar -->
+    <aside id="right-sidebar" class="hidden md:block fixed right-0 top-16 bottom-0 w-64 lg:w-72 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-sm z-40 transition-colors" aria-label="Online Admins Sidebar">
+      <div class="relative flex flex-col h-full px-3.5 md:px-4 pt-3 pb-3 overflow-y-auto">
+        <div class="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-gray-50/60 dark:from-gray-800/40 to-transparent pointer-events-none"></div>
+        <div class="relative flex items-center justify-between mb-2 md:mb-3">
+          <h3 class="text-sm md:text-[15px] font-semibold tracking-tight text-gray-900 dark:text-gray-100">Online Admins</h3>
+          <button type="button" id="toggleRightSidebar" class="md:hidden text-gray-500 dark:text-gray-300 rounded px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="Toggle Online Admins">&times;</button>
+        </div>
+        <ul id="online-admins-list" class="space-y-2.5" aria-live="polite" aria-busy="false"></ul>
+      </div>
+    </aside>
+  {% endif %}
+
+  <!-- Discreet aria-live region for screen readers -->
+  <div id="aria-status" class="sr-only" aria-live="polite" role="status"></div>
+
+  <!-- Content -->
+  <main id="content-root" class="flex-1 px-4 sm:px-6 lg:px-8 pt-16 pb-6 {% if request.user.is_authenticated %}md:ml-64 md:mr-64 lg:mr-72{% endif %}">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include 'partials/_footer.html' %}
+
+  <!-- Common JS -->
+  <script src="{% static 'js/common.js' %}"></script>
+  <script src="{% static 'js/notifications.js' %}"></script>
+  <!-- Dashboard behavior (tables, logs, admins overview). Load globally so overview initializes on index page. -->
+  <script src="{% static 'js/dashboard.js' %}"></script>
+  <script src="{% static 'js/base.js' %}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

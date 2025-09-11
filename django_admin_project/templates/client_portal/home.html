@@ -1,0 +1,44 @@
+{% extends "client_portal/base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div id="content-root" class="pt-6 p-4 md:p-6 space-y-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6 md:p-8">
+      <h1 class="text-2xl font-extrabold tracking-tight">Welcome to FloDo</h1>
+      <p class="mt-2 text-gray-600 dark:text-gray-300">Choose your workspace. Public portal for Customers, and (if approved) Artists.</p>
+      <div class="grid sm:grid-cols-2 gap-4 mt-6">
+        <a href="{% url 'client_portal:customer_dashboard' %}" class="group rounded-xl border border-gray-200 dark:border-gray-700 p-5 bg-gray-50 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-800 transition">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold">Customer</h2>
+            <span class="text-sm text-blue-600">Open →</span>
+          </div>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Browse verified artists, request bookings, and manage reservations.</p>
+        </a>
+        <div class="space-y-3">
+          {% if is_verified_artist %}
+            <a href="{% url 'client_portal:artist_dashboard' %}" class="group rounded-xl border border-gray-200 dark:border-gray-700 p-5 bg-gray-50 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-800 transition block">
+              <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold">Artist</h2>
+                <span class="text-sm text-blue-600">Open →</span>
+              </div>
+              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Manage services, calendar, and bookings. Communicate with customers.</p>
+            </a>
+          {% else %}
+            <a href="{% url 'client_portal:artist_apply' %}" class="group rounded-xl border border-gray-200 dark:border-gray-700 p-5 bg-gray-50 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-800 transition block {% if has_application %}pointer-events-none opacity-60{% endif %}">
+              <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold">Apply as Artist</h2>
+                <span class="text-sm text-blue-600">{% if has_application %}Pending{% else %}Apply →{% endif %}</span>
+              </div>
+              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Submit your application for super-admin review. You will be notified upon decision.</p>
+            </a>
+            <a href="{% url 'client_portal:artist_application_status' %}" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+              <span class="w-2 h-2 rounded-full {% if has_application %}bg-amber-500{% else %}bg-gray-400{% endif %}"></span>
+              Check application status
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

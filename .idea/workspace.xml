@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="d2b84521-bc59-49d9-a24e-0cbc1d0c4fcb" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/django_admin_project/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/apps/authentication/middleware.py" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/apps/authentication/middleware.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/apps/authentication/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/apps/authentication/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/apps/dashboard/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/apps/dashboard/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/apps/dashboard/signals.py" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/apps/dashboard/signals.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/apps/dashboard/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/apps/dashboard/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/apps/dashboard/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/apps/dashboard/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/apps/settings_app/context_processors.py" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/apps/settings_app/context_processors.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/db.sqlite3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/django_admin_project/asgi.py" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/django_admin_project/asgi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/django_admin_project/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/django_admin_project/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/django_admin_project/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/django_admin_project/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/media/avatars/DXDF2163.JPG" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/static/css/login.css" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/static/css/login.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/static/js/auth.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/static/js/auth.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/static/js/dashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/static/js/dashboard.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/static/js/notifications.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/static/js/notifications.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/base.9f65b5cd54b3.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/base.9f65b5cd54b3.css.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/base.css" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/base.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/base.css.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/base.css.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/changelists.47cb433b29d4.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/changelists.47cb433b29d4.css.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/changelists.css" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/changelists.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/changelists.css.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/changelists.css.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/dark_mode.css" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/dark_mode.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/dark_mode.css.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/dark_mode.css.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/dark_mode.e18e9a052429.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/dark_mode.e18e9a052429.css.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/forms.b29a0c8c9155.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/forms.b29a0c8c9155.css.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/forms.css" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/forms.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/forms.css.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/forms.css.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/nav_sidebar.css" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/nav_sidebar.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/nav_sidebar.css.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/nav_sidebar.css.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/nav_sidebar.dd925738f4cc.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/nav_sidebar.dd925738f4cc.css.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/responsive.css" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/responsive.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/responsive.css.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/responsive.css.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/responsive.eafb93ff084c.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/responsive.eafb93ff084c.css.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/responsive_rtl.7d1130848605.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/responsive_rtl.7d1130848605.css.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/responsive_rtl.css" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/responsive_rtl.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/responsive_rtl.css.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/responsive_rtl.css.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/rtl.aa92d763340b.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/rtl.aa92d763340b.css.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/rtl.css" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/rtl.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/rtl.css.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/rtl.css.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/widgets.8a70ea6d8850.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/widgets.8a70ea6d8850.css.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/widgets.css" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/widgets.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/widgets.css.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/css/widgets.css.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/img/icon-hidelink.8d245a995e18.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/img/icon-hidelink.8d245a995e18.svg.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/img/icon-hidelink.svg.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/SelectFilter2.b8cf7343ff9e.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/SelectFilter2.b8cf7343ff9e.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/SelectFilter2.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/SelectFilter2.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/SelectFilter2.js.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/SelectFilter2.js.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/actions.867b023a736d.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/actions.867b023a736d.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/actions.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/actions.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/actions.js.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/actions.js.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/admin/RelatedObjectLookups.ef211845e458.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/admin/RelatedObjectLookups.ef211845e458.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/admin/RelatedObjectLookups.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/admin/RelatedObjectLookups.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/admin/RelatedObjectLookups.js.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/admin/RelatedObjectLookups.js.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/calendar.d64496bbf46d.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/calendar.d64496bbf46d.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/calendar.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/calendar.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/calendar.js.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/calendar.js.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/core.7e257fdf56dc.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/core.7e257fdf56dc.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/core.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/core.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/core.js.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/core.js.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/inlines.22d4d93c00b4.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/inlines.22d4d93c00b4.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/inlines.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/inlines.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/inlines.js.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/inlines.js.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/jquery/jquery.12e87d2f3a4c.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/jquery/jquery.12e87d2f3a4c.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/jquery/jquery.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/jquery/jquery.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/jquery/jquery.js.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/jquery/jquery.js.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/jquery/jquery.min.2c872dbe60f4.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/jquery/jquery.min.2c872dbe60f4.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/jquery/jquery.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/jquery/jquery.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/jquery/jquery.min.js.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/jquery/jquery.min.js.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/LICENSE.b6fd2ceea8d3.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/LICENSE.b6fd2ceea8d3.txt.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/LICENSE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/LICENSE.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/LICENSE.txt.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/LICENSE.txt.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/xregexp.a7e08b0ce686.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/xregexp.a7e08b0ce686.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/xregexp.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/xregexp.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/xregexp.js.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/xregexp.js.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/xregexp.min.f1ae4617847c.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/xregexp.min.f1ae4617847c.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/xregexp.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/xregexp.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/xregexp.min.js.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/admin/js/vendor/xregexp/xregexp.min.js.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/css/login.51469d5a118a.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/css/login.51469d5a118a.css.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/css/login.ab095dce1f0b.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/css/login.ab095dce1f0b.css.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/css/login.css" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/css/login.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/css/login.css.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/css/login.css.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/css/login.d3453fa41ad3.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/css/login.d3453fa41ad3.css.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/css/login.d375a5e3232e.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/css/login.d375a5e3232e.css.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/css/login.e15e10d28ace.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/css/login.e15e10d28ace.css.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/css/login.fe8ac12ee429.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/css/login.fe8ac12ee429.css.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/auth.4f7d8e208131.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/auth.4f7d8e208131.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/auth.9fac410488a6.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/auth.9fac410488a6.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/auth.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/js/auth.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/auth.js.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/js/auth.js.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/common.70c038662140.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/common.70c038662140.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/common.d8ceab51153b.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/common.d8ceab51153b.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/common.db1e0f6ddbd9.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/common.db1e0f6ddbd9.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/common.ee61c087a60a.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/common.ee61c087a60a.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/common.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/js/common.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/common.js.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/js/common.js.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.20b804aecd85.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.20b804aecd85.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.5a0b8d72f9a2.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.5a0b8d72f9a2.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.649a90d108c5.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.649a90d108c5.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.6749714447cb.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.6749714447cb.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.68235ca550f6.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.68235ca550f6.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.b3955822862a.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.b3955822862a.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.e859d17e86f2.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.e859d17e86f2.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.js.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/js/dashboard.js.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/login.5d2fbf145233.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/login.5d2fbf145233.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/login.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/login.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/notifications.1e31d6cc4df6.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/notifications.1e31d6cc4df6.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/notifications.bee9837b57eb.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/notifications.bee9837b57eb.js.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/notifications.js" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/js/notifications.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/js/notifications.js.gz" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/js/notifications.js.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/staticfiles/staticfiles.json" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/staticfiles/staticfiles.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/templates/auth/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/templates/auth/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/templates/dashboard/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/templates/dashboard/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/templates/dashboard/tables_partial.html" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/templates/dashboard/tables_partial.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/templates/partials/_header.html" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/templates/partials/_header.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/django_admin_project/templates/partials/sidebar.html" beforeDir="false" afterPath="$PROJECT_DIR$/django_admin_project/templates/partials/sidebar.html" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/django_admin_project" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 4
+}]]></component>
+  <component name="ProjectId" id="32GdU9fNvnYzomEsSkQvWsIhNA2" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "fix/tables-dropdown-labels-and-styles",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/Ruturaj/OneDrive/Desktop/FloDo",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-09060db00ec0-JavaScript-PY-251.26927.90" />
+        <option value="bundled-python-sdk-41e8cd69c857-64d779b69b7a-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.26927.90" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="d2b84521-bc59-49d9-a24e-0cbc1d0c4fcb" name="Changes" comment="" />
+      <created>1757050856128</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1757050856128</updated>
+      <workItem from="1757050857586" duration="50000" />
+    </task>
+    <servers />
+  </component>
+</project>

@@ -1,0 +1,27 @@
+{% extends "client_portal/base.html" %}
+{% block title %}Application Status{% endblock %}
+{% block content %}
+<div id="content-root" class="pt-6 p-4 md:p-6 space-y-6">
+  <div class="max-w-xl mx-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
+    <h1 class="text-2xl font-extrabold tracking-tight">Artist Application Status</h1>
+    <div class="mt-4">
+      {% if status == 'approved' %}
+        <div class="rounded-lg border border-green-300 bg-green-50 text-green-800 p-4 dark:border-green-700 dark:bg-green-900/40 dark:text-green-200">
+          Your application has been approved. You can now access the Artist Dashboard.
+        </div>
+        <a href="{% url 'client_portal:artist_dashboard' %}" class="mt-4 inline-flex px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Open Artist Dashboard</a>
+      {% elif status == 'pending' %}
+        <div class="rounded-lg border border-amber-300 bg-amber-50 text-amber-800 p-4 dark:border-amber-700 dark:bg-amber-900/40 dark:text-amber-200">
+          Your application is under review by the Super-admin. You will be notified once a decision is made.
+        </div>
+        <a href="{% url 'client_portal:home' %}" class="mt-4 inline-flex px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">Back to Home</a>
+      {% else %}
+        <div class="rounded-lg border border-gray-300 bg-gray-50 text-gray-800 p-4 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-200">
+          No application found. You can submit your application to become a verified artist.
+        </div>
+        <a href="{% url 'client_portal:artist_apply' %}" class="mt-4 inline-flex px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Apply as Artist</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

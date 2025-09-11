@@ -1,0 +1,48 @@
+# requirements.txt
+# Production Dependencies
+# (legacy section removed; see below)
+# ---- Installable requirements (appended; do not remove existing content above) ----
+# These lines are plain-text and usable by pip. They mirror and formalize the project's
+# core runtime dependencies detected from settings and code. Optional and dev packages
+# are included for convenience; comment out if not needed.
+
+# Core runtime
+Django==4.2.7
+django-unfold
+django-analytical
+python-dotenv==1.0.1
+whitenoise==6.7.0
+Pillow==11.0.0
+
+# Database driver (Postgres) — skipped by default for local dev on SQLite
+# psycopg2-binary 2.9.x does not provide wheels for Python 3.13 on Windows and
+# attempts to build from source require pg_config. If you need Postgres locally
+# on Python 3.13, prefer psycopg v3 wheels instead:
+# psycopg[binary]==3.1.18
+
+# Optional packages (safe to keep; not required for basic run)
+djangorestframework==3.14.0
+celery==5.3.4
+redis==5.0.1
+django-cors-headers==4.3.1
+
+# WebSockets / Channels
+channels==4.0.0
+channels-redis==4.1.0
+daphne==4.0.0
+
+# Development tools (not required in production)
+pytest==7.4.3
+
+pytest-django==4.5.2
+black==23.9.1
+flake8==6.1.0
+coverage==7.3.2
+vulture==2.14
+setuptools-scm==8.1.0
+
+# Optional additions (safe, only used when configured)
+# Rate limiting (uses Django cache; will use Redis if REDIS_URL is set)
+django-ratelimit==4.1.0
+# Error tracking (enabled only if SENTRY_DSN provided)
+sentry-sdk==2.8.0

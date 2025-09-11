@@ -1,0 +1,39 @@
+{% extends "client_portal/base.html" %}
+{% block title %}Customer Dashboard{% endblock %}
+{% block content %}
+<div id="content-root" class="pt-6 p-4 md:p-6 space-y-6">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h1 class="text-2xl font-extrabold tracking-tight">Your Dashboard</h1>
+      <div class="flex items-center gap-2">
+        <a href="{% url 'client_portal:browse_artists' %}" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Browse Artists</a>
+        <a href="{% url 'client_portal:artist_apply' %}" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">Apply as Artist</a>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
+        <h2 class="text-lg font-semibold">Recent Bookings</h2>
+        <ul class="mt-4 space-y-3">
+          {% for b in recent_bookings %}
+            <li class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+              <div class="text-sm text-gray-600 dark:text-gray-300">Service: <span class="font-medium">{{ b.name }}</span></div>
+              <div class="text-xs text-gray-500">Created: {{ b.created_at }}</div>
+            </li>
+          {% empty %}
+            <li class="text-sm text-gray-500">No bookings yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
+        <h2 class="text-lg font-semibold">Next Steps</h2>
+        <ol class="mt-3 list-decimal list-inside text-sm text-gray-600 dark:text-gray-300 space-y-1">
+          <li>Find a verified artist that fits your needs.</li>
+          <li>Request a booking for a desired day/time.</li>
+          <li>After artist confirms, complete payment.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

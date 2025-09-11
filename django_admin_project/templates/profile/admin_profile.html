@@ -1,0 +1,178 @@
+{% load static %}
+<!-- Admin Profile Card -->
+<div class="max-w-5xl mx-auto">
+  <div class="relative bg-white dark:bg-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-transparent dark:from-indigo-400/5 pointer-events-none"></div>
+    <div class="relative flex items-center justify-between px-6 md:px-8 py-4 md:py-5 border-b border-gray-200 dark:border-gray-800">
+      <h2 class="text-lg md:text-xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">Admin Profile</h2>
+      <div class="flex items-center gap-2">
+        <button type="button" class="px-3.5 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">Edit</button>
+        <a href="{% url 'settings_app:index' %}" class="px-3.5 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">Settings</a>
+      </div>
+    </div>
+
+    <div class="relative p-6 md:p-8">
+      <div class="flex flex-col md:flex-row gap-6 md:gap-8">
+        <!-- Avatar + Bio -->
+        <div class="w-full md:w-1/3 flex flex-col items-center">
+          <div class="w-36 h-36 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden flex items-center justify-center border border-gray-200 dark:border-gray-700 shadow-sm ring-1 ring-gray-900/5 dark:ring-white/5">
+            {% if profile.avatar %}
+              <img src="{{ profile.avatar.url }}" alt="Avatar" class="w-full h-full object-cover">
+            {% else %}
+              <svg class="w-16 h-16 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+            {% endif %}
+          </div>
+          <div class="mt-4 text-center">
+            {% if profile.bio %}
+            <span class="inline-block text-xs md:text-sm px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">{{ profile.bio }}</span>
+            {% else %}
+            <span class="inline-block text-xs md:text-sm px-2.5 py-1 rounded-full bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500 border border-gray-200 dark:border-gray-700">No bio</span>
+            {% endif %}
+          </div>
+          <div class="mt-5 flex gap-2" >
+            <label class="inline-flex items-center gap-2 px-3.5 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+              <input id="avatar-input" type="file" name="avatar" accept="image/*" class="hidden">
+              <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M3 16a2 2 0 002 2h10a2 2 0 002-2V8l-6-5-6 5v8zm7-9h2v4h3l-4 4-4-4h3V7z"/></svg>
+              Upload
+            </label>
+            {% if profile.avatar %}
+            <button type="button" class="px-3.5 py-1.5 text-sm rounded-lg border border-red-200 text-red-700 dark:border-red-800 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20">Delete</button>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Details -->
+        <div class="w-full md:w-2/3">
+          <div id="profile-view-mode">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+              <div>
+                <dt class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Username</dt>
+                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">{{ user_obj.username }}</dd>
+              </div>
+              <div>
+                <dt class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Name</dt>
+                <dd class="mt-1 text-sm text-gray-800 dark:text-gray-200">{{ profile.display_name|default:user_obj.get_full_name|default:user_obj.username }}</dd>
+              </div>
+              <div>
+                <dt class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Role</dt>
+                <dd class="mt-1 text-sm text-gray-800 dark:text-gray-200">{{ profile.role|default:"Admin" }}</dd>
+              </div>
+              <div>
+                <dt class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Email</dt>
+                <dd class="mt-1 text-sm text-gray-800 dark:text-gray-200">{{ user_obj.email }}</dd>
+              </div>
+              <div>
+                <dt class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Location</dt>
+                <dd class="mt-1 text-sm text-gray-800 dark:text-gray-200">{{ profile.location|default:"—" }}</dd>
+              </div>
+              <div>
+                <dt class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Birth Date</dt>
+                <dd class="mt-1 text-sm text-gray-800 dark:text-gray-200">{% if profile.birth_date %}{{ profile.birth_date }}{% else %}—{% endif %}</dd>
+              </div>
+              <div>
+                <dt class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Contact</dt>
+                <dd class="mt-1 text-sm text-gray-800 dark:text-gray-200">{{ profile.phone|default:"+91 " }}</dd>
+              </div>
+              <div>
+                <dt class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Last Sign-In</dt>
+                <dd class="mt-1 text-xs inline-flex items-center bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 px-2 py-0.5 rounded-full">{{ last_login_human }}</dd>
+              </div>
+              <div>
+                <dt class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Status</dt>
+                <dd class="text-sm">
+                  {% if user_obj.is_authenticated %}
+                  <span class="inline-flex items-center bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 text-xs font-medium px-2.5 py-0.5 rounded-full"><span class="w-2 h-2 mr-1 bg-green-500 rounded-full animate-pulse"></span>Online</span>
+                  {% else %}
+                  <span class="inline-flex items-center bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 text-xs font-medium px-2.5 py-0.5 rounded-full"><span class="w-2 h-2 mr-1 bg-gray-400 rounded-full"></span>Offline</span>
+                  {% endif %}
+                </dd>
+              </div>
+            </dl>
+
+            <!-- Social Links -->
+            <div class="mt-8">
+              <h3 class="text-sm font-semibold mb-3 text-gray-900 dark:text-gray-100">Social Links</h3>
+              <div class="space-y-2 text-sm">
+                {% for key, val in profile.social_links.items %}
+                <div class="flex items-center">
+                  <span class="w-5 h-5 mr-3">🔗</span>
+                  <a class="text-blue-600 dark:text-blue-400 hover:underline" href="{{ val }}" target="_blank" rel="noopener">{{ key|title }}</a>
+                </div>
+                {% empty %}
+                <div class="text-gray-500 dark:text-gray-400">No social links</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit Mode -->
+          <div id="profile-edit-mode" class="hidden">
+            <form id="profile-edit-form">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
+                <div>
+                  <label class="block text-[11px] text-gray-600 dark:text-gray-400 mb-1">Name</label>
+                  <input type="text" name="display_name" class="w-full border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2" value="{{ profile.display_name }}" placeholder="Full name" />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-gray-600 dark:text-gray-400 mb-1">Role</label>
+                  <input type="text" name="role" class="w-full border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2" value="{{ profile.role }}" placeholder="Admin" />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-gray-600 dark:text-gray-400 mb-1">Email</label>
+                  <input type="email" name="email" class="w-full border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2" value="{{ user_obj.email }}" placeholder="email@example.com" />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-gray-600 dark:text-gray-400 mb-1">Location</label>
+                  <input type="text" name="location" class="w-full border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2" value="{{ profile.location }}" placeholder="City, Country" />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-gray-600 dark:text-gray-400 mb-1">Birth Date</label>
+                  <input type="date" name="birth_date" class="w-full border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2" value="{% if profile.birth_date %}{{ profile.birth_date|date:'Y-m-d' }}{% endif %}" />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-gray-600 dark:text-gray-400 mb-1">Contact (+Country Code)</label>
+                  <input type="text" name="phone" class="w-full border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2" value="{{ profile.phone|default:'+91 ' }}" placeholder="+91 9999999999" />
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-[11px] text-gray-600 dark:text-gray-400 mb-1">Bio</label>
+                  <textarea name="bio" class="w-full border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2" rows="2" placeholder="Short bio">{{ profile.bio }}</textarea>
+                </div>
+                <!-- Avatar controls in Edit Mode -->
+                <div class="sm:col-span-2">
+                  <label class="block text-[11px] text-gray-600 dark:text-gray-400 mb-1">Avatar</label>
+                  <div class="flex gap-2">
+                    <label class="inline-flex items-center gap-2 px-3.5 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                      <input id="avatar-input-edit" type="file" name="avatar" accept="image/*" class="hidden">
+                      <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M3 16a2 2 0 002 2h10a2 2 0 002-2V8l-6-5-6 5v8zm7-9h2v4h3l-4 4-4-4h3V7z"/></svg>
+                      Upload
+                    </label>
+                    {% if profile.avatar %}
+                    <button type="button" class="px-3.5 py-1.5 text-sm rounded-lg border border-red-200 text-red-700 dark:border-red-800 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20">Delete</button>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              <div class="mt-5 flex items-center gap-2">
+                <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Save</button>
+                <button type="button" class="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">Cancel</button>
+              </div>
+            </form>
+
+            <!-- Password Change -->
+            <div class="mt-10">
+              <h3 class="text-sm font-semibold mb-3 text-gray-900 dark:text-gray-100">Change Password</h3>
+              <form id="password-form" class="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+                <input type="password" name="current_password" class="border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2" placeholder="Current password" required>
+                <input type="password" name="new_password" class="border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2" placeholder="New password" required>
+                <button type="submit" class="px-3 py-2 rounded-lg bg-gray-800 text-white hover:bg-black">Update</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts moved to base.html as global helpers so they execute after AJAX injection -->
+

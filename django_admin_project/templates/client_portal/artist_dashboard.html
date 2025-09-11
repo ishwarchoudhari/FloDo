@@ -1,0 +1,50 @@
+{% extends "client_portal/base.html" %}
+{% block title %}Artist Dashboard{% endblock %}
+{% block content %}
+<div id="content-root" class="pt-6 p-4 md:p-6 space-y-6">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h1 class="text-2xl font-extrabold tracking-tight">Artist Dashboard</h1>
+      <a href="{% url 'client_portal:home' %}" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">Back to Home</a>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="md:col-span-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
+        <h2 class="text-lg font-semibold">Upcoming Bookings</h2>
+        <ul class="mt-4 space-y-3">
+          {% for b in upcoming %}
+            <li class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+              <div class="text-sm">Service: <span class="font-medium">{{ b.name }}</span></div>
+              <div class="text-xs text-gray-500">Created: {{ b.created_at }}</div>
+            </li>
+          {% empty %}
+            <li class="text-sm text-gray-500">No upcoming bookings yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
+        <h2 class="text-lg font-semibold">Quick Links</h2>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li><a class="text-blue-600 hover:underline" href="#">Manage Services</a></li>
+          <li><a class="text-blue-600 hover:underline" href="#">Edit Availability</a></li>
+          <li><a class="text-blue-600 hover:underline" href="#">Messages</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
+      <h2 class="text-lg font-semibold">Today’s Calendar</h2>
+      <ul class="mt-4 space-y-3">
+        {% for it in calendar_items %}
+          <li class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+            <div class="text-sm">{{ it.name }} — {{ it.city }}</div>
+            <div class="text-xs text-gray-500">Created: {{ it.created_at }}</div>
+          </li>
+        {% empty %}
+          <li class="text-sm text-gray-500">No items for today.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% load static %}
+<header class="fixed top-0 inset-x-0 z-40 bg-white/80 dark:bg-gray-900/70 backdrop-blur border-b border-gray-200 dark:border-gray-800">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a href="{% url 'client_portal:home' %}" class="inline-flex items-center gap-2 font-extrabold tracking-tight text-lg">
+        <span class="inline-flex w-8 h-8 items-center justify-center rounded-lg bg-blue-600 text-white">F</span>
+        <span>FloDo</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-5 ml-6 text-sm text-gray-700 dark:text-gray-300">
+        <a class="hover:text-blue-600" href="{% url 'client_portal:customer_dashboard' %}">Customer</a>
+        <a class="hover:text-blue-600" href="{% url 'client_portal:browse_artists' %}">Artists</a>
+        <a class="hover:text-blue-600" href="{% url 'client_portal:artist_apply' %}">Apply as Artist</a>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3"></div>
+  </div>
+</header>

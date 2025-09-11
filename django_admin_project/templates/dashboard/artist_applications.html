@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} · {{ table_label }}{% endblock %}
+{% block content %}
+<div class="space-y-6 px-0">
+  <div class="max-w-none mx-0 space-y-6">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-extrabold tracking-tight">{{ table_label }}</h1>
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Latest artist applications (read-only view). Use Admin Management and other flows to take actions.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            Total: {{ total }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Status Tabs (Navbar style, sticky) -->
+    <div id="apps-tabs-bar" class="sticky top-16 z-30 bg-white/70 dark:bg-gray-900/60 backdrop-blur supports-[backdrop-filter]:backdrop-blur border-b border-gray-200 dark:border-gray-800 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+      <nav class="py-2">
+      <div class="flex items-center justify-between">
+        <ul class="-mb-px flex flex-wrap gap-x-4 gap-y-2 text-sm">
+        {% with q=filters.q city=filters.city %}
+        <li>
+          <a href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if city %}city={{ city|urlencode }}&{% endif %}"
+             class="inline-flex items-center gap-2 px-3 py-2 border-b-2 {% if not filters.status %}border-blue-600 text-blue-600{% else %}border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100{% endif %}"
+             aria-current="{% if not filters.status %}page{% endif %}">All</a>
+        </li>
+        <li>
+          <a href="?status=pending{% if q %}&q={{ q|urlencode }}{% endif %}{% if city %}&city={{ city|urlencode }}{% endif %}"
+             class="inline-flex items-center gap-2 px-3 py-2 border-b-2 {% if filters.status == 'pending' %}border-blue-600 text-blue-600{% else %}border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100{% endif %}"
+             aria-current="{% if filters.status == 'pending' %}page{% endif %}">Pending</a>
+        </li>
+        <li>
+          <a href="?status=under_review{% if q %}&q={{ q|urlencode }}{% endif %}{% if city %}&city={{ city|urlencode }}{% endif %}"
+             class="inline-flex items-center gap-2 px-3 py-2 border-b-2 {% if filters.status == 'under_review' %}border-blue-600 text-blue-600{% else %}border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100{% endif %}"
+             aria-current="{% if filters.status == 'under_review' %}page{% endif %}">Under Review</a>
+        </li>
+        <li>
+          <a href="?status=processing{% if q %}&q={{ q|urlencode }}{% endif %}{% if city %}&city={{ city|urlencode }}{% endif %}"
+             class="inline-flex items-center gap-2 px-3 py-2 border-b-2 {% if filters.status == 'processing' %}border-blue-600 text-blue-600{% else %}border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100{% endif %}"
+             aria-current="{% if filters.status == 'processing' %}page{% endif %}">Processing</a>
+        </li>
+        <li>
+          <a href="?status=approved{% if q %}&q={{ q|urlencode }}{% endif %}{% if city %}&city={{ city|urlencode }}{% endif %}"
+             class="inline-flex items-center gap-2 px-3 py-2 border-b-2 {% if filters.status == 'approved' %}border-blue-600 text-blue-600{% else %}border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100{% endif %}"
+             aria-current="{% if filters.status == 'approved' %}page{% endif %}">Approved</a>
+        </li>
+        <li>
+          <a href="?status=rejected{% if q %}&q={{ q|urlencode }}{% endif %}{% if city %}&city={{ city|urlencode }}{% endif %}"
+             class="inline-flex items-center gap-2 px-3 py-2 border-b-2 {% if filters.status == 'rejected' %}border-blue-600 text-blue-600{% else %}border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100{% endif %}"
+             aria-current="{% if filters.status == 'rejected' %}page{% endif %}">Rejected</a>
+        </li>
+        {% endwith %}
+      </ul>
+        <div class="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+          {% now "M j, Y, g:i a" as now_str %}
+          <span class="hidden sm:inline">Last updated: {{ now_str }}</span>
+          <a id="appsRefresh" href="{{ request.path }}?{{ request.GET.urlencode }}" class="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/60 hover:bg-gray-50 dark:hover:bg-gray-800">
+            <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M3 10a7 7 0 111.342 4.121l1.42-1.02A5 5 0 1010 5v2L6 3l4-4v2a8 8 0 11-7 9z"/></svg>
+            <span>Refresh</span>
+            <svg data-spinner class="hidden w-4 h-4 animate-spin text-blue-600" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+          </a>
+        </div>
+      </div>
+      </nav>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm">
+      <form method="get" class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-xs text-gray-500">Search</label>
+          <input type="text" name="q" value="{{ filters.q }}" placeholder="Name, email or phone" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 dark:border-gray-700" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500">City</label>
+          <input type="text" name="city" value="{{ filters.city }}" placeholder="City" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 dark:border-gray-700" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500">Status</label>
+          <select name="status" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 dark:border-gray-700">
+            <option value="">Any</option>
+            <option value="pending" {% if filters.status == 'pending' %}selected{% endif %}>Pending</option>
+            <option value="under_review" {% if filters.status == 'under_review' %}selected{% endif %}>Under Review</option>
+            <option value="processing" {% if filters.status == 'processing' %}selected{% endif %}>Processing</option>
+            <option value="approved" {% if filters.status == 'approved' %}selected{% endif %}>Approved</option>
+            <option value="rejected" {% if filters.status == 'rejected' %}selected{% endif %}>Rejected</option>
+          </select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Filter</button>
+          <a href="{% url 'dashboard:artist_applications' %}" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">Clear</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Active filter chips -->
+    <div class="mt-3 flex flex-wrap gap-2">
+      {% if filters.q %}
+        <a href="?{% if filters.city %}city={{ filters.city|urlencode }}&{% endif %}{% if filters.status %}status={{ filters.status|urlencode }}&{% endif %}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs border border-blue-200 hover:bg-blue-100">Query: {{ filters.q }} ✕</a>
+      {% endif %}
+      {% if filters.city %}
+        <a href="?{% if filters.q %}q={{ filters.q|urlencode }}&{% endif %}{% if filters.status %}status={{ filters.status|urlencode }}&{% endif %}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-50 text-violet-700 text-xs border border-violet-200 hover:bg-violet-100">City: {{ filters.city }} ✕</a>
+      {% endif %}
+      {% if filters.status %}
+        <a href="?{% if filters.q %}q={{ filters.q|urlencode }}&{% endif %}{% if filters.city %}city={{ filters.city|urlencode }}&{% endif %}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs border border-emerald-200 hover:bg-emerald-100">Status: {{ filters.status|title }} ✕</a>
+      {% endif %}
+      {% if not filters.q and not filters.city and not filters.status %}
+        <span class="text-xs text-gray-500">No filters applied</span>
+      {% endif %}
+    </div>
+
+    <!-- Cards Grid -->
+    <div class="bg-white/70 dark:bg-gray-900/60 border border-gray-200/70 dark:border-gray-700/70 rounded-2xl shadow-sm mt-4">
+      <div class="p-4">
+        <div class="grid gap-6 items-stretch content-stretch place-items-stretch w-full [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))]">
+          {% for a in applications %}
+          {% ifchanged a.created_at|date:"Y-m-d" %}
+          <div class="col-span-full my-2"><div class="flex items-center gap-3">
+            <div class="h-px flex-1 bg-gray-200 dark:bg-gray-800"></div>
+            <div class="text-xs px-3 py-1 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">{{ a.created_at|date:"M j, Y" }}</div>
+            <div class="h-px flex-1 bg-gray-200 dark:bg-gray-800"></div>
+          </div></div>
+          {% endifchanged %}
+          <div class="group relative rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-sm hover:shadow-md hover:-translate-y-1 hover:ring-1 hover:ring-blue-300/50 transition-all duration-300 h-full min-h-[180px] flex flex-col">
+            <!-- Header -->
+            <div class="flex items-start gap-3">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold shadow-sm">
+                {{ a.name|first|default:"A"|upper }}
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h3 class="truncate font-semibold text-gray-900 dark:text-gray-100 max-w-[14rem]">{{ a.name }}</h3>
+                  <span class="inline-flex px-2 py-0.5 rounded-full text-xs border {% if a.application_status == 'approved' %}bg-green-50 text-green-700 border-green-200{% elif a.application_status == 'rejected' %}bg-red-50 text-red-700 border-red-200{% elif a.application_status == 'under_review' %}bg-amber-50 text-amber-700 border-amber-200{% else %}bg-gray-50 text-gray-700 border-gray-200{% endif %}">{{ a.application_status|title }}</span>
+                  {% if a.city %}<span class="inline-flex px-2 py-0.5 rounded-full text-[11px] border bg-gray-50 text-gray-700 border-gray-200">{{ a.city }}</span>{% endif %}
+                </div>
+                <p class="mt-0.5 text-[11px] text-gray-500 truncate">
+                  <span class="inline-flex items-center gap-1">
+                    <span class="font-mono text-[10px] text-gray-500">#{{ a.unique_id }}</span>
+                  </span>
+                  · <span class="font-mono text-[10px] text-gray-500">{{ a.artist_application_id }}</span>
+                  <button type="button" class="ms-1 inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800" data-copy="{{ a.artist_application_id }}" aria-label="Copy UUID">Copy</button>
+                </p>
+              </div>
+              <div class="ms-auto">
+                <button type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 inline-flex items-center gap-1 text-xs px-2 py-1 rounded border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
+                        data-toggle="details-{{ a.unique_id }}" aria-expanded="false" aria-controls="details-{{ a.unique_id }}">
+                  Open
+                  <svg class="w-3.5 h-3.5 transition-transform" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="mt-2 flex flex-wrap items-center gap-2 text-[12px]">
+              {% if a.email %}<span class="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">{{ a.email }}</span>{% endif %}
+              {% if a.phone %}<span class="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">{{ a.phone }}</span>{% endif %}
+              {% with count=a.cert_count %}{% if count %}<span class="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">{{ count }} certificate(s)</span>{% endif %}{% endwith %}
+            </div>
+            <div class="mt-3 border-t border-gray-200 dark:border-gray-800"></div>
+
+            <!-- Body: definition list style for clarity -->
+            <div id="details-{{ a.unique_id }}" class="hidden mt-3 flex-1">
+              <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-[13px]">
+                <div class="flex justify-between gap-2">
+                  <dt class="text-gray-500 shrink-0">Email</dt>
+                  <dd class="font-medium text-gray-900 dark:text-gray-100 truncate text-right">
+                    <span class="truncate inline-block max-w-[12rem] align-middle">{{ a.email|default:"—" }}</span>
+                    {% if a.email %}
+                    <button type="button" class="ms-1 inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800" data-copy="{{ a.email }}" aria-label="Copy Email">Copy</button>
+                    {% endif %}
+                  </dd>
+                </div>
+                <div class="flex justify-between gap-2">
+                  <dt class="text-gray-500 shrink-0">Phone</dt>
+                  <dd class="font-medium text-gray-900 dark:text-gray-100 text-right">
+                    <span class="inline-block align-middle">{{ a.phone|default:"—" }}</span>
+                    {% if a.phone %}
+                    <button type="button" class="ms-1 inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 align-middle" data-copy="{{ a.phone }}" aria-label="Copy Phone">Copy</button>
+                    {% endif %}
+                  </dd>
+                </div>
+                <div class="flex justify-between gap-2">
+                  <dt class="text-gray-500 shrink-0">Experience</dt>
+                  <dd class="font-medium text-gray-900 dark:text-gray-100 text-right">{{ a.years_experience }} yrs</dd>
+                </div>
+                <div class="flex justify-between gap-2">
+                  <dt class="text-gray-500 shrink-0">Certificates</dt>
+                  <dd class="text-right">
+                    {% with count=a.cert_count %}
+                      {% if count %}
+                        <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">{{ count }} file(s)</span>
+                        <button type="button" data-modal-open="cert-{{ a.unique_id }}" class="ms-1 text-[11px] px-2 py-0.5 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 transition">Preview</button>
+                      {% else %}
+                        <span class="text-xs text-gray-500">None</span>
+                      {% endif %}
+                    {% endwith %}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+            <div class="mt-2 text-[12px] text-gray-600 dark:text-gray-300">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1">
+                <div>Approval Admin: <span class="font-medium">{{ a.approval_admin.username|default:"—" }}</span></div>
+                <div>Approved At: <span class="font-medium">{{ a.approved_at|default:"—" }}</span></div>
+                <div>User: <span class="font-medium">{{ a.user.username|default:"—" }}</span></div>
+                <div>Status: <span class="font-medium">{{ a.application_status|title }}</span></div>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="hidden mt-3 border-t border-gray-200 dark:border-gray-800 pt-2 items-center justify-between text-[11px] text-gray-500" data-details-footer="details-{{ a.unique_id }}">
+              <div class="flex flex-wrap items-center gap-2">
+                <span>Created {{ a.created_at }}</span>
+                <span class="hidden sm:inline">·</span>
+                <span class="hidden sm:inline">Updated {{ a.updated_at }}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border {% if a.approved %}bg-emerald-50 text-emerald-700 border-emerald-200{% else %}bg-gray-50 text-gray-700 border-gray-200{% endif %}">
+                  {% if a.approved %}<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Approved{% else %}<span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Not Approved{% endif %}
+                </span>
+                <span class="hidden sm:inline text-gray-400">·</span>
+                <span class="truncate max-w-[8rem]">Admin: {{ a.approval_admin.username|default:"—" }}</span>
+              </div>
+            </div>
+
+            <div class="hidden mt-3 items-center justify-between" data-details-actions="details-{{ a.unique_id }}">
+              <div class="flex items-center gap-2">
+                <form method="post" action="{% url 'dashboard:artist_application_approve' a.unique_id %}" onsubmit="return confirm('Approve this application?');">
+                  {% csrf_token %}
+                  <button class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs hover:bg-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed" {% if a.approved %}disabled{% endif %}>Approve</button>
+                </form>
+                <form method="post" action="{% url 'dashboard:artist_application_reject' a.unique_id %}" onsubmit="return confirm('Reject this application?');">
+                  {% csrf_token %}
+                  <button class="px-3 py-1.5 rounded-lg bg-rose-600 text-white text-xs hover:bg-rose-700 transition">Reject</button>
+                </form>
+              </div>
+              <div class="text-[10px] text-gray-400 font-mono">#{{ a.unique_id }}</div>
+            </div>
+
+            <div class="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-transparent group-hover:ring-blue-300/50 transition"></div>
+
+            <!-- Modal (JS-driven) -->
+            <div id="cert-{{ a.unique_id }}" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4" data-modal>
+              <div class="max-w-3xl w-full rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden" role="dialog" aria-modal="true">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+                  <h4 class="font-semibold">Certificates · {{ a.name }}</h4>
+                  <button type="button" class="text-sm text-gray-500 hover:text-gray-700" data-modal-close>Close</button>
+                </div>
+                <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[70vh] overflow-auto" data-modal-overlay>
+                  {% for c in a.certificates.all %}
+                    <div class="border border-gray-200 dark:border-gray-800 rounded-lg p-3">
+                      <div class="text-xs text-gray-500 truncate mb-2">{{ c.file.name }}</div>
+                      {% if '.png' in c.file.url|lower or '.jpg' in c.file.url|lower or '.jpeg' in c.file.url|lower or '.webp' in c.file.url|lower %}
+                        <img src="{{ c.file.url }}" alt="Certificate" class="w-full h-40 object-cover rounded" />
+                      {% else %}
+                        <a href="{{ c.file.url }}" target="_blank" class="inline-flex items-center px-3 py-1.5 rounded bg-blue-600 text-white text-xs hover:bg-blue-700">Open</a>
+                      {% endif %}
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+            <div class="col-span-full">
+              <div class="p-8 text-center text-sm text-gray-500">No applications found.</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj %}
+    <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
+      <div>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} · {{ total }} total</div>
+      <div class="flex items-center gap-2">
+        {% with q=filters.q city=filters.city status=filters.status per=filters.per_page %}
+        {% if page_obj.has_previous %}
+          <a class="px-3 py-1.5 rounded-lg border bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800" href="?page={{ page_obj.previous_page_number }}&per_page={{ per }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if city %}&city={{ city|urlencode }}{% endif %}{% if status %}&status={{ status|urlencode }}{% endif %}">Previous</a>
+        {% else %}
+          <span class="px-3 py-1.5 rounded-lg border bg-gray-50 dark:bg-gray-800 opacity-50 cursor-not-allowed">Previous</span>
+        {% endif %}
+        {% if page_obj.has_next %}
+          <a class="px-3 py-1.5 rounded-lg border bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800" href="?page={{ page_obj.next_page_number }}&per_page={{ per }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if city %}&city={{ city|urlencode }}{% endif %}{% if status %}&status={{ status|urlencode }}{% endif %}">Next</a>
+        {% else %}
+          <span class="px-3 py-1.5 rounded-lg border bg-gray-50 dark:bg-gray-800 opacity-50 cursor-not-allowed">Next</span>
+        {% endif %}
+        {% endwith %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'js/dashboard_artist_applications.js' %}"></script>
+{% endblock %}

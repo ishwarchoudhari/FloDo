@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} · Admin Management{% endblock %}
+{% block content %}
+  {% include 'dashboard/admin_management_partial.html' %}
+  <script src="{% static 'js/admin_management.js' %}"></script>
+{% endblock %}

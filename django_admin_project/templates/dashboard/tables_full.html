@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{# Full-page fallback for direct navigation. Reuses the partial to avoid duplication. #}
+{% block title %} · Tables{% endblock %}
+
+{% block content %}
+  {% include 'dashboard/tables_partial.html' %}
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'js/dashboard.js' %}" data-dash-js="1"></script>
+{% endblock %}
+

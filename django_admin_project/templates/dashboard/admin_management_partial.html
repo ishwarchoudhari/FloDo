@@ -1,0 +1,22 @@
+<!-- templates/dashboard/admin_management_partial.html -->
+<section class="space-y-6" id="admin-mgmt-root">
+  <header class="flex items-center justify-between">
+    <h1 class="text-2xl font-semibold">Admin Management</h1>
+    <div class="flex items-center gap-2">
+      <input id="admin-search" type="text" class="border rounded px-2 py-1 text-sm" placeholder="Search by name/email/username" />
+      <button id="admin-refresh" class="px-3 py-1 bg-gray-800 text-white rounded text-sm">Refresh</button>
+    </div>
+  </header>
+
+  <div class="p-4 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded shadow-sm">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Admins</h2>
+      <span id="admin-count" class="text-sm text-gray-500 dark:text-gray-400"></span>
+    </div>
+    <!-- Responsive grid for admin cards -->
+    <div id="admin-card-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+  </div>
+</section>
+
+<!-- Portal root for animated Add Admin card-form overlay (injected by JS) -->
+<div id="admin-add-portal" class="fixed inset-0 z-50 pointer-events-none"></div>
