@@ -698,6 +698,326 @@ python manage.py collectstatic --noinput
 
 ---
 
+## Database Schema & ERD
+
+This project currently uses a single database configured in `django_admin_project/settings.py`:
+
+- Name: `default`
+- Engine: `django.db.backends.sqlite3`
+- File: `django_admin_project/db.sqlite3`
+
+A pre-migration backup was created at `django_admin_project/db.sqlite3.preclientbackup`.
+
+To generate an up-to-date JSON inventory (databases → tables → columns → constraints → row counts), run:
+
+```bash
+python manage.py inspectdb_full --indent 2
+```
+
+### Entity Relationship Diagram (Mermaid)
+
+```mermaid
+erDiagram
+  AUTH_USER {
+    INTEGER id PK
+    VARCHAR(150) username UNIQUE
+    VARCHAR(128) password
+    VARCHAR(254) email
+    BOOL is_superuser
+    BOOL is_staff
+    BOOL is_active
+    DATETIME date_joined
+  }
+
+  DJANGO_CONTENT_TYPE {
+    INTEGER id PK
+    VARCHAR(100) app_label
+    VARCHAR(100) model
+  }
+
+  DJANGO_ADMIN_LOG {
+    INTEGER id PK
+    DATETIME action_time
+    INTEGER user_id FK
+    INTEGER content_type_id FK
+    TEXT object_id
+    VARCHAR(200) object_repr
+    SMALLINT action_flag
+    TEXT change_message
+  }
+
+  DJANGO_SESSION {
+    VARCHAR(40) session_key PK
+    TEXT session_data
+    DATETIME expire_date IDX
+  }
+
+  SETTINGS_APP_APPSETTINGS {
+    INTEGER id PK
+    VARCHAR(100) app_name
+    VARCHAR(50) timezone
+    INTEGER records_per_page
+    BOOL enable_notifications
+    DATETIME updated_at
+    INTEGER updated_by_id FK
+  }
+
+  DASHBOARD_CLIENT {
+    UUID client_id PK
+    VARCHAR(255) full_name
+    VARCHAR(32) phone UNIQUE
+    VARCHAR(255) email UNIQUE NULL
+    VARCHAR(128) password
+    VARCHAR(255) location NULL
+    VARCHAR(8) status
+    DATETIME created_at
+    DATETIME updated_at
+  }
+
+  DASHBOARD_CLIENT_LOG {
+    UUID log_id PK
+    UUID client_id FK
+    VARCHAR(20) action
+    INTEGER performed_by_id FK NULL
+    JSON details NULL
+    DATETIME timestamp
+  }
+
+  %% BaseTable fields (applies to the 10 demo tables)
+  %% unique_id PK, name, city, phone, created_at, updated_at
+
+  DASHBOARD_ADMIN {
+    INTEGER unique_id PK
+    VARCHAR(100) name
+    VARCHAR(100) city
+    VARCHAR(20) phone
+    DATETIME created_at
+    DATETIME updated_at
+    VARCHAR(150) user_name UNIQUE
+    VARCHAR(128) password_hash
+    VARCHAR(20) role
+    BOOL is_active
+    INTEGER role_approvedby_id FK NULL
+  }
+
+  DASHBOARD_USER {
+    INTEGER unique_id PK
+    VARCHAR(100) name
+    VARCHAR(100) city
+    VARCHAR(20) phone
+    DATETIME created_at
+    DATETIME updated_at
+  }
+
+  DASHBOARD_VERIFIED_ARTIST {
+    INTEGER unique_id PK
+    VARCHAR(100) name
+    VARCHAR(100) city
+    VARCHAR(20) phone
+    DATETIME created_at
+    DATETIME updated_at
+  }
+
+  DASHBOARD_PAYMENT {
+    INTEGER unique_id PK
+    VARCHAR(100) name
+    VARCHAR(100) city
+    VARCHAR(20) phone
+    DATETIME created_at
+    DATETIME updated_at
+  }
+
+  DASHBOARD_ARTIST_SERVICE {
+    INTEGER unique_id PK
+    VARCHAR(100) name
+    VARCHAR(100) city
+    VARCHAR(20) phone
+    DATETIME created_at
+    DATETIME updated_at
+  }
+
+  DASHBOARD_ARTIST_APPLICATION {
+    INTEGER unique_id PK
+    VARCHAR(100) name
+    VARCHAR(100) city
+    VARCHAR(20) phone
+    DATETIME created_at
+    DATETIME updated_at
+    UUID artist_application_id UNIQUE
+    BOOL approved
+    DATETIME approved_at NULL
+    INTEGER approval_admin_id FK NULL
+    VARCHAR(32) application_status IDX
+    INTEGER user_id FK NULL
+    VARCHAR(254) email NULL
+    INTEGER years_experience
+  }
+
+  DASHBOARD_ARTIST_APPLICATION_CERTIFICATE {
+    INTEGER id PK
+    INTEGER application_id FK
+    FILE file
+    DATETIME uploaded_at
+  }
+
+  DASHBOARD_ARTIST_AVAILABILITY {
+    INTEGER unique_id PK
+    VARCHAR(100) name
+    VARCHAR(100) city
+    VARCHAR(20) phone
+    DATETIME created_at
+    DATETIME updated_at
+  }
+
+  DASHBOARD_ARTIST_CALENDAR {
+    INTEGER unique_id PK
+    VARCHAR(100) name
+    VARCHAR(100) city
+    VARCHAR(20) phone
+    DATETIME created_at
+    DATETIME updated_at
+  }
+
+  DASHBOARD_BOOKING {
+    INTEGER unique_id PK
+    VARCHAR(100) name
+    VARCHAR(100) city
+    VARCHAR(20) phone
+    DATETIME created_at
+    DATETIME updated_at
+    UUID client_id FK NULL
+  }
+
+  DASHBOARD_MESSAGE {
+    INTEGER unique_id PK
+    VARCHAR(100) name
+    VARCHAR(100) city
+    VARCHAR(20) phone
+    DATETIME created_at
+    DATETIME updated_at
+    UUID client_id FK NULL
+  }
+
+  DASHBOARD_ACTIVITYLOG {
+    INTEGER id PK
+    VARCHAR(50) table_name
+    VARCHAR(10) action
+    INTEGER row_id
+    JSON row_details
+    DATETIME timestamp
+    INTEGER admin_user_id FK
+  }
+
+  %% Relationships
+  DJANGO_ADMIN_LOG }o--|| AUTH_USER : "user_id"
+  DJANGO_ADMIN_LOG }o--|| DJANGO_CONTENT_TYPE : "content_type_id"
+  SETTINGS_APP_APPSETTINGS }o--|| AUTH_USER : "updated_by_id"
+  DASHBOARD_CLIENT_LOG }o--|| DASHBOARD_CLIENT : "client_id"
+  DASHBOARD_CLIENT_LOG }o--|| AUTH_USER : "performed_by_id"
+  DASHBOARD_ARTIST_APPLICATION_CERTIFICATE }o--|| DASHBOARD_ARTIST_APPLICATION : "application_id"
+  DASHBOARD_BOOKING }o--|| DASHBOARD_CLIENT : "client_id (nullable)"
+  DASHBOARD_MESSAGE }o--|| DASHBOARD_CLIENT : "client_id (nullable)"
+  DASHBOARD_ACTIVITYLOG }o--|| AUTH_USER : "admin_user_id"
+  DASHBOARD_ARTIST_APPLICATION }o--|| AUTH_USER : "approval_admin_id"
+  DASHBOARD_ARTIST_APPLICATION }o--|| AUTH_USER : "user_id"
+```
+
+### Table Inventory (Columns, Constraints, Row Counts)
+
+This section summarizes the key tables. For authoritative, real-time details use the introspection command above.
+
+- __auth_user__
+  - Columns: `id PK`, `username UNIQUE`, `password`, `email`, `is_superuser`, `is_staff`, `is_active`, `date_joined`, `last_login` (NULL)
+  - Purpose: Django authentication users (includes super-admins)
+  - Row count: varies (super-admin credentials stored here)
+
+- __dashboard_client__
+  - Columns: `client_id PK (UUID)`, `full_name`, `phone UNIQUE`, `email UNIQUE NULL`, `password`, `location NULL`, `status`, timestamps
+  - Purpose: Portal clients/customers (separate from `auth_user`)
+  - Row count: populated via non-destructive backfill from `dashboard_user`
+
+- __dashboard_client_log__
+  - Columns: `log_id PK (UUID)`, `client_id FK`, `action`, `performed_by_id FK NULL`, `details JSON`, `timestamp`
+  - Purpose: Audit client actions and admin operations over clients
+
+- __dashboard_booking__
+  - Columns: BaseTable fields + `client_id FK NULL`
+  - Purpose: Bookings. The new FK is optional to preserve backward compatibility.
+
+- __dashboard_message__
+  - Columns: BaseTable fields + `client_id FK NULL`
+  - Purpose: Messages. The new FK is optional to preserve backward compatibility.
+
+- __dashboard_artist_application__
+  - Columns: BaseTable fields + application metadata (UUID, approvals, status, years_experience, email)
+
+- __dashboard_artist_application_certificate__
+  - Columns: `id PK`, `application_id FK`, `file`, `uploaded_at`
+
+- __dashboard_admin__, __dashboard_user__, __dashboard_verified_artist__, __dashboard_payment__, __dashboard_artist_service__, __dashboard_artist_availability__, __dashboard_artist_calendar__
+  - Columns: BaseTable fields
+
+- __dashboard_activitylog__
+  - Columns: `id PK`, `table_name`, `action`, `row_id`, `row_details JSON`, `timestamp`, `admin_user_id FK`
+
+- __django_session__, __django_content_type__, __django_admin_log__, __auth_*__ (groups/permissions)
+  - Standard Django system tables.
+
+### Where are super-admin credentials stored?
+
+- Super-admin credentials are stored in the Django auth table: `auth_user` (password hashes in `password`, `is_superuser=True`).
+- This is distinct from `dashboard_client` (portal customers) and `dashboard_admin` (operators registry). No overlap.
+
+### Generating Sample Data (Optional)
+
+To print 5 sample rows from each table (safe, read-only), use the existing introspection command and filter results, or extend it with a small helper. For now:
+
+```bash
+python manage.py inspectdb_full --indent 2 > db-inventory.json
+```
+
+Review `row_count` and `columns` per table. Add fixtures under `fixtures/` if you want repeatable samples.
+
+### Sample Data (first 5 rows)
+
+Below are illustrative samples pulled from the current development database. Your data will vary. Sensitive payloads (e.g., session_data) are omitted.
+
+#### auth_user
+
+| id | username | email | is_superuser | is_staff | is_active | date_joined |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | Ishu | Ishwarchoudhari007@gmail.com | True | True | True | 2025-09-04 17:15:13+00:00 |
+
+#### dashboard_client
+
+| client_id | full_name | phone | email | status | created_at |
+| --- | --- | --- | --- | --- | --- |
+| 731f4552-d6e9-4628-aafc-cfcab3fc36c6 | Rani | 9874563214 | NULL | Active | 2025-09-12 07:28:36+00:00 |
+
+#### dashboard_booking
+
+(no rows in current dev DB)
+
+#### dashboard_message
+
+(no rows in current dev DB)
+
+#### dashboard_artist_application
+
+(no rows in current dev DB)
+
+#### dashboard_artist_application_certificate
+
+(no rows in current dev DB)
+
+#### settings_app_appsettings
+
+| id | app_name | timezone | records_per_page | enable_notifications | updated_at | updated_by_id |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | Admin Dashboard | UTC | 25 | True | 2025-09-08 09:49:55+00:00 | 1 |
+
+-
+
 # Auditor's Report (2025-09-01)
 
 This section consolidates a precise, code-verified view of the repository: structure, technologies, dependencies, setup, and observations. It complements existing README content and can be used as a handoff for developers and reviewers.
