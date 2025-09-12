@@ -1,17 +1,67 @@
 {% load static %}
-<header class="fixed top-0 inset-x-0 z-40 bg-white/80 dark:bg-gray-900/70 backdrop-blur border-b border-gray-200 dark:border-gray-800">
+<header class="fixed top-0 inset-x-0 z-40 bg-[#222831]/95 dark:bg-black/80 backdrop-blur border-b border-gray-200/20 dark:border-gray-800/60 text-white">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <!-- Brand + Nav -->
     <div class="flex items-center gap-3">
       <a href="{% url 'client_portal:home' %}" class="inline-flex items-center gap-2 font-extrabold tracking-tight text-lg">
-        <span class="inline-flex w-8 h-8 items-center justify-center rounded-lg bg-blue-600 text-white">F</span>
-        <span>FloDo</span>
+        <span class="inline-flex w-8 h-8 items-center justify-center rounded-lg bg-gradient-to-tr from-pink-500 to-fuchsia-600 text-white shadow-sm">F</span>
+        <span class="text-white">FloDo</span>
       </a>
-      <nav class="hidden md:flex items-center gap-5 ml-6 text-sm text-gray-700 dark:text-gray-300">
-        <a class="hover:text-blue-600" href="{% url 'client_portal:customer_dashboard' %}">Customer</a>
-        <a class="hover:text-blue-600" href="{% url 'client_portal:browse_artists' %}">Artists</a>
-        <a class="hover:text-blue-600" href="{% url 'client_portal:artist_apply' %}">Apply as Artist</a>
+      <nav class="hidden md:flex items-center gap-5 ml-6 text-sm text-gray-100/90">
+        <a class="hover:text-pink-300 transition" href="{% url 'client_portal:home' %}">Home</a>
+        <a class="hover:text-pink-300 transition" href="{% url 'client_portal:browse_artists' %}">Browse Artists</a>
+        <a class="hover:text-pink-300 transition" href="{% url 'client_portal:customer_dashboard' %}">Bookings</a>
+        <a class="hover:text-pink-300 transition" href="{% url 'client_portal:artist_apply' %}">Apply</a>
       </nav>
+      <!-- Inline search (desktop) -->
+      <form action="{% url 'client_portal:browse_artists' %}" method="get" class="hidden lg:flex items-center gap-2 ml-6">
+        <div class="relative">
+          <input name="q" placeholder="Search artists" class="pl-9 pr-3 py-2 rounded-lg bg-white/10 text-white placeholder:text-white/70 border border-white/20 focus:outline-none focus:ring-2 focus:ring-pink-500/50" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.9 14.32a8 8 0 111.414-1.414l3.387 3.387a1 1 0 11-1.414 1.414l-3.387-3.387zM14 8a6 6 0 11-12 0 6 6 0 0112 0z" clip-rule="evenodd"/></svg>
+        </div>
+        <button class="px-3 py-2 rounded-lg bg-pink-600 hover:bg-pink-700 text-white transition">Search</button>
+      </form>
     </div>
-    <div class="flex items-center gap-3"></div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-2 md:gap-3">
+      <!-- Theme toggle -->
+      <button id="btn-theme" type="button" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-white/20 hover:bg-white/10" aria-label="Toggle dark mode">
+        <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3a1 1 0 011 1v1a1 1 0 11-2 0V4a1 1 0 011-1zm0 11a4 4 0 100-8 4 4 0 000 8zm7-4a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1zM3 10a1 1 0 00-1-1H1a1 1 0 100 2h1a1 1 0 001-1zm12.657 5.657a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM5.05 6.464A1 1 0 106.464 5.05l.707-.707A1 1 0 105.757 2.93l-.707.707A1 1 0 105.05 6.464zm9.9-3.535a1 1 0 011.414 0l.707.707A1 1 0 0115.95 5.05l-.707-.707a1 1 0 010-1.414zM4.343 15.657a1 1 0 00-1.414 0l-.707.707a1 1 0 001.414 1.414l.707-.707a1 1 0 000-1.414z"/></svg>
+        <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 dark:hidden" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8 8 0 1010.586 10.586z"/></svg>
+      </button>
+      <!-- Notification bell (WebSocket-driven) -->
+      <a href="#" id="btn-bell" class="relative inline-flex items-center justify-center w-10 h-10 rounded-lg border border-white/20 hover:bg-white/10" aria-label="Notifications">
+        <span id="notif-dot" class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-pink-500 hidden"></span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v2.586l-.707.707A1 1 0 004 13h12a1 1 0 00.707-1.707L16 10.586V8a6 6 0 00-6-6zm0 16a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+      </a>
+      <!-- Auth links -->
+      <a href="{% url 'authentication:login' %}" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-pink-600 text-white hover:bg-pink-700 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 4.5A1.5 1.5 0 014.5 3h5A1.5 1.5 0 0111 4.5V6a.5.5 0 11-1 0V4.5a.5.5 0 00-.5-.5h-5a.5.5 0 00-.5.5v11a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V14a.5.5 0 111 0v1.5A1.5 1.5 0 019.5 17h-5A1.5 1.5 0 013 15.5v-11z" clip-rule="evenodd"/><path d="M12.146 10.354a.5.5 0 010-.708l2-2a.5.5 0 11.708.708L13.707 10l1.147 1.646a.5.5 0 01-.708.708l-2-2z"/></svg>
+        <span>Sign in</span>
+      </a>
+      <a href="{% url 'authentication:signup' %}" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-pink-500 text-pink-200 hover:bg-pink-500/10 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M8 9a3 3 0 116 0 3 3 0 01-6 0z"/><path fill-rule="evenodd" d="M2 15.5A4.5 4.5 0 016.5 11h7A4.5 4.5 0 0118 15.5V17a1 1 0 01-1 1H3a1 1 0 01-1-1v-1.5z" clip-rule="evenodd"/></svg>
+        <span>Create account</span>
+      </a>
+
+      <!-- Mobile menu button -->
+      <button id="btn-mobile" class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 5h14a1 1 0 100-2H3a1 1 0 000 2zm14 4H3a1 1 0 000 2h14a1 1 0 100-2zm0 6H3a1 1 0 000 2h14a1 1 0 100-2z" clip-rule="evenodd"/></svg>
+      </button>
+    </div>
+  </div>
+  <!-- Mobile nav -->
+  <div id="mobile-nav" class="md:hidden hidden border-t border-white/10">
+    <nav class="px-4 py-3 grid gap-2 text-sm text-white bg-[#222831]/95 dark:bg-black/80">
+      <a class="hover:text-blue-600" href="{% url 'client_portal:home' %}">Home</a>
+      <a class="hover:text-blue-600" href="{% url 'client_portal:browse_artists' %}">Browse Artists</a>
+      <a class="hover:text-blue-600" href="{% url 'client_portal:customer_dashboard' %}">Bookings</a>
+      <a class="hover:text-blue-600" href="{% url 'client_portal:artist_apply' %}">Apply</a>
+      <div class="flex gap-2 pt-2">
+        <a href="{% url 'authentication:login' %}" class="inline-flex px-3 py-2 rounded-lg bg-pink-600 text-white hover:bg-pink-700">Sign in</a>
+        <a href="{% url 'authentication:signup' %}" class="inline-flex px-3 py-2 rounded-lg border border-pink-500 text-pink-200 hover:bg-pink-500/10">Create account</a>
+      </div>
+    </nav>
   </div>
 </header>

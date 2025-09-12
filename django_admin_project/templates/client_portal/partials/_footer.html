@@ -1,10 +1,28 @@
-<footer class="mt-auto border-t border-gray-200 dark:border-gray-800 bg-white/60 dark:bg-gray-900/60">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-sm text-gray-600 dark:text-gray-400 flex items-center justify-between">
-    <div>&copy; {{ now|default:None }} FloDo. All rights reserved.</div>
-    <div class="space-x-4">
-      <a href="#" class="hover:underline">Privacy</a>
-      <a href="#" class="hover:underline">Terms</a>
-      <a href="#" class="hover:underline">Help</a>
+<footer class="mt-auto border-t border-white/10 bg-[#222831] text-white dark:bg-black/90">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid md:grid-cols-3 gap-6 text-sm">
+    <div>
+      <div class="inline-flex items-center gap-2 font-extrabold tracking-tight text-lg">
+        <span class="inline-flex w-8 h-8 items-center justify-center rounded-lg bg-gradient-to-tr from-pink-500 to-fuchsia-600 text-white shadow-sm">F</span>
+        <span>FloDo</span>
+      </div>
+      <p class="mt-2 text-white/70">Discover and book talented artists. Secure, fast, and modern.</p>
     </div>
+    <nav class="grid grid-cols-2 gap-x-8 gap-y-2">
+      <a href="#" class="text-white/80 hover:text-white">Privacy</a>
+      <a href="#" class="text-white/80 hover:text-white">Terms</a>
+      <a href="#" class="text-white/80 hover:text-white">Help</a>
+      <a href="{% url 'client_portal:browse_artists' %}" class="text-white/80 hover:text-white">Browse Artists</a>
+    </nav>
+    <div class="flex items-center md:justify-end gap-3">
+      <a href="#" aria-label="Twitter" class="inline-flex w-9 h-9 items-center justify-center rounded-lg bg-white/10 hover:bg-white/20">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19.633 7.997c.013.176.013.353.013.53 0 5.4-4.109 11.63-11.63 11.63-2.312 0-4.46-.676-6.266-1.84.322.038.63.05.966.05a8.23 8.23 0 005.1-1.76A4.117 4.117 0 013.3 13.7c.273.039.546.065.832.065.403 0 .806-.052 1.184-.143a4.11 4.11 0 01-3.296-4.034v-.052c.546.3 1.18.49 1.85.514A4.104 4.104 0 012.8 6.47c0-.756.202-1.456.556-2.066a11.67 11.67 0 008.463 4.29 4.636 4.636 0 01-.102-.942A4.106 4.106 0 0115.826 3.7c1.184 0 2.25.49 3.002 1.283a8.17 8.17 0 002.605-1 4.1 4.1 0 01-1.805 2.26 8.19 8.19 0 002.363-.64 8.82 8.82 0 01-2.358 2.394z"/></svg>
+      </a>
+      <a href="#" aria-label="LinkedIn" class="inline-flex w-9 h-9 items-center justify-center rounded-lg bg-white/10 hover:bg-white/20">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M6.94 6.94A2.44 2.44 0 114.5 4.5a2.44 2.44 0 012.44 2.44zM4.75 8.75h4.38V19.5H4.75zM13.5 8.75h4.19v1.47h.06c.58-1.1 2-2.26 4.12-2.26 4.41 0 5.23 2.9 5.23 6.68V19.5H22.7v-4.71c0-1.13-.02-2.57-1.57-2.57-1.58 0-1.82 1.23-1.82 2.5V19.5h-4.38z"/></svg>
+      </a>
+    </div>
+  </div>
+  <div class="border-t border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-xs text-white/70">&copy; {{ now|default:None }} FloDo. All rights reserved.</div>
   </div>
 </footer>

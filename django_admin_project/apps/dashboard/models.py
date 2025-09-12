@@ -117,11 +117,17 @@ class Table8(BaseTable):
 
 
 class Table9(BaseTable):
+    # Optional link to Client; additive and nullable to avoid breaking flows
+    client = models.ForeignKey('Client', null=True, blank=True, on_delete=models.SET_NULL, related_name="bookings")
+
     class Meta:  # added
         db_table = "dashboard_booking"  # added: was dashboard_table9
 
 
 class Table10(BaseTable):
+    # Optional link to Client
+    client = models.ForeignKey('Client', null=True, blank=True, on_delete=models.SET_NULL, related_name="messages")
+
     class Meta:  # added
         db_table = "dashboard_message"  # added: was dashboard_table10
 
@@ -139,3 +145,67 @@ class ActivityLog(models.Model):
 
     def __str__(self) -> str:
         return f"{self.table_name} {self.action} #{self.row_id} by {self.admin_user_id}"
+
+"""
+New client models (additive, reversible):
+- Client: dedicated end-user entity, separate from auth_user and dashboard_admin
+- ClientLog: audit log for client actions and admin operations on clients
+Also adding optional ForeignKey references from Booking (Table9) and Message (Table10) to Client.
+"""
+
+import uuid
+from django.conf import settings
+
+
+class Client(models.Model):
+    client_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    full_name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=32, unique=True)
+    email = models.EmailField(max_length=255, unique=True, null=True, blank=True)
+    password = models.CharField(max_length=128)  # store Django hashed password
+    location = models.CharField(max_length=255, null=True, blank=True)
+    STATUS_CHOICES = (("Active", "Active"), ("Inactive", "Inactive"))
+    status = models.CharField(max_length=8, choices=STATUS_CHOICES, default="Active")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "dashboard_client"
+        indexes = [
+            models.Index(fields=["phone"]),
+            models.Index(fields=["email"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"Client {self.full_name} ({self.phone})"
+
+
+class ClientLog(models.Model):
+    log_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="logs")
+    ACTION_CHOICES = (
+        ("CREATE", "CREATE"),
+        ("UPDATE", "UPDATE"),
+        ("DELETE", "DELETE"),
+        ("LOGIN", "LOGIN"),
+        ("LOGOUT", "LOGOUT"),
+        ("PASSWORD_RESET", "PASSWORD_RESET"),
+        ("BOOKING", "BOOKING"),
+    )
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    performed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="client_logs_performed")
+    details = models.JSONField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "dashboard_client_log"
+        indexes = [
+            models.Index(fields=["action"]),
+            models.Index(fields=["timestamp"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"ClientLog {self.action} for {self.client_id} @ {self.timestamp}"
+
+
+# End of client-related additive changes

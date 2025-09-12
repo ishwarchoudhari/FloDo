@@ -12,3 +12,17 @@ class ActivityLogAdmin(admin.ModelAdmin):
 for i in range(1, 11):
     model = getattr(models, f"Table{i}")
     admin.site.register(model)
+
+
+@admin.register(models.Client)
+class ClientAdmin(admin.ModelAdmin):
+    list_display = ("client_id", "full_name", "phone", "email", "status", "created_at")
+    search_fields = ("full_name", "phone", "email")
+    list_filter = ("status",)
+
+
+@admin.register(models.ClientLog)
+class ClientLogAdmin(admin.ModelAdmin):
+    list_display = ("log_id", "client", "action", "timestamp")
+    list_filter = ("action",)
+    search_fields = ("client__full_name", "client__phone", "client__email")

@@ -267,6 +267,13 @@ if not DEBUG:
 # ---------------------------------------------------------------------------
 FEATURE_ENFORCE_ADMIN_API_PERMS = os.getenv("FEATURE_ENFORCE_ADMIN_API_PERMS", "False").lower() in ("1", "true", "yes")
 FEATURE_EXPORT_SUPERADMIN_ONLY = os.getenv("FEATURE_EXPORT_SUPERADMIN_ONLY", "False").lower() in ("1", "true", "yes")
+FEATURE_SECURITY_HEADERS = os.getenv("FEATURE_SECURITY_HEADERS", "False").lower() in ("1", "true", "yes")
+FEATURE_CLIENT_AUTH = os.getenv("FEATURE_CLIENT_AUTH", "False").lower() in ("1", "true", "yes")
+FEATURE_ENFORCE_CLIENT_FKS = os.getenv("FEATURE_ENFORCE_CLIENT_FKS", "False").lower() in ("1", "true", "yes")
+
+# Conditionally enable security headers middleware (CSP report-only + modern headers)
+if FEATURE_SECURITY_HEADERS:
+    MIDDLEWARE.insert(1, "django_admin_project.middleware.security_headers.SecurityHeadersMiddleware")
 
 # Simple console logging in development; console + rotating file logging in production
 if DEBUG:
