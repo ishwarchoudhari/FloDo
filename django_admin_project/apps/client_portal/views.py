@@ -1,12 +1,16 @@
 from __future__ import annotations
 from django.shortcuts import render, redirect
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, Http404
 from django.db import transaction
 from django.contrib.auth.models import AnonymousUser
 from django.core.paginator import Paginator
 from django.utils import timezone
 from apps.dashboard import models as dm
 from apps.settings_app.models import AppSettings
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.hashers import make_password, check_password
+from django.core import signing
 
 # Public Client Portal (no authentication). Uses existing dashboard tables.
 # SOC: templates render-only; all logic lives here.
@@ -144,3 +148,121 @@ def artist_dashboard(request: HttpRequest) -> HttpResponse:
         "services": services,
         "calendar_items": calendar_items,
     })
+
+
+# -----------------------------
+# Feature-flagged Client Auth
+# -----------------------------
+
+def _client_auth_enabled() -> bool:
+    return getattr(settings, "FEATURE_CLIENT_AUTH", False)
+
+
+def _require_client_auth_enabled():
+    if not _client_auth_enabled():
+        raise Http404()
+
+
+def _current_client(request: HttpRequest):
+    cid = request.session.get("client_id")
+    if not cid:
+        return None
+    try:
+        return dm.Client.objects.only("client_id", "full_name").get(client_id=cid)
+    except dm.Client.DoesNotExist:
+        return None
+
+
+def client_signup(request: HttpRequest) -> HttpResponse:
+    _require_client_auth_enabled()
+    if request.method == "POST":
+        full_name = (request.POST.get("full_name") or "").strip()
+        phone = (request.POST.get("phone") or "").strip()
+        email = (request.POST.get("email") or "").strip() or None
+        password = (request.POST.get("password") or "").strip()
+        location = (request.POST.get("location") or "").strip() or None
+        if not full_name or not phone or not password:
+            messages.error(request, "Full name, phone, and password are required.")
+        else:
+            try:
+                client = dm.Client.objects.create(
+                    full_name=full_name,
+                    phone=phone,
+                    email=email,
+                    password=make_password(password),
+                    location=location,
+                    status="Active",
+                )
+                dm.ClientLog.objects.create(client=client, action="CREATE", details={"full_name": full_name, "phone": phone})
+                messages.success(request, "Account created. Please log in.")
+                return redirect("client_portal:client_login")
+            except Exception:
+                messages.error(request, "Could not create account. Phone or email may already exist.")
+    return render(request, "client_portal/client_signup.html")
+
+
+def client_login(request: HttpRequest) -> HttpResponse:
+    _require_client_auth_enabled()
+    if request.method == "POST":
+        identifier = (request.POST.get("identifier") or "").strip()  # phone or email
+        password = (request.POST.get("password") or "").strip()
+        client = None
+        if "@" in identifier:
+            client = dm.Client.objects.filter(email=identifier).first()
+        else:
+            client = dm.Client.objects.filter(phone=identifier).first()
+        if client and check_password(password, client.password) and client.status == "Active":
+            request.session["client_id"] = str(client.client_id)
+            dm.ClientLog.objects.create(client=client, action="LOGIN")
+            return redirect("client_portal:customer_dashboard")
+        messages.error(request, "Invalid credentials or inactive account.")
+    return render(request, "client_portal/client_login.html")
+
+
+def client_logout(request: HttpRequest) -> HttpResponse:
+    _require_client_auth_enabled()
+    client = _current_client(request)
+    if client:
+        dm.ClientLog.objects.create(client=client, action="LOGOUT")
+    request.session.pop("client_id", None)
+    messages.success(request, "Logged out.")
+    return redirect("client_portal:client_login")
+
+
+def client_forgot_password(request: HttpRequest) -> HttpResponse:
+    _require_client_auth_enabled()
+    token = None
+    if request.method == "POST":
+        identifier = (request.POST.get("identifier") or "").strip()
+        client = None
+        if "@" in identifier:
+            client = dm.Client.objects.filter(email=identifier).only("client_id").first()
+        else:
+            client = dm.Client.objects.filter(phone=identifier).only("client_id").first()
+        if client:
+            signer = signing.TimestampSigner()
+            token = signer.sign(str(client.client_id))
+            # In production, email/SMS this token. For now, show it on the page to complete the flow.
+            messages.info(request, "Use the generated reset link to set a new password.")
+    return render(request, "client_portal/client_forgot_password.html", {"token": token})
+
+
+def client_reset_password(request: HttpRequest, token: str) -> HttpResponse:
+    _require_client_auth_enabled()
+    signer = signing.TimestampSigner()
+    try:
+        cid = signer.unsign(token, max_age=3600)  # 1 hour
+        client = dm.Client.objects.get(client_id=cid)
+    except Exception:
+        raise Http404()
+    if request.method == "POST":
+        new_pw = (request.POST.get("password") or "").strip()
+        if not new_pw:
+            messages.error(request, "Password required.")
+        else:
+            client.password = make_password(new_pw)
+            client.save(update_fields=["password"])
+            dm.ClientLog.objects.create(client=client, action="PASSWORD_RESET")
+            messages.success(request, "Password updated. Please log in.")
+            return redirect("client_portal:client_login")
+    return render(request, "client_portal/client_reset_password.html")
