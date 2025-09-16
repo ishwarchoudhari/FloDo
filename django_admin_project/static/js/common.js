@@ -215,12 +215,19 @@ async function fetchWithCSRF(input, init){
   const isSameOrigin = !/^https?:\/\//i.test(url) || url.indexOf(location.origin) === 0;
   if (isSameOrigin && !isSafe){
     init.headers = init.headers || {};
+    // Determine token with fallbacks (cookie -> meta[name="csrf-token"] -> #csrf-token-global)
+    var token = (function(){
+      try { var c = getCookie('csrftoken'); if (c) return c; } catch(_){ }
+      try { var m = document.querySelector('meta[name="csrf-token"]'); if (m && (m.content||'').trim()) return m.content.trim(); } catch(_){ }
+      try { var h = document.getElementById('csrf-token-global'); if (h && (h.value||h.content)) return (h.value||h.content); } catch(_){ }
+      return '';
+    })();
     if (!(init.headers instanceof Headers)){
       // Plain object, safe to mutate
-      if (!init.headers['X-CSRFToken']) init.headers['X-CSRFToken'] = getCookie('csrftoken');
+      if (!init.headers['X-CSRFToken'] && token) init.headers['X-CSRFToken'] = token;
       if (!init.headers['X-Requested-With']) init.headers['X-Requested-With'] = 'XMLHttpRequest';
     } else {
-      if (!init.headers.has('X-CSRFToken')) init.headers.set('X-CSRFToken', getCookie('csrftoken'));
+      if (!init.headers.has('X-CSRFToken') && token) init.headers.set('X-CSRFToken', token);
       if (!init.headers.has('X-Requested-With')) init.headers.set('X-Requested-With', 'XMLHttpRequest');
     }
     init.credentials = init.credentials || 'same-origin';

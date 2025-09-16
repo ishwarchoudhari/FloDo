@@ -9,8 +9,9 @@ from django.utils import timezone
 from django.utils.timesince import timesince
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-from django.core.files.uploadedfile import UploadedFile
+from django.core.files.uploadedfile import UploadedFile, InMemoryUploadedFile
 from PIL import Image, UnidentifiedImageError
+import io
 from django.conf import settings
 
 # Optional: Redis-backed rate limiting (enabled only if REDIS_URL present)
@@ -120,16 +121,18 @@ def login_view(request: HttpRequest):
     is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest"
     next_url = request.POST.get("next") or request.GET.get("next")
     if not is_ajax:
-        return redirect(next_url or "/dashboard/")
+        # Redirect to 'next' if provided, else to configured LOGIN_REDIRECT_URL
+        return redirect(next_url or settings.LOGIN_REDIRECT_URL)
     # Default AJAX response (existing SPA behavior)
-    return JsonResponse({"success": True, "redirect": next_url or "/dashboard/"})
+    return JsonResponse({"success": True, "redirect": next_url or settings.LOGIN_REDIRECT_URL})
 
 
 @require_http_methods(["POST"])  # CSRF protected by default since middleware is enabled
 @login_required
 def logout_view(request: HttpRequest):
     logout(request)
-    return JsonResponse({"success": True, "redirect": "/login/"})
+    # Respect configured LOGOUT_REDIRECT_URL
+    return JsonResponse({"success": True, "redirect": settings.LOGOUT_REDIRECT_URL})
 
 
 @require_http_methods(["GET"])  # Lightweight auth status endpoint for frontend polling
@@ -142,6 +145,7 @@ def check_auth_status(request: HttpRequest):
 # ------------------------------
 
 @login_required
+@ensure_csrf_cookie
 @require_http_methods(["GET"])
 def profile_view(request: HttpRequest) -> HttpResponse:
     """Return the Admin Profile card HTML partial for injection via AJAX."""
@@ -152,10 +156,41 @@ def profile_view(request: HttpRequest) -> HttpResponse:
         "profile": profile,
         "last_login_human": timesince(user.last_login) + " ago" if user.last_login else "—",
     }
+    # For superusers, also surface Super-Admin status data inline on the profile
+    if user.is_superuser:
+        supers = []
+        sa = None
+        sa_count = 0
+        try:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            supers = list(User.objects.filter(is_superuser=True).values("id", "username", "email", "is_active"))
+        except Exception:
+            supers = []
+        try:
+            from apps.authentication.models import SuperAdmin
+            sa_count = SuperAdmin.objects.count()
+            sa = SuperAdmin.objects.select_related("user").first()
+            # Self-heal: if multiple rows exist, keep first and remove extras
+            if sa_count > 1 and sa:
+                try:
+                    SuperAdmin.objects.exclude(pk=sa.pk).delete()
+                    sa_count = 1
+                except Exception:
+                    pass
+        except Exception:
+            sa = None
+            sa_count = 0
+        context.update({
+            "supers": supers,
+            "superadmin": sa,
+            "superadmin_count": sa_count,
+        })
     return render(request, "profile/admin_profile.html", context)
 
 
 @login_required
+@csrf_protect
 @require_http_methods(["POST"])  # JSON payload
 def profile_update(request: HttpRequest) -> JsonResponse:
     user = request.user
@@ -197,6 +232,7 @@ def profile_update(request: HttpRequest) -> JsonResponse:
 
 
 @login_required
+@csrf_protect
 @require_http_methods(["POST"])  # multipart/form-data
 def profile_avatar_upload(request: HttpRequest) -> JsonResponse:
     user = request.user
@@ -206,17 +242,23 @@ def profile_avatar_upload(request: HttpRequest) -> JsonResponse:
         return JsonResponse({"success": False, "error": "No file provided."}, status=400)
 
     # Validation constraints
-    MAX_AVATAR_BYTES = 2 * 1024 * 1024  # 2 MB
-    ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+    MAX_AVATAR_BYTES = 5 * 1024 * 1024  # 5 MB (relaxed to reduce false negatives)
+    # Accept common image content types and fallback to extension-based check for robustness
+    ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif", "image/jpg"}
+    ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
     MAX_WIDTH = 1024
     MAX_HEIGHT = 1024
 
     # Size check
     if getattr(avatar, "size", 0) > MAX_AVATAR_BYTES:
-        return JsonResponse({"success": False, "error": "Avatar too large (max 2MB)."}, status=400)
+        return JsonResponse({"success": False, "error": "Avatar too large (max 5MB)."}, status=400)
 
     # MIME type check (client provided, best-effort)
-    if getattr(avatar, "content_type", "") not in ALLOWED_CONTENT_TYPES:
+    content_type = (getattr(avatar, "content_type", "") or "").lower()
+    name_lower = (getattr(avatar, "name", "") or "").lower()
+    has_allowed_ct = content_type in ALLOWED_CONTENT_TYPES or content_type.startswith("image/")
+    has_allowed_ext = any(name_lower.endswith(ext) for ext in ALLOWED_EXTENSIONS)
+    if not (has_allowed_ct or has_allowed_ext):
         return JsonResponse({"success": False, "error": "Unsupported image type."}, status=400)
 
     # Image verification and dimension check using Pillow
@@ -226,9 +268,22 @@ def profile_avatar_upload(request: HttpRequest) -> JsonResponse:
             img.verify()  # quick integrity check
         avatar.file.seek(0)
         with Image.open(avatar.file) as img2:
+            img2 = img2.convert("RGB")  # normalize mode for consistent saving
             width, height = img2.size
             if width > MAX_WIDTH or height > MAX_HEIGHT:
-                return JsonResponse({"success": False, "error": "Image dimensions too large (max 1024x1024)."}, status=400)
+                # Auto-resize down to fit within bounds while keeping aspect ratio (safe, non-breaking)
+                img2.thumbnail((MAX_WIDTH, MAX_HEIGHT))
+                buf = io.BytesIO()
+                img2.save(buf, format="JPEG", quality=85)
+                buf.seek(0)
+                avatar = InMemoryUploadedFile(
+                    buf,
+                    field_name="avatar",
+                    name=(getattr(avatar, "name", "avatar") or "avatar").rsplit(".", 1)[0] + ".jpg",
+                    content_type="image/jpeg",
+                    size=buf.getbuffer().nbytes,
+                    charset=None,
+                )
     except (UnidentifiedImageError, OSError):
         return JsonResponse({"success": False, "error": "Invalid image file."}, status=400)
 
@@ -238,6 +293,7 @@ def profile_avatar_upload(request: HttpRequest) -> JsonResponse:
 
 
 @login_required
+@csrf_protect
 @require_http_methods(["POST"])  # form-encoded
 def profile_avatar_delete(request: HttpRequest) -> JsonResponse:
     user = request.user

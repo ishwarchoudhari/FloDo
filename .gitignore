@@ -1,4 +1,4 @@
-﻿# Virtual environments
+# Virtual environments
 .venv/
 venv/
 
@@ -35,3 +35,21 @@ staticfiles/
 # OS junk
 .DS_Store
 Thumbs.db
+
+# Media uploads (do not version control user-uploaded files)
+django_admin_project/media/
+
+# Logs and performance reports
+logs/
+django_admin_project/logs/
+performance_test_results.json
+django_admin_project/performance_test_results.json
+reports/
+
+# Test reports and temporary artifacts
+django_admin_project/testsprite_tests/
+django_admin_project/testsprite_tests/**
+
+# Local build outputs (keep sources under static/js, exclude built/minified if generated)
+# Uncomment the next line if you generate dist at build time and don't want it tracked:
+# django_admin_project/static/dist/

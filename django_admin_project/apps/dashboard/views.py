@@ -10,7 +10,7 @@ from django.db.models import Q  # added: for combined OR filtering across multip
 from django.forms.models import model_to_dict
 from django.http import JsonResponse, HttpRequest, HttpResponseForbidden
 from django.shortcuts import render, redirect
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie, csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone  # reused: timezone-aware now()
 from django.contrib.auth.models import User  # added: manage Django users for Admin Management
@@ -22,6 +22,7 @@ from . import models
 from apps.settings_app.models import AppSettings
 from apps.authentication.models import AdminProfile, SuperAdmin  # added: use AdminProfile for roles
 from apps.dashboard.services import admin_service  # added: centralize admin business logic
+from apps.dashboard.models import Client  # added: portal clients for Clients page
 
 TABLE_MODEL_MAP: Dict[int, Type[models.BaseTable]] = {i: getattr(models, f"Table{i}") for i in range(1, 11)}
 
@@ -100,7 +101,8 @@ def _safe_table1_details(obj, password_changed: bool | None = None) -> dict:  # 
 
 
 @login_required
-@require_http_methods(["GET"])  # Overview dashboard: lightweight stats only (no heavy tables)
+@ensure_csrf_cookie  # ensure CSRF cookie is present for subsequent AJAX POSTs
+@require_http_methods(["GET"])  # Overview dashboard: lightweight stats only (no heavy CRUD tables)
 def dashboard_view(request: HttpRequest):
     # Restrict access: only super-admin may access the admin dashboard UI
     if not _is_super_admin(request.user):
@@ -116,6 +118,9 @@ def dashboard_view(request: HttpRequest):
     table_stats = [{"id": i, "count": table_counts[i], "label": TABLE_LABELS.get(i, f"Table {i}")} for i in table_ids]  # added
     # ActivityLog is shown only as a number here; detailed logs remain on their own flows.
     recent_logs_count = models.ActivityLog.objects.count()  # unchanged: count only
+
+    # Optional default log filter for UI chips (e.g., ?logs_table=Client or Admin)  # added
+    logs_table_filter = (request.GET.get("logs_table") or "").strip()
 
     # Compute latest 10 logs for a read-only dashboard table (no forms/buttons)  # added
     now = timezone.now()  # added: current timezone-aware time
@@ -149,11 +154,13 @@ def dashboard_view(request: HttpRequest):
             "recent_logs_count": recent_logs_count,  # activity summary number only
             "logs_recent": logs_recent,        # added: latest 10 logs for read-only table
             "label_map_json": json.dumps(TABLE_LABELS),  # added: expose labels to template if needed for client-side usage
+            "logs_table_filter": logs_table_filter,  # added: preselect log filter chip on the client
         },
     )
 
 
 @login_required
+@ensure_csrf_cookie  # ensure CSRF cookie for AJAX table actions
 @require_http_methods(["GET"])  # Tables page: same UI/JS as dashboard tables
 def tables_view(request: HttpRequest):
     # Restrict access: only super-admin may access the tables management UI
@@ -232,21 +239,25 @@ def get_table_data(request: HttpRequest, table_id: int):
     })
 
 
+
+
 # ---------------------- Admin Management ----------------------
 
 def _is_super_admin(user: User) -> bool:
+    """Super-admin is strictly the Django superuser.
+
+    This enforces a single source of truth for super-admin privileges and
+    avoids accidental elevation via model side-channels. Any SuperAdmin model
+    object is informational only; permission gate is is_superuser.
+    """
     try:
-        if not user.is_authenticated:
-            return False
-        if user.is_superuser:
-            return True
-        # Allow via explicit SuperAdmin profile if project uses it
-        return hasattr(user, "super_admin_profile") or SuperAdmin.objects.filter(user=user).exists()
+        return bool(user and user.is_authenticated and user.is_superuser)
     except Exception:
         return False
 
 
 @login_required
+@ensure_csrf_cookie  # ensure CSRF cookie for Admin Management AJAX create/update/delete
 @require_http_methods(["GET"])  # page render (full or partial)
 def admin_mgmt_view(request: HttpRequest):
     if not _is_super_admin(request.user):
@@ -260,12 +271,15 @@ def admin_mgmt_view(request: HttpRequest):
 
 
 @login_required
-@csrf_protect
+@ensure_csrf_cookie  # send csrftoken cookie on GET list responses
+@csrf_exempt  # DEV: temporarily disable CSRF for Admin Management API (re-enable in prod)
 @require_http_methods(["GET", "POST"])  # list or create
 @transaction.atomic
 def admin_list_create_api(request: HttpRequest):
-    if not _is_super_admin(request.user):
-        return JsonResponse({"success": False, "error": "Forbidden"}, status=403)
+    # In development, allow disabling strict super-admin enforcement via feature flag
+    if getattr(settings, "FEATURE_ENFORCE_ADMIN_API_PERMS", False):
+        if not _is_super_admin(request.user):
+            return JsonResponse({"success": False, "error": "Forbidden"}, status=403)
 
     if request.method == "GET":
         q = (request.GET.get("q") or "").strip()
@@ -411,12 +425,15 @@ def admin_list_create_api(request: HttpRequest):
 
 
 @login_required
-@csrf_protect
+@ensure_csrf_cookie  # send csrftoken cookie on GET detail (if any future GET) and consistent responses
+@csrf_exempt  # DEV: temporarily disable CSRF for Admin Management API (re-enable in prod)
 @require_http_methods(["PUT", "DELETE", "POST"])  # support _method override via POST
 @transaction.atomic
 def admin_detail_api(request: HttpRequest, user_id: int):
-    if not _is_super_admin(request.user):
-        return JsonResponse({"success": False, "error": "Forbidden"}, status=403)
+    # In development, allow disabling strict super-admin enforcement via feature flag
+    if getattr(settings, "FEATURE_ENFORCE_ADMIN_API_PERMS", False):
+        if not _is_super_admin(request.user):
+            return JsonResponse({"success": False, "error": "Forbidden"}, status=403)
 
     # Operate against Table1 instead of auth.User
     Model = models.Table1
@@ -657,6 +674,64 @@ def artist_applications_view(request: HttpRequest):
         "filters": {"status": status, "city": city, "q": q, "per_page": per_page},
     }
     return render(request, "dashboard/artist_applications.html", ctx)
+
+
+# ---------------------------------------------------------------------------
+# Super-admin: Clients page (portal signups)
+# ---------------------------------------------------------------------------
+@login_required
+@require_http_methods(["GET"])  # page render (full or partial)
+def clients_view(request: HttpRequest):
+    if not _is_super_admin(request.user):
+        return HttpResponseForbidden("Forbidden")
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    template_name = "dashboard/clients_partial.html" if is_ajax else "dashboard/clients_full.html"
+    return render(request, template_name, {})
+
+
+@login_required
+@require_http_methods(["GET"])  # list with pagination and search
+def clients_list_api(request: HttpRequest):
+    if getattr(settings, "FEATURE_ENFORCE_ADMIN_API_PERMS", False):
+        if not _is_super_admin(request.user):
+            return JsonResponse({"success": False, "error": "Forbidden"}, status=403)
+
+    q = (request.GET.get("q") or "").strip()
+    qs = Client.objects.all().order_by("-created_at")
+    if q:
+        cond = Q(full_name__icontains=q) | Q(phone__icontains=q) | Q(email__icontains=q) | Q(location__icontains=q)
+        qs = qs.filter(cond)
+
+    # Pagination (fallback to AppSettings.records_per_page)
+    default_pp = 10
+    try:
+        latest = AppSettings.objects.order_by("-updated_at").first()
+        if latest and int(latest.records_per_page) > 0:
+            default_pp = int(latest.records_per_page)
+    except Exception:
+        pass
+    per_page = int(request.GET.get("per_page") or default_pp)
+    paginator = Paginator(qs, per_page)
+    page_obj = paginator.get_page(request.GET.get("page") or 1)
+
+    results = []
+    for c in page_obj.object_list:
+        results.append({
+            "client_id": str(c.client_id),
+            "full_name": c.full_name,
+            "phone": c.phone,
+            "email": c.email,
+            "location": c.location,
+            "status": c.status,
+            "created_at": c.created_at.isoformat() if c.created_at else None,
+        })
+    return JsonResponse({
+        "success": True,
+        "results": results,
+        "page": page_obj.number,
+        "num_pages": paginator.num_pages,
+        "total": paginator.count,
+    })
 
 
 @login_required

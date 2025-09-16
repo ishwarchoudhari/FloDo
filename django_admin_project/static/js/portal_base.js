@@ -18,6 +18,29 @@ Security-conscious: no inline eval, no third-party origins beyond existing Tailw
       localStorage.setItem('theme', mode);
     } catch (_) {}
   }
+
+  // User dropdown menus (desktop + mobile)
+  function initUserMenu(){
+    var btn = qs('#user-menu-btn');
+    var panel = qs('#user-menu-panel');
+    var btnM = qs('#user-menu-btn-mobile');
+    var panelM = qs('#user-menu-panel-mobile');
+    function toggle(el){ if (!el) return; el.classList.toggle('hidden'); }
+    function open(el){ if (!el) return; el.classList.remove('hidden'); }
+    function close(el){ if (!el) return; el.classList.add('hidden'); }
+    if (btn && panel){
+      btn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); toggle(panel); btn.setAttribute('aria-expanded', String(!panel.classList.contains('hidden'))); });
+    }
+    if (btnM && panelM){
+      btnM.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); toggle(panelM); btnM.setAttribute('aria-expanded', String(!panelM.classList.contains('hidden'))); });
+    }
+    document.addEventListener('click', function(e){
+      var t = e.target;
+      if (panel && !panel.contains(t) && btn && !btn.contains(t)) close(panel);
+      if (panelM && !panelM.contains(t) && btnM && !btnM.contains(t)) close(panelM);
+    });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape'){ close(panel); close(panelM); } });
+  }
   function currentTheme() {
     try {
       var t = localStorage.getItem('theme');
@@ -103,6 +126,7 @@ Security-conscious: no inline eval, no third-party origins beyond existing Tailw
     initThemeToggle();
     initMobileMenu();
     initNotifications();
+    initUserMenu();
     initStickySearch();
     initFiltersDrawer();
   }

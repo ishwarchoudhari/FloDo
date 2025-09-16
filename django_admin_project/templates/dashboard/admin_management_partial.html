@@ -1,22 +1,28 @@
 <!-- templates/dashboard/admin_management_partial.html -->
-<section class="space-y-6" id="admin-mgmt-root">
-  <header class="flex items-center justify-between">
-    <h1 class="text-2xl font-semibold">Admin Management</h1>
+<section id="admin-mgmt-root" class="max-w-7xl mx-auto space-y-5">
+  <!-- Header matches dashboard overview scale/spacing -->
+  <header class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+    <div>
+      <h1 class="typo-h1">Admin Management</h1>
+    </div>
     <div class="flex items-center gap-2">
-      <input id="admin-search" type="text" class="border rounded px-2 py-1 text-sm" placeholder="Search by name/email/username" />
-      <button id="admin-refresh" class="px-3 py-1 bg-gray-800 text-white rounded text-sm">Refresh</button>
+      <input id="admin-search" type="search" placeholder="Search by name / username / phone" class="w-72 max-w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800" />
+      <button id="admin-refresh" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">Refresh</button>
     </div>
   </header>
 
-  <div class="p-4 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded shadow-sm">
+  <!-- Card container consistent with overview cards -->
+  <div class="p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
     <div class="flex items-center justify-between mb-3">
-      <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Admins</h2>
-      <span id="admin-count" class="text-sm text-gray-500 dark:text-gray-400"></span>
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Admins</h2>
+      <span id="admin-count" class="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300"></span>
     </div>
-    <!-- Responsive grid for admin cards -->
+    <!-- Summary chips (populated by JS) -->
+    <div id="admin-summary" class="flex flex-wrap items-center gap-2 mb-3"></div>
+    <!-- Responsive grid for admin cards (JS injects cards) -->
     <div id="admin-card-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
   </div>
 </section>
 
-<!-- Portal root for animated Add Admin card-form overlay (injected by JS) -->
+<!-- Portal root for animated overlays injected by admin_management.js (dialogs, forms) -->
 <div id="admin-add-portal" class="fixed inset-0 z-50 pointer-events-none"></div>

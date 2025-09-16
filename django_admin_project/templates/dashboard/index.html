@@ -1,26 +1,70 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %} · Dashboard{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'js/dashboard.js' %}?v=dev"></script>
+  <script>
+    (function(){
+      try {
+        // Hydrate donut and bar charts if present
+        if (typeof window.initDashboardCharts === 'function') window.initDashboardCharts();
+        if (typeof window.initDashboardDonuts === 'function') window.initDashboardDonuts();
+        // Populate Recent Client Activity table on first load
+        if (typeof window.refreshClientLogs === 'function') window.refreshClientLogs();
+        // Keep charts live via notifications WS if enabled
+        if (typeof window.initDashboardStatsWS === 'function') window.initDashboardStatsWS();
+        // Hide skeletons once widgets are ready
+        function hideSkels(){
+          try { document.querySelectorAll('[data-skel]').forEach(function(el){ el.classList.add('hidden'); }); } catch(_){ }
+        }
+        // Charts: give init a short beat to mount, then hide
+        setTimeout(hideSkels, 500);
+        // Recent Client Activity: observe tbody for real rows
+        (function observeClientLogs(){
+          try {
+            var tbody = document.querySelector('#client-logs-table tbody');
+            if (!tbody) return;
+            var obs = new MutationObserver(function(){
+              try {
+                if (tbody && tbody.querySelectorAll('tr').length > 1) {
+                  tbody.removeAttribute('aria-busy');
+                }
+              } catch(_){ }
+            });
+            obs.observe(tbody, { childList: true });
+          } catch(_){ }
+        })();
+      } catch(_){ }
+    })();
+  </script>
+{% endblock %}
 {% block content %}
+  <style>
+    /* Lightweight skeleton styles (dark-mode aware) */
+    .skel { position: relative; overflow: hidden; background: #eef2f7; }
+    .dark .skel { background: #1f2937; }
+    .skel::after {
+      content: ""; position: absolute; inset: 0; transform: translateX(-100%);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+      animation: skel-shimmer 1.2s infinite;
+    }
+    .dark .skel::after {
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
+    }
+    @keyframes skel-shimmer { 100% { transform: translateX(100%); } }
+    .skel-rect { border-radius: .5rem; height: 2.75rem; }
+    .skel-chart { border-radius: .75rem; height: 11rem; }
+    @media (min-width: 768px){ .skel-chart { height: 14rem; } }
+    @media (min-width: 1280px){ .skel-chart { height: 16rem; } }
+    .skel-table-row > td { padding: .5rem .75rem; }
+    .skel-pill { height: 1.25rem; width: 6rem; border-radius: 999px; }
+  </style>
   <!-- Dashboard Overview: lightweight stats instead of heavy CRUD tables (keeps dashboard fast) -->
-  <h1 class="text-2xl font-semibold text-blue-700 dark:text-blue-300 mb-2">Dashboard Overview</h1> <!-- Renamed heading to reflect overview role -->
-  <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">Key stats and quick actions. Use the Tables page for full CRUD and details.</p> <!-- Clarifies separation of concerns -->
+  <h1 class="text-2xl font-semibold text-blue-700 dark:text-blue-300 mb-4">Dashboard Overview</h1> <!-- Renamed heading to reflect overview role -->
 
-  <!-- Summary badges: total rows and recent activity count (server-provided aggregates) -->
-    <div class="flex flex-wrap gap-3 mb-4"> <!-- Reduced spacing -->
-      <div class="px-2 py-1 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 shadow-sm"> <!-- Smaller badge -->
-        <div class="text-[10px] text-gray-500 dark:text-gray-400">Total Rows</div>
-        <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ total_rows }}</div>
-      </div>
-      <div class="px-2 py-1 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 shadow-sm"> <!-- Smaller badge -->
-        <div class="text-[10px] text-gray-500 dark:text-gray-400">Activity Entries</div>
-        <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ recent_logs_count }}</div>
-      </div>
-      <a href="/dashboard/tables/"
-        class="px-2 py-1 bg-blue-600 text-white rounded shadow-sm text-sm inline-flex items-center justify-center">
-        Go to Tables
-      </a>
-    </div>
-
+  
   <!-- Per-table mini cards: show counts and a quick deep-link action reusing existing AJAX loader -->
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4"> <!-- Responsive, modern grid -->
     {% for stat in table_stats %} <!-- Use server-provided list to avoid custom filters -->
@@ -32,7 +76,7 @@
         </div>
         <div class="mt-1 text-3xl font-extrabold text-gray-900 dark:text-gray-100">{{ stat.count }}</div>
         <div class="mt-auto pt-4">
-          <a href="/dashboard/tables/" class="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800 dark:hover:bg-blue-900/30 transition-colors">
+          <a href="{% url 'dashboard:tables' %}" class="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800 dark:hover:bg-blue-900/30 transition-colors">
             Open in Tables
           </a>
         </div>
@@ -58,6 +102,7 @@
           Live
         </span>
       </div>
+      <div data-skel class="skel skel-chart mb-2"></div>
       <div id="donut-users" class="h-44 md:h-56 xl:h-64"></div>
       <div class="mt-3 md:mt-4 text-xs md:text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
         <span class="inline-flex items-center gap-1 font-medium">
@@ -80,6 +125,7 @@
           Live
         </span>
       </div>
+      <div data-skel class="skel skel-chart mb-2"></div>
       <div id="donut-artists" class="h-44 md:h-56 xl:h-64"></div>
       <div class="mt-3 md:mt-4 text-xs md:text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
         <span class="inline-flex items-center gap-1 font-medium">
@@ -102,6 +148,7 @@
           Live
         </span>
       </div>
+      <div data-skel class="skel skel-chart mb-2"></div>
       <div id="donut-bookings" class="h-44 md:h-56 xl:h-64"></div>
       <div class="mt-3 md:mt-4 text-xs md:text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
         <span class="inline-flex items-center gap-1 font-medium">
@@ -131,6 +178,7 @@
     </div>
     <div class="p-4">
       <!-- Chart host; data is embedded to avoid inline scripts -->
+      <div data-skel class="skel skel-chart mb-2"></div>
       <div id="chart-table-distribution" class="relative w-full h-64 md:h-72 xl:h-80"
            data-stats='[
            {% for stat in table_stats %}{% if not forloop.first %},{% endif %}{"label":"{{ stat.label|escapejs }}","count":{{ stat.count|default:0 }}}{% endfor %}
@@ -146,45 +194,93 @@
     <div class="text-sm text-gray-500">Loading admins overview…</div>
   </div>
 
-   <!-- Read-only Activity Logs section (server-rendered; no JS; placed directly under overview) -->
-   <h2 class="text-xl font-semibold text-blue-700 dark:text-blue-300 mt-10 mb-3">Activity Logs</h2> <!-- added: section heading -->
-   <div class="bg-white dark:bg-gray-800 rounded shadow border border-gray-200 dark:border-gray-700"> <!-- added: container consistent with cards -->
-     <div class="px-4 py-3"> <!-- added: standard inner padding -->
-       <div class="overflow-x-auto"> <!-- added: horizontal scroll on small screens -->
-         <table class="min-w-full text-sm w-full border-collapse text-gray-900 dark:text-gray-100"> <!-- added: reuse table classes -->
-           <thead> <!-- added -->
-             <tr class="text-left border-b border-gray-200 dark:border-gray-700"> <!-- added: header row styling -->
-               <th class="py-2 pr-2">Time</th> <!-- added: humanized timestamp -->
-               <th class="py-2 pr-2">Table</th> <!-- added -->
-               <th class="py-2 pr-2">Action</th> <!-- added -->
-               <th class="py-2 pr-2">Row ID</th> <!-- added -->
-               <th class="py-2 pr-2">User</th> <!-- added -->
-               <th class="py-2 pr-2">Name</th> <!-- added -->
-               <th class="py-2 pr-2">City</th> <!-- added -->
-               <th class="py-2 pr-2">Phone</th> <!-- added -->
-             </tr>
-           </thead>
-           <tbody> <!-- added -->
-             {% for x in logs_recent %} <!-- added: latest 10 logs -->
-             <tr class="border-b border-gray-200 dark:border-gray-700 {% if x.is_recent %}bg-blue-50 dark:bg-blue-900/20{% endif %}"> <!-- added: soft highlight for recent -->
-               <td class="py-2 pr-2">{{ x.timestamp|timesince }} ago</td> <!-- added: human-friendly time -->
-               <td class="py-2 pr-2">{{ x.table_name }}</td> <!-- added -->
-               <td class="py-2 pr-2">{{ x.action }}</td> <!-- added -->
-               <td class="py-2 pr-2">{{ x.row_id }}</td> <!-- added -->
-               <td class="py-2 pr-2">{{ x.admin_user }}</td> <!-- added -->
-               <td class="py-2 pr-2">{{ x.name|default:'-' }}</td> <!-- added -->
-               <td class="py-2 pr-2">{{ x.city|default:'-' }}</td> <!-- added -->
-               <td class="py-2 pr-2">{{ x.phone|default:'-' }}</td> <!-- added -->
-             </tr>
-             {% empty %} <!-- added: empty state -->
-             <tr> <!-- added -->
-               <td class="py-3 text-gray-500 dark:text-gray-300" colspan="8">No activity yet.</td> <!-- added -->
-             </tr>
-             {% endfor %} <!-- added -->
-           </tbody>
-         </table>
-       </div>
-     </div>
-   </div>
+  <!-- Activity Logs (full width) -->
+  <div class="mt-10">
+    <h2 class="text-xl font-semibold text-blue-700 dark:text-blue-300 mb-3">Activity Logs</h2>
+    <div class="bg-white dark:bg-gray-800 rounded shadow border border-gray-200 dark:border-gray-700">
+      <div class="px-4 py-3">
+        <!-- Filter chips -->
+        <div class="flex flex-wrap items-center gap-2 mb-3" role="toolbar" aria-label="Filter activity logs">
+          <button type="button" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs bg-gray-100 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 is-active" data-log-filter="" aria-pressed="true">All</button>
+          <button type="button" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300" data-log-filter="Client" aria-pressed="false">Client</button>
+          <button type="button" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300" data-log-filter="Admin" aria-pressed="false">Admin</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table id="logs-table" class="min-w-full text-sm w-full border-collapse text-gray-900 dark:text-gray-100">
+            <thead>
+              <tr class="text-left border-b border-gray-200 dark:border-gray-700">
+                <th class="py-2 pr-2">Time</th>
+                <th class="py-2 pr-2">Table</th>
+                <th class="py-2 pr-2">Action</th>
+                <th class="py-2 pr-2">Row ID</th>
+                <th class="py-2 pr-2">User</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for x in logs_recent %}
+              <tr class="border-b border-gray-200 dark:border-gray-700 {% if x.is_recent %}bg-blue-50 dark:bg-blue-900/20{% endif %}">
+                <td class="py-2 pr-2">{{ x.timestamp|timesince }} ago</td>
+                <td class="py-2 pr-2">{{ x.table_name }}</td>
+                <td class="py-2 pr-2">{{ x.action }}</td>
+                <td class="py-2 pr-2">{{ x.row_id }}</td>
+                <td class="py-2 pr-2">{{ x.admin_user }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td class="py-3 text-gray-500 dark:text-gray-300" colspan="5">No activity yet.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Client Activity (full width, matching style) -->
+  <div class="mt-6">
+    <h2 class="text-xl font-semibold text-blue-700 dark:text-blue-300 mb-3">Recent Client Activity</h2>
+    <div class="bg-white dark:bg-gray-800 rounded shadow border border-gray-200 dark:border-gray-700">
+      <div class="px-4 py-3">
+        <div class="overflow-x-auto">
+          <table id="client-logs-table" class="min-w-full text-sm w-full border-collapse text-gray-900 dark:text-gray-100">
+            <thead>
+              <tr class="text-left border-b border-gray-200 dark:border-gray-700">
+                <th class="py-2 pr-2">Time</th>
+                <th class="py-2 pr-2">Full name</th>
+                <th class="py-2 pr-2">Email</th>
+                <th class="py-2 pr-2">Location</th>
+                <th class="py-2 pr-2">Phone</th>
+                <th class="py-2 pr-2">Action</th>
+              </tr>
+            </thead>
+            <tbody aria-busy="true">
+              <tr class="skel-table-row">
+                <td colspan="6">
+                  <div class="skel skel-rect mb-2"></div>
+                  <div class="skel skel-rect mb-2"></div>
+                  <div class="skel skel-rect"></div>
+                </td>
+              </tr>
+              <tr class="skel-table-row">
+                <td colspan="6">
+                  <div class="skel skel-rect mb-2"></div>
+                  <div class="skel skel-rect mb-2"></div>
+                  <div class="skel skel-rect"></div>
+                </td>
+              </tr>
+              <tr class="skel-table-row">
+                <td colspan="6">
+                  <div class="skel skel-rect mb-2"></div>
+                  <div class="skel skel-rect mb-2"></div>
+                  <div class="skel skel-rect"></div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 
 {% endblock %}

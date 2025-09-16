@@ -13,9 +13,32 @@ function esc(s){
   } catch(_) { return s; }
 }
 
+// Robust CSRF token getter (mirrors admin_management.js behavior)
+function csrf(){
+  try {
+    if (typeof window.getCookie === 'function'){
+      const v = window.getCookie('csrftoken');
+      if (v) return v;
+    }
+    const name = 'csrftoken=';
+    const parts = (document.cookie || '').split(';');
+    for (let i=0;i<parts.length;i++){
+      const c = parts[i].trim();
+      if (c.startsWith(name)) return decodeURIComponent(c.substring(name.length));
+    }
+    try {
+      const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+      if (el && el.value) return String(el.value);
+    } catch(_){ }
+    return '';
+  } catch(_){ return ''; }
+}
+
+
 async function fetchTableData(tableId, page=1, q='') {
   const url = `/dashboard/api/table/${tableId}/?page=${page}&per_page=10&q=${encodeURIComponent(q)}`;
   const res = await fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+  if (res.status === 403) return { success: false, error: 'Forbidden' };
   return res.json();
 }
 
@@ -213,9 +236,10 @@ function updateTableDisplay(tableId, payload){
 }
 
 async function createTableRow(tableId, rowData){
+  try { rowData.append('csrfmiddlewaretoken', csrf()); } catch(_){ }
   const doFetch = () => fetch(`/dashboard/api/table/${tableId}/row/`, {
     method: 'POST',
-    headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' },
+    headers: { 'X-CSRFToken': csrf(), 'X-Requested-With': 'XMLHttpRequest' },
     credentials: 'same-origin',
     body: rowData,
   });
@@ -227,9 +251,10 @@ async function updateTableRow(tableId, rowId, rowData){
   // Use POST + _method=PUT for better compatibility with Django's CSRF/form parsing
   rowData = rowData || new FormData();
   rowData.append('_method', 'PUT');
+  try { rowData.append('csrfmiddlewaretoken', csrf()); } catch(_){ }
   const doFetch = () => fetch(`/dashboard/api/table/${tableId}/row/${rowId}/`, {
     method: 'POST',
-    headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' },
+    headers: { 'X-CSRFToken': csrf(), 'X-Requested-With': 'XMLHttpRequest' },
     credentials: 'same-origin',
     body: rowData,
   });
@@ -241,9 +266,10 @@ async function deleteTableRow(tableId, rowId){
   // Use POST + _method=DELETE
   const fd = new FormData();
   fd.append('_method', 'DELETE');
+  try { fd.append('csrfmiddlewaretoken', csrf()); } catch(_){ }
   const doFetch = () => fetch(`/dashboard/api/table/${tableId}/row/${rowId}/`, {
     method: 'POST',
-    headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' },
+    headers: { 'X-CSRFToken': csrf(), 'X-Requested-With': 'XMLHttpRequest' },
     credentials: 'same-origin',
     body: fd,
   });
@@ -263,6 +289,15 @@ function setActiveTable(value){
     const tid = parseInt(value, 10) || 1;
     const picker = document.getElementById('tablePicker');
     if (picker) picker.value = String(tid);
+    // Table 1 (Admins) is not available via generic tables API.
+    // To keep UX smooth and avoid surprise navigation, default to Table 2 on Tables page.
+    if (tid === 1) {
+      const fallbackTid = 2;
+      if (picker) picker.value = String(fallbackTid);
+      try { if (typeof showNotification === 'function') showNotification('Table 1 is managed in Admin Management. Showing Table 2 here.', 'info'); } catch(_){ }
+      if (typeof refreshTable === 'function') refreshTable(fallbackTid);
+      return;
+    }
     // Sync custom display text and active option
     try {
       const wrapper = document.getElementById('tablePickerWrapper');
@@ -368,7 +403,16 @@ function addRow(tableId){
 }
 
 async function refreshLogs(){
-  const res = await fetch('/dashboard/api/logs/?per_page=10', { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
+  // Respect active filter chip if present (empty => All)
+  let tableFilter = '';
+  try {
+    const active = document.querySelector('[data-log-filter].is-active');
+    if (active) tableFilter = active.getAttribute('data-log-filter') || '';
+  } catch(_) { tableFilter = ''; }
+  const qp = new URLSearchParams();
+  qp.set('per_page', '10');
+  if (tableFilter) qp.set('table_name', tableFilter);
+  const res = await fetch(`/dashboard/api/logs/?${qp.toString()}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
   const payload = await res.json();
   const tbody = document.querySelector('#logs-table tbody');
   tbody.innerHTML = '';
@@ -407,7 +451,7 @@ function debounce(fn, delay){  // added
 }  // added
 
 // Single delegated listener works for both full-page and AJAX-injected partials  // added
-const __handleLiveSearch = debounce(function(inputEl){  // added
+if (!window.__handleLiveSearch) window.__handleLiveSearch = debounce(function(inputEl){  // added
   try {  // added
     if (!inputEl || !inputEl.id || inputEl.id.indexOf('search-') !== 0) return;  // added
     const tableId = parseInt(inputEl.id.slice('search-'.length), 10);  // added
@@ -419,7 +463,7 @@ document.addEventListener('input', function(e){  // added
   const el = e && (e.target || e.srcElement);  // added
   if (!el || el.tagName !== 'INPUT') return;  // added
   if (el.id && el.id.indexOf('search-') === 0) {  // added
-    __handleLiveSearch(el);  // added
+    window.__handleLiveSearch(el);  // added
   }  // added
 });  // added
 
@@ -428,6 +472,21 @@ document.addEventListener('click', function(e){  // added
   try {  // added
     const btn = e.target && e.target.closest('button');  // added
     if (!btn) return;  // added
+    // Log filter chips
+    if (btn.hasAttribute('data-log-filter')){
+      e.preventDefault();
+      // Toggle active state within group
+      try {
+        const group = btn.parentElement;
+        if (group){
+          group.querySelectorAll('[data-log-filter]').forEach(n => { n.classList.remove('is-active'); n.setAttribute('aria-pressed','false'); });
+        }
+      } catch(_){ }
+      btn.classList.add('is-active');
+      btn.setAttribute('aria-pressed','true');
+      if (typeof window.refreshLogs === 'function') window.refreshLogs();
+      return;
+    }
     // Identify Add/Refresh/Search without relying on inline onclick  // added
     const isGreen = btn.classList && btn.classList.contains('bg-green-600');  // added
     const ocAttr = (btn.getAttribute && btn.getAttribute('onclick')) || '';  // added
@@ -476,6 +535,50 @@ document.addEventListener('click', function(e){  // added
 // Policy: pause up to 3 minutes from last activity. Resume only when the 3-minute window elapses
 // or immediately on explicit form close/submit (handled in Add/Save/Delete success handlers).
 (function(){
+  // Recent Client Activity side card
+  async function fetchClientActivity(){
+    try {
+      const url = new URL('/api/v1/logs/', window.location.origin);
+      url.searchParams.set('table_name', 'Client');
+      url.searchParams.set('per_page', '8');
+      const res = await fetch(url.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
+      const data = await res.json();
+      return (data && data.results) ? data.results : [];
+    } catch(_) { return []; }
+  }
+
+  function renderClientActivity(list){
+    const host = document.getElementById('client-activity-card');
+    if (!host) return;
+    host.innerHTML = '';
+    if (!list || list.length === 0){
+      const empty = document.createElement('div');
+      empty.className = 'text-sm text-gray-500';
+      empty.textContent = 'No recent client activity.';
+      host.appendChild(empty);
+      return;
+    }
+    const ul = document.createElement('ul');
+    ul.className = 'space-y-2';
+    list.forEach(x => {
+      const li = document.createElement('li');
+      li.className = 'flex items-start gap-2';
+      const badge = document.createElement('span');
+      badge.className = 'inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ' + (x.action === 'CREATE' ? 'bg-emerald-50 text-emerald-700' : x.action === 'LOGIN' ? 'bg-blue-50 text-blue-700' : x.action === 'LOGOUT' ? 'bg-gray-100 text-gray-700' : 'bg-indigo-50 text-indigo-700');
+      badge.textContent = x.action || '';
+      const main = document.createElement('div');
+      main.className = 'text-sm text-gray-800 dark:text-gray-200';
+      main.innerHTML = `<div><strong>${esc(x.table_name || 'Client')}</strong> · ${esc(x.row_id || '')}</div><div class="text-xs text-gray-500">${esc(x.timestamp || '')}</div>`;
+      li.appendChild(badge);
+      li.appendChild(main);
+      ul.appendChild(li);
+    });
+    host.appendChild(ul);
+  }
+
+  window.hydrateClientActivityCard = function(){
+    fetchClientActivity().then(renderClientActivity).catch(()=>{});
+  };
   const MAX_PAUSE_MS = 3 * 60 * 1000;      // 3 minutes
   window.__tablesPauseUntil = 0;           // epoch ms until which refresh is paused
   window.__tablesInactivityTimer = null;   // kept for compatibility; not used for early-resume anymore
@@ -506,7 +609,133 @@ document.addEventListener('click', function(e){  // added
       window.noteTablesFormActivity();  // added
     }  // added
   });
-})();  // added
+})();
+
+// ---------------- Client Logs (full-width table) + Optional Admin Overview ----------------
+(function(){
+  // Populate Recent Client Activity table with only Client logs
+  window.refreshClientLogs = async function(){
+    try {
+      const tbl = document.getElementById('client-logs-table'); if (!tbl) return;
+      const tbody = tbl.querySelector('tbody'); if (!tbody) return;
+      // Inject notification styles if not already present, to reuse glowing animation
+      (function ensureNotifStylesIfMissing(){
+        try {
+          if (document.getElementById('notifGlowStyles')) return;
+          const style = document.createElement('style');
+          style.id = 'notifGlowStyles';
+          style.textContent = `
+@keyframes notifPulse{0%{box-shadow:0 0 0 0 rgba(59,130,246,.28)}70%{box-shadow:0 0 0 10px rgba(59,130,246,0)}100%{box-shadow:0 0 0 0 rgba(59,130,246,0)}}
+@keyframes notifGlowOut{0%{background-color:rgba(59,130,246,0.06)}100%{background-color:transparent}}
+.notif-new{background-color:rgba(59,130,246,0.06); animation:notifPulse 1800ms ease-out infinite}
+.dark .notif-new{background-color:rgba(59,130,246,0.12)}
+.notif-fade{animation:notifGlowOut 600ms ease-out 1}`;
+          document.head.appendChild(style);
+        } catch(_){ }
+      })();
+
+      // Human-friendly time ago similar to notifications.js
+      function timeAgo(iso){
+        try {
+          const d = new Date(iso);
+          const now = new Date();
+          const sec = Math.max(0, Math.floor((now - d) / 1000));
+          if (sec < 10) return 'just now';
+          if (sec < 60) return `${sec}s ago`;
+          const min = Math.floor(sec / 60);
+          if (min < 60) return `${min} min ago`;
+          const hr = Math.floor(min / 60);
+          if (hr < 24) return `${hr} h ago`;
+          const day = Math.floor(hr / 24);
+          if (day < 7) return `${day} d ago`;
+          return d.toLocaleString();
+        } catch { return iso; }
+      }
+
+      const url = new URL('/api/v1/logs/', window.location.origin);
+      url.searchParams.set('table_name', 'Client');
+      url.searchParams.set('per_page', '8');
+      const res = await fetch(url.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
+      const data = await res.json().catch(()=>({}));
+      const items = (data && data.results) ? data.results : [];
+      tbody.innerHTML = '';
+      if (!items.length){
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td class="py-3 text-gray-500 dark:text-gray-300" colspan="6">No recent client activity.</td>';
+        tbody.appendChild(tr);
+        return;
+      }
+      const nowMs = Date.now();
+      items.forEach(x => {
+        const tr = document.createElement('tr');
+        // Highlight if within last 60s, mirroring notifications glow
+        let withinOneMinute = false;
+        try { withinOneMinute = Math.abs(nowMs - new Date(x.timestamp).getTime()) <= 60 * 1000; } catch(_){ }
+        tr.className = 'border-b ' + (withinOneMinute ? 'notif-new' : '');
+        const rd = (x.row_details || {});
+        const fullName = rd.full_name || rd.name || '';
+        const email = rd.email || '';
+        const location = rd.location || rd.city || '';
+        const phone = rd.phone || '';
+        // Small action icons for scanability
+        const action = (x.action || '').toUpperCase();
+        let icon = '';
+        if (action === 'CREATE') {
+          icon = '<svg class="w-4 h-4 text-emerald-600 inline-block align-[-2px] mr-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293A1 1 0 106.293 10.707l2 2a1 1 0 001.414 0l3.999-4z"/></svg>';
+        } else if (action === 'LOGIN') {
+          icon = '<svg class="w-4 h-4 text-blue-600 inline-block align-[-2px] mr-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M3 4a2 2 0 012-2h6a2 2 0 012 2v3h-2V4H5v12h6v-3h2v3a2 2 0 01-2 2H5a2 2 0 01-2-2V4z"/><path d="M12 11h-5v-2h5V6l5 4-5 4v-3z"/></svg>';
+        } else if (action === 'LOGOUT') {
+          icon = '<svg class="w-4 h-4 text-gray-600 inline-block align-[-2px] mr-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M7 4a2 2 0 012-2h3a2 2 0 012 2v3h-2V4H9v12h3v-3h2v3a2 2 0 01-2 2H9a2 2 0 01-2-2V4z"/><path d="M13 11H5V9h8V6l5 4-5 4v-3z"/></svg>';
+        } else if (action === 'PASSWORD_RESET') {
+          icon = '<svg class="w-4 h-4 text-indigo-600 inline-block align-[-2px] mr-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a4 4 0 00-4 4v2H5a3 3 0 00-3 3v4a3 3 0 003 3h10a3 3 0 003-3v-4a3 3 0 00-3-3h-1V6a4 4 0 00-4-4zm-2 6V6a2 2 0 114 0v2H8z"/></svg>';
+        } else if (action === 'FORGOT_PASSWORD') {
+          icon = '<svg class="w-4 h-4 text-amber-600 inline-block align-[-2px] mr-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM9 14h2v2H9v-2zm1-9a3 3 0 00-3 3h2a1 1 0 112 0c0 .667-.333 1.111-1.2 1.8C9.333 10.4 9 11 9 12h2c0-.5.167-.8.8-1.3.866-.7 2.2-1.5 2.2-3.7a3 3 0 00-3-3z"/></svg>';
+        } else if (action === 'ARTIST_APPLY') {
+          icon = '<svg class="w-4 h-4 text-violet-600 inline-block align-[-2px] mr-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M4 3a2 2 0 00-2 2v10l4-2 4 2 4-2 4 2V5a2 2 0 00-2-2H4z"/></svg>';
+        }
+
+        tr.innerHTML = `
+          <td class="py-2 pr-2">${esc(timeAgo(x.timestamp || ''))}</td>
+          <td class="py-2 pr-2">${esc(fullName)}</td>
+          <td class="py-2 pr-2">${esc(email)}</td>
+          <td class="py-2 pr-2">${esc(location)}</td>
+          <td class="py-2 pr-2">${esc(phone)}</td>
+          <td class="py-2 pr-2">${icon}${esc(action)}</td>`;
+        tbody.appendChild(tr);
+      });
+    } catch(_){ /* no-op */ }
+  };
+  const MAX_PAUSE_MS = 3 * 60 * 1000;      // 3 minutes
+  window.__tablesPauseUntil = 0;           // epoch ms until which refresh is paused
+  window.__tablesInactivityTimer = null;   // kept for compatibility; not used for early-resume anymore
+
+  // Public helper to mark recent form activity (focus/typing on add/edit inputs)
+  window.noteTablesFormActivity = function(){
+    try {
+      // Extend pause window to the next 3 minutes from the latest activity.
+      window.__tablesPauseUntil = Date.now() + MAX_PAUSE_MS;
+      // Do not early-resume on brief inactivity; we only resume when the
+      // 3-minute window ends or when a form is explicitly submitted/closed.
+      if (window.__tablesInactivityTimer) { clearTimeout(window.__tablesInactivityTimer); window.__tablesInactivityTimer = null; }
+    } catch(_){}
+  };
+
+  // Delegate focus and input events on add/edit fields to mark activity  // added
+  document.addEventListener('focusin', function(e){  // added
+    const t = e.target;  // added
+    if (!t) return;  // added
+    if ((t.id && t.id.indexOf('add-') === 0) || t.matches('input[data-field]')) {  // added
+      window.noteTablesFormActivity();  // added
+    }  // added
+  });
+  document.addEventListener('input', function(e){  // added
+    const t = e.target;  // added
+    if (!t) return;  // added
+    if ((t.id && t.id.indexOf('add-') === 0) || t.matches('input[data-field]')) {  // added
+      window.noteTablesFormActivity();  // added
+    }  // added
+  });
+})();
 
 // ---------------- Full-page Tables initializer (moved from templates/dashboard/tables_full.html) ----------------
 (function(){
@@ -642,10 +871,36 @@ document.addEventListener('click', function(e){  // added
       if (document.getElementById('tablePicker')) initTablesFullPage();
       // Optional Admin Overview auto-init when container exists (non-intrusive)
       try { if (typeof window.initAdminOverview === 'function') window.initAdminOverview(); } catch(_){ }
+      // Kick off recent client activity card hydration when present
+      try { if (document.getElementById('client-activity-card')) hydrateClientActivityCard(); } catch(_){ }
+      // Kick off Recent Client Activity (full-width table) hydration when present
+      try { if (document.getElementById('client-logs-table')) refreshClientLogs(); } catch(_){ }
+      // Piggyback on notifications bump to keep client logs fresh without editing notifications.js
+      try {
+        if (!window.__clientLogsWrapped && typeof window.bumpNotificationsNow === 'function'){
+          const __origBump = window.bumpNotificationsNow;
+          window.bumpNotificationsNow = function(){
+            try { __origBump && __origBump(); } catch(_){ }
+            try { if (document.getElementById('client-logs-table')) refreshClientLogs(); } catch(_){ }
+          };
+          window.__clientLogsWrapped = true;
+        }
+      } catch(_){ }
     });
   } else {
     if (document.getElementById('tablePicker')) initTablesFullPage();
     try { if (typeof window.initAdminOverview === 'function') window.initAdminOverview(); } catch(_){ }
+    try { if (document.getElementById('client-logs-table')) refreshClientLogs(); } catch(_){ }
+    try {
+      if (!window.__clientLogsWrapped && typeof window.bumpNotificationsNow === 'function'){
+        const __origBump = window.bumpNotificationsNow;
+        window.bumpNotificationsNow = function(){
+          try { __origBump && __origBump(); } catch(_){ }
+          try { if (document.getElementById('client-logs-table')) refreshClientLogs(); } catch(_){ }
+        };
+        window.__clientLogsWrapped = true;
+      }
+    } catch(_){ }
   }
 })();
 

@@ -18,4 +18,7 @@ urlpatterns = [
     path("Admin_management/", views.admin_mgmt_view, name="admin_mgmt"),
     path("api/admins/", views.admin_list_create_api, name="admin_list_create"),
     path("api/admins/<int:user_id>/", views.admin_detail_api, name="admin_detail"),
+    # Clients (portal signups)
+    path("clients/", views.clients_view, name="clients"),
+    path("api/clients/", views.clients_list_api, name="clients_list"),
 ]

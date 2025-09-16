@@ -68,6 +68,7 @@ if SENTRY_DSN:
 # Middleware stack including WhiteNoise for static files in production.
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "django.middleware.gzip.GZipMiddleware",  # Add Gzip compression
     "whitenoise.middleware.WhiteNoiseMiddleware",  # Serve static files efficiently
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -120,9 +121,10 @@ DATABASES = {
 # ---------------------------------------------------------------------------
 # Channels / Channel Layer configuration
 # ---------------------------------------------------------------------------
-# In development you may not have Redis running. To avoid WebSocket failures,
-# set USE_INMEMORY_CHANNEL_LAYER=1 (or true/yes) to use the in-memory layer.
-USE_INMEMORY_CHANNEL_LAYER = os.getenv("USE_INMEMORY_CHANNEL_LAYER", "").lower() in ("1", "true", "yes")
+# In development you may not have Redis running. Default to in-memory layer
+# when DEBUG=True, unless explicitly overridden via env.
+_ENV_INMEM = os.getenv("USE_INMEMORY_CHANNEL_LAYER", "").lower()
+USE_INMEMORY_CHANNEL_LAYER = (_ENV_INMEM in ("1", "true", "yes")) or (DEBUG and _ENV_INMEM == "")
 REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
 
 if USE_INMEMORY_CHANNEL_LAYER:
@@ -197,6 +199,18 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+    BASE_DIR / "static/dist",  # Add optimized assets directory
+]
+
+# Enable WhiteNoise compression and caching
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# Cache control headers for static files
+WHITENOISE_MAX_AGE = 31536000  # 1 year in seconds
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]  # Where we store our source static files
 STATIC_ROOT = BASE_DIR / "staticfiles"  # Where collectstatic will gather files for production
 
@@ -215,10 +229,13 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Login/Logout redirects and URLs (use namespaced URL names)
+# Login/Logout redirects and URLs
+# Keep LOGIN_URL as a named route so reverse() respects the Super-Admin mount.
 LOGIN_URL = "authentication:login"
-LOGIN_REDIRECT_URL = "dashboard:index"
-LOGOUT_REDIRECT_URL = "authentication:login"
+# After successful login, land on Super-Admin dashboard.
+LOGIN_REDIRECT_URL = "/Super-Admin/dashboard/"
+# After logout, return to Super-Admin login page.
+LOGOUT_REDIRECT_URL = "/Super-Admin/auth/login/"
 
 # ---------------------------------------------------------------------------
 # Session configuration
@@ -263,12 +280,14 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "True").lower() in ("1", "true", "yes")
 
 # ---------------------------------------------------------------------------
-# Feature flags (default OFF to preserve current behavior; enable via env)
+# Feature flags (defaults tuned for development; production should set via env)
 # ---------------------------------------------------------------------------
 FEATURE_ENFORCE_ADMIN_API_PERMS = os.getenv("FEATURE_ENFORCE_ADMIN_API_PERMS", "False").lower() in ("1", "true", "yes")
 FEATURE_EXPORT_SUPERADMIN_ONLY = os.getenv("FEATURE_EXPORT_SUPERADMIN_ONLY", "False").lower() in ("1", "true", "yes")
 FEATURE_SECURITY_HEADERS = os.getenv("FEATURE_SECURITY_HEADERS", "False").lower() in ("1", "true", "yes")
-FEATURE_CLIENT_AUTH = os.getenv("FEATURE_CLIENT_AUTH", "False").lower() in ("1", "true", "yes")
+# Enable client auth portal by default in development (to avoid 404 on /portal/login/)
+_ENV_CLIENT_AUTH = os.getenv("FEATURE_CLIENT_AUTH", "").lower()
+FEATURE_CLIENT_AUTH = (_ENV_CLIENT_AUTH in ("1", "true", "yes")) or (DEBUG and _ENV_CLIENT_AUTH == "")
 FEATURE_ENFORCE_CLIENT_FKS = os.getenv("FEATURE_ENFORCE_CLIENT_FKS", "False").lower() in ("1", "true", "yes")
 
 # Conditionally enable security headers middleware (CSP report-only + modern headers)

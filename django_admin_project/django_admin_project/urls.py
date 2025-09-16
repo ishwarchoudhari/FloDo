@@ -3,7 +3,7 @@ URL configuration for django_admin_project.
 Includes app-specific URLconfs.
 """
 from django.contrib import admin  # Django admin site
-from django.urls import path, include  # Path and include utilities for URL routing
+from django.urls import path, include, re_path  # Path and include utilities for URL routing
 from django.conf import settings  # Access settings for static/media serving in dev
 from django.conf.urls.static import static  # Helper to serve static/media files in dev
 from django.views.generic import RedirectView
@@ -18,10 +18,23 @@ urlpatterns = [
     # Root -> login page
     path("", RedirectView.as_view(pattern_name="authentication:login", permanent=False)),
     # App URL includes
-    path("auth/", include("apps.authentication.urls")),  # Authentication routes (login, signup)
-    path("dashboard/", include("apps.dashboard.urls")),  # Dashboard routes
-    path("settings/", include("apps.settings_app.urls")),  # Settings routes
+    # Super-Admin scoped routes
+    path("Super-Admin/auth/", include("apps.authentication.urls")),  # Authentication routes (login, signup)
+    path("Super-Admin/", include("apps.dashboard.urls")),            # Dashboard and admin management routes
+    path(
+        "Super-Admin/dashboard/",
+        RedirectView.as_view(pattern_name="dashboard:index", permanent=False),
+    ),
+    path("Super-Admin/settings/", include("apps.settings_app.urls")),  # Settings routes
     path("portal/", include("apps.client_portal.urls")),  # Public Client Portal
+    # Redirect legacy admin page routes under /dashboard/... to /Super-Admin/... while preserving APIs
+    re_path(r"^dashboard/$", RedirectView.as_view(url="/Super-Admin/dashboard/", permanent=False)),
+    re_path(
+        r"^dashboard/(?P<rest>(?!api/).*)$",
+        RedirectView.as_view(url="/Super-Admin/%(rest)s", permanent=False),
+    ),
+    # Keep API endpoints exactly the same under /dashboard/api/... by also including dashboard here
+    path("dashboard/", include("apps.dashboard.urls")),
     # Legacy compatibility direct mappings (avoid redirects to support POST)
     path("login/", auth_views.login_view, name="legacy_login"),
     path("signup/", auth_views.signup_view, name="legacy_signup"),

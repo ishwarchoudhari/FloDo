@@ -4,13 +4,23 @@
   function qsa(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
   function csrf(){
     try {
-      if (window.getCookie) return window.getCookie('csrftoken') || '';
+      // 1) If a helper exists, use it but fall back if it returns empty
+      if (typeof window.getCookie === 'function'){
+        const v = window.getCookie('csrftoken');
+        if (v) return v;
+      }
+      // 2) Parse document.cookie
       const name = 'csrftoken=';
       const parts = (document.cookie || '').split(';');
       for (let i=0;i<parts.length;i++){
         const c = parts[i].trim();
         if (c.startsWith(name)) return decodeURIComponent(c.substring(name.length));
       }
+      // 3) Fallback: look for hidden input value if present in page
+      try {
+        const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        if (el && el.value) return String(el.value);
+      } catch(_){ }
       return '';
     } catch(_){ return ''; }
   }
@@ -543,11 +553,13 @@
           fd.append('_method', 'PUT');
           const phone = (fd.get('phone')||'').toString().trim();
           if (phone && !/^\d{10}$/.test(phone)) { notify('Phone must be exactly 10 digits', 'error'); return; }
-          const doFetch = () => fetch(`/dashboard/api/admins/${u.id}/`, { method: 'POST', headers: { 'X-CSRFToken': csrf() }, body: fd });
+          const doFetch = () => fetch(`/dashboard/api/admins/${u.id}/`, { method: 'POST', headers: { 'X-CSRFToken': csrf(), 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin', body: fd });
           const res = await (window.withLoading ? window.withLoading(doFetch()) : doFetch());
-          const data = await res.json().catch(()=>({success:false}));
-          if (data && data.success){ notify('Admin updated', 'success'); try { if (typeof window.bumpNotificationsNow==='function') window.bumpNotificationsNow(); } catch(_){ } close(); await refresh(); }
-          else { notify((data && data.error) || 'Update failed', 'error'); }
+          let data = null;
+          try { data = await res.json(); }
+          catch(_) { if (!res.ok) { notify(`Update failed (HTTP ${res.status})`, 'error'); return; } }
+          if (res.ok && data && data.success){ notify('Admin updated', 'success'); try { if (typeof window.bumpNotificationsNow==='function') window.bumpNotificationsNow(); } catch(_){ } close(); await refresh(); }
+          else { notify((data && data.error) || `Update failed${!res.ok?` (HTTP ${res.status})`:''}`, 'error'); }
         });
       }
       // Focus trap
@@ -622,6 +634,32 @@
     return res.json();
   }
 
+  function renderSummary(results){
+    try {
+      const wrap = qs('#admin-summary');
+      if (!wrap) return;
+      const list = Array.isArray(results) ? results : [];
+      const total = list.length;
+      const online = list.filter(function(u){ return String(u.status||'').toLowerCase()==='online'; }).length;
+      const active = list.filter(function(u){ return !!u.is_active; }).length;
+      const paused = total - active;
+      // Build chips matching overview badge style
+      const frag = document.createDocumentFragment();
+      function chip(label, cls){
+        const span = document.createElement('span');
+        span.className = 'inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ' + cls;
+        span.textContent = label;
+        return span;
+      }
+      frag.appendChild(chip(`Total: ${total}`, 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'));
+      frag.appendChild(chip(`Online: ${online}`, 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300'));
+      frag.appendChild(chip(`Active: ${active}`, 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'));
+      frag.appendChild(chip(`Paused: ${paused}`, 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300'));
+      wrap.innerHTML = '';
+      wrap.appendChild(frag);
+    } catch(_) { /* ignore */ }
+  }
+
   function renderCards(results){
     const grid = qs('#admin-card-grid');
     const count = qs('#admin-count');
@@ -641,6 +679,8 @@
     grid.innerHTML = '';
     grid.appendChild(frag);
     if (count) count.textContent = `${(results||[]).length} admin(s)`;
+    // Summary chips just above grid
+    renderSummary(results);
     renderLoadMore(grid);
     startAllTimers();
   }
@@ -796,13 +836,33 @@
     e.preventDefault();
     const form = e.currentTarget;
     const fd = new FormData(form);
+    try { fd.append('csrfmiddlewaretoken', csrf()); } catch(_){ }
     const phone = (fd.get('phone')||'').toString().trim();
     if (!/^\d{10}$/.test(phone)) { notify('Phone must be exactly 10 digits', 'error'); return; }
-    const doFetch = () => fetch('/dashboard/api/admins/', { method: 'POST', headers: { 'X-CSRFToken': csrf() }, body: fd });
+    const doFetch = () => fetch('/dashboard/api/admins/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrf(),
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      credentials: 'same-origin',
+      body: fd
+    });
     const res = await (window.withLoading ? window.withLoading(doFetch()) : doFetch());
-    const data = await res.json().catch(()=>({success:false}));
-    if (data && data.success){ notify('Admin created', 'success'); try { if (typeof window.bumpNotificationsNow==='function') window.bumpNotificationsNow(); } catch(_){ } closeAddOverlay(); await refresh(); }
-    else { notify((data && data.error) || 'Create failed', 'error'); }
+    let data = null;
+    try { data = await res.json(); }
+    catch(err){ if (!res.ok) { notify(`Create failed (HTTP ${res.status})`, 'error'); return; } }
+    if (res.ok && data && data.success){
+      notify('Admin created', 'success');
+      try { if (typeof window.bumpNotificationsNow==='function') window.bumpNotificationsNow(); } catch(_){ }
+      closeAddOverlay();
+      await refresh();
+    } else {
+      let msg = 'Create failed';
+      if (data && data.error) msg = data.error;
+      else if (!res.ok) msg = `Create failed (HTTP ${res.status})`;
+      notify(msg, 'error');
+    }
   }
 
   function buildProfileCard(u){
@@ -924,14 +984,35 @@
       form.addEventListener('submit', async function(e){
         e.preventDefault();
         const fd = new FormData(form);
+        try { fd.append('csrfmiddlewaretoken', csrf()); } catch(_){ }
         fd.append('_method', 'PUT');
         const phone = (fd.get('phone')||'').toString().trim();
         if (phone && !/^\d{10}$/.test(phone)) { notify('Phone must be exactly 10 digits', 'error'); return; }
-        const doFetch = () => fetch(`/dashboard/api/admins/${u.id}/`, { method: 'POST', headers: { 'X-CSRFToken': csrf() }, body: fd });
+        const doFetch = () => fetch(`/dashboard/api/admins/${u.id}/`, { 
+          method: 'POST', 
+          headers: { 
+            'X-CSRFToken': csrf(), 
+            'X-Requested-With': 'XMLHttpRequest' 
+          }, 
+          credentials: 'same-origin', 
+          body: fd 
+        });
         const res = await (window.withLoading ? window.withLoading(doFetch()) : doFetch());
-        const data = await res.json().catch(()=>({success:false}));
-        if (data && data.success){ notify('Admin updated', 'success'); closeAddOverlay(); await refresh(); }
-        else { notify((data && data.error) || 'Update failed', 'error'); }
+        let data = null;
+        try { data = await res.json(); } 
+        catch(_) { 
+          if (!res.ok) { 
+            notify(`Update failed (HTTP ${res.status})`, 'error'); 
+            return; 
+          } 
+        }
+        if (res.ok && data && data.success){
+          notify('Admin updated', 'success');
+          closeAddOverlay();
+          await refresh();
+        } else {
+          notify((data && data.error) || `Update failed${!res.ok?` (HTTP ${res.status})`:''}`, 'error');
+        }
       });
     }
     // Focus trap for accessibility
@@ -941,23 +1022,48 @@
 
   async function deleteAdmin(id, name){
     const fd = new FormData();
+    try { fd.append('csrfmiddlewaretoken', csrf()); } catch(_){ }
     fd.append('_method', 'DELETE');
     const doFetch = () => fetch(`/dashboard/api/admins/${id}/`, {
       method: 'POST',
-      headers: { 'X-CSRFToken': csrf() },
+      headers: {
+        'X-CSRFToken': csrf(),
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      credentials: 'same-origin',
       body: fd,
     });
     let res = await (window.withLoading ? window.withLoading(doFetch()) : doFetch());
     let data = null;
     try { data = await res.json(); }
-    catch(_) { data = res.ok ? { success: true } : { success: false }; }
+    catch(_) { 
+      if (!res.ok) { 
+        notify(`Delete failed (HTTP ${res.status})`, 'error'); 
+        return false; 
+      } 
+    }
 
     // Fallback: try actual HTTP DELETE if POST override wasn't accepted
     if (!(res.ok && data && data.success)){
       try {
-        res = await fetch(`/dashboard/api/admins/${id}/`, { method: 'DELETE', headers: { 'X-CSRFToken': csrf() } });
-        try { data = await res.json(); } catch(_){ data = res.ok ? { success: true } : { success: false }; }
-      } catch(_){ /* network error, handled below */ }
+        res = await fetch(`/dashboard/api/admins/${id}/`, { 
+          method: 'DELETE', 
+          headers: { 
+            'X-CSRFToken': csrf() 
+          }, 
+          credentials: 'same-origin' 
+        });
+        try { data = await res.json(); } 
+        catch(_) { 
+          if (!res.ok) { 
+            notify(`Delete failed (HTTP ${res.status})`, 'error'); 
+            return false; 
+          } 
+        }
+      } catch(_){ 
+        notify('Delete failed', 'error'); 
+        return false; 
+      }
     }
 
     if (res.ok && data && data.success){
@@ -985,17 +1091,34 @@
       confirmClass: 'bg-yellow-600 hover:bg-yellow-700'
     })) return;
     const fd = new FormData();
+    try { fd.append('csrfmiddlewaretoken', csrf()); } catch(_){ }
     fd.append('_method', 'PUT');
     fd.append('action', 'pause');
-    const doFetch = () => fetch(`/dashboard/api/admins/${id}/`, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': csrf() },
-      body: fd,
+    const doFetch = () => fetch(`/dashboard/api/admins/${id}/`, { 
+      method: 'POST', 
+      headers: { 
+        'X-CSRFToken': csrf(), 
+        'X-Requested-With': 'XMLHttpRequest' 
+      }, 
+      credentials: 'same-origin', 
+      body: fd 
     });
     const res = await (window.withLoading ? window.withLoading(doFetch()) : doFetch());
-    const data = await res.json();
-    if (data && data.success){ notify('Admin paused', 'success'); try { if (typeof window.bumpNotificationsNow==='function') window.bumpNotificationsNow(); } catch(_){ } await refresh(); }
-    else { notify((data && data.error) || 'Pause failed', 'error'); }
+    let data = null;
+    try { data = await res.json(); } 
+    catch(_) { 
+      if (!res.ok) { 
+        notify(`Pause failed (HTTP ${res.status})`, 'error'); 
+        return; 
+      } 
+    }
+    if (res.ok && data && data.success){
+      notify('Admin paused', 'success');
+      try { if (typeof window.bumpNotificationsNow==='function') window.bumpNotificationsNow(); } catch(_){ }
+      await refresh();
+    } else {
+      notify((data && data.error) || `Pause failed${!res.ok?` (HTTP ${res.status})`:''}`, 'error');
+    }
   }
 
   async function refresh(){

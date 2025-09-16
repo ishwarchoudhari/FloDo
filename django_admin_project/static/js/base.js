@@ -1,4 +1,21 @@
+(function ensureCsrfHelper(){
+  try {
+    if (!window.getCSRFToken) {
+      window.getCSRFToken = function(){
+        try { var c = (window.getCookie && window.getCookie('csrftoken')); if (c) return c; } catch(_){ }
+        try { var m = document.querySelector('meta[name="csrf-token"]'); if (m && (m.content||'').trim()) return m.content.trim(); } catch(_){ }
+        try { var h = document.getElementById('csrf-token-global'); if (h && (h.value||h.content)) return (h.value||h.content); } catch(_){ }
+        try { var hi = document.querySelector('#csrf-holder input[name="csrfmiddlewaretoken"]'); if (hi && hi.value) return hi.value; } catch(_){ }
+        return '';
+      };
+    }
+  } catch(_){ }
+})();
 'use strict';
+
+// Centralized admin URL prefixing to keep paths consistent with server routing
+const ADMIN_PREFIX = '/Super-Admin';
+const AUTH_BASE = ADMIN_PREFIX + '/auth';
 
 // ---- Theme (dark mode) handling with persistence and system preference ----
 (function(){
@@ -32,7 +49,7 @@
           else { sun.classList.add('hidden'); moon.classList.remove('hidden'); }
         }
       }
-    } catch(_){}
+    } catch(_){ }
   }
   function setTheme(theme){
     try { localStorage.setItem('theme', theme); } catch(_){ }
@@ -60,6 +77,43 @@
   } catch(_){}
   // Expose small API
   window.__setTheme = setTheme;
+  // Bind click handler for theme toggle (resilient to early/late availability)
+  try {
+    function __bindThemeToggle(){
+      try {
+        var btn = document.getElementById('themeToggle');
+        if (!btn) return;
+        if (btn.getAttribute('data-theme-bound') === '1') return; // idempotent
+        var getCurrent = function(){ return document.documentElement.classList.contains('dark') ? 'dark' : 'light'; };
+        btn.addEventListener('click', function(){
+          try {
+            var next = getCurrent() === 'dark' ? 'light' : 'dark';
+            setTheme(next);
+          } catch(_){ }
+        });
+        btn.setAttribute('data-theme-bound', '1');
+      } catch(_){ }
+    }
+    // Attempt immediately and on DOMContentLoaded
+    __bindThemeToggle();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', __bindThemeToggle);
+    }
+    // Global delegated fallback (catches clicks if button was re-rendered dynamically)
+    if (!window.__themeToggleDelegated){
+      document.addEventListener('click', function(e){
+        try {
+          var t = e.target && (e.target.closest ? e.target.closest('#themeToggle') : null);
+          if (!t) return;
+          var isPressed = document.documentElement.classList.contains('dark');
+          setTheme(isPressed ? 'light' : 'dark');
+          // update aria for good measure
+          try { t.setAttribute('aria-pressed', isPressed ? 'false' : 'true'); } catch(_){ }
+        } catch(_){ }
+      });
+      window.__themeToggleDelegated = true;
+    }
+  } catch(_){ }
 })();
 
 // Ensure Admin Overview initializes on pages that include the container
@@ -198,7 +252,7 @@ window.refreshDashboardCharts = async function(){
     var host = document.getElementById('chart-table-distribution'); if (!host) return;
     // Attempt to fetch fresh distribution; if 404 or error, just re-render current
     try {
-      var res = await fetch('/dashboard/api/stats/table_distribution/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+      const res = await fetch('/dashboard/api/stats/table_distribution/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
       if (res.ok){
         var json = await res.json();
         if (Array.isArray(json)){
@@ -433,7 +487,7 @@ window.loadTables = async function(){
   try {
     window.startLoading && window.startLoading();
     window.updateAriaStatus && window.updateAriaStatus('Loading tables…');
-    const res = await fetch('/dashboard/tables/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+    const res = await fetch(ADMIN_PREFIX + '/tables/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
     try { var _hdr = res.headers && res.headers.get('X-Label-Map'); if (_hdr) { window.TABLE_LABELS = JSON.parse(_hdr); } } catch(_){ }
     const html = await res.text();
     var root = document.getElementById('content-root');
@@ -449,7 +503,7 @@ window.loadTables = async function(){
             var existing = document.querySelector('script[data-dash-js]');
             if (existing) { setTimeout(function(){ ensureDashReady(cb); }, 0); return; }
             var s = document.createElement('script');
-            s.src = '/static/js/dashboard.js';
+            s.src = '/static/js/dashboard.js?v=dev';
             s.setAttribute('data-dash-js','1');
             s.onload = function(){ cb && cb(); };
             document.head.appendChild(s);
@@ -500,8 +554,8 @@ window.loadTables = async function(){
         })();
         try { document.title = (document.title || '').replace(/\s·\s.*$/, '') + ' · Tables'; } catch(e){ }
         window.showNotification && window.showNotification('Tables', 'info');
-        try { if (window.history && window.history.pushState) { window.history.pushState({ page: 'tables' }, '', '/dashboard/tables/'); } } catch(e){ }
-        if (typeof window.setActiveSidebar === 'function') { window.setActiveSidebar('/dashboard/tables/'); }
+        try { if (window.history && window.history.pushState) { window.history.pushState({ page: 'tables' }, '', ADMIN_PREFIX + '/tables/'); } } catch(e){ }
+        if (typeof window.setActiveSidebar === 'function') { window.setActiveSidebar(ADMIN_PREFIX + '/tables/'); }
         if (window.__tablesAutoTimer) { clearInterval(window.__tablesAutoTimer); window.__tablesAutoTimer = null; }
         window.__tablesAutoTimer = setInterval(function(){
           try {
@@ -520,11 +574,11 @@ window.loadTables = async function(){
       var already = document.querySelector('script[data-dash-js]');
       if (!already){
         var s = document.createElement('script');
-        s.src = '/static/js/dashboard.js';
+        s.src = '/static/js/dashboard.js?v=dev';
         s.async = true;
         s.setAttribute('data-dash-js','1');
         s.onload = initTables;
-        s.onerror = function(){ window.location.href = '/dashboard/tables/'; };
+        s.onerror = function(){ window.location.href = ADMIN_PREFIX + '/tables/'; };
         document.head.appendChild(s);
       } else {
         setTimeout(initTables, 0);
@@ -537,7 +591,7 @@ window.loadTables = async function(){
   } catch (e) {
     window.updateAriaStatus && window.updateAriaStatus('Failed to load tables');
     window.showNotification && window.showNotification('Failed to load tables', 'error');
-    window.location.href = '/dashboard/tables/';
+    window.location.href = ADMIN_PREFIX + '/tables/';
   } finally { window.stopLoading && window.stopLoading(); }
 };
 
@@ -575,7 +629,7 @@ window.loadAdminProfile = async function(){
   try {
     window.startLoading && window.startLoading();
     window.updateAriaStatus && window.updateAriaStatus('Loading profile…');
-    const res = await fetch('/auth/profile/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+    const res = await fetch(AUTH_BASE + '/profile/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
     const html = await res.text();
     var root = document.getElementById('content-root');
     if (root) root.innerHTML = html;
@@ -662,10 +716,11 @@ window.profileSave = async function(ev){
   var form = document.getElementById('profile-edit-form');
   if (!form) return;
   const formData = new FormData(form);
+  try { var _tok = (window.getCSRFToken && window.getCSRFToken()); if (_tok && !formData.has('csrfmiddlewaretoken')) formData.append('csrfmiddlewaretoken', _tok); } catch(_){ }
   try{
-    const res = await fetch('/auth/profile/update/', {
+    const _fetch = (window.fetchWithCSRF || window.fetch);
+    const res = await _fetch(AUTH_BASE + '/profile/update/', {
       method: 'POST',
-      headers: { 'X-CSRFToken': window.getCookie && window.getCookie('csrftoken') },
       body: formData
     });
     const data = await res.json();
@@ -684,10 +739,11 @@ window.profileUploadAvatar = async function(input){
   if(!input || !input.files || !input.files[0]) return;
   const fd = new FormData();
   fd.append('avatar', input.files[0]);
+  try { var _tok = (window.getCSRFToken && window.getCSRFToken()); if (_tok) fd.append('csrfmiddlewaretoken', _tok); } catch(_){ }
   try{
-    const res = await fetch('/auth/profile/avatar/', {
+    const _fetch = (window.fetchWithCSRF || window.fetch);
+    const res = await _fetch(AUTH_BASE + '/profile/avatar/', {
       method: 'POST',
-      headers: { 'X-CSRFToken': window.getCookie && window.getCookie('csrftoken') },
       body: fd
     });
     const data = await res.json();
@@ -721,10 +777,10 @@ window.profileUploadAvatar = async function(input){
 };
 window.profileDeleteAvatar = async function(){
   try{
-    const res = await fetch('/auth/profile/avatar/delete/', {
-      method: 'POST',
-      headers: { 'X-CSRFToken': window.getCookie && window.getCookie('csrftoken') }
-    });
+    const _fetch = (window.fetchWithCSRF || window.fetch);
+    var fd = new FormData();
+    try { var _tok = (window.getCSRFToken && window.getCSRFToken()); if (_tok) fd.append('csrfmiddlewaretoken', _tok); } catch(_){ }
+    const res = await _fetch(AUTH_BASE + '/profile/avatar/delete/', { method: 'POST', body: fd });
     const data = await res.json();
     if(data.success){
       window.updateAriaStatus && window.updateAriaStatus('Avatar removed');
@@ -749,7 +805,7 @@ window.profileChangePassword = async function(ev){
   if (!form) return;
   const fd = new FormData(form);
   try{
-    const res = await fetch('/auth/profile/password/', {
+    const res = await fetch(AUTH_BASE + '/profile/password/', {
       method: 'POST',
       headers: { 'X-CSRFToken': window.getCookie && window.getCookie('csrftoken') },
       body: fd
@@ -851,7 +907,7 @@ window.loadAdminManagement = async function(){
   try {
     window.startLoading && window.startLoading();
     window.updateAriaStatus && window.updateAriaStatus('Loading admin management…');
-    const res = await fetch('/dashboard/Admin_management/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+    const res = await fetch(ADMIN_PREFIX + '/Admin_management/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
     const html = await res.text();
     var root = document.getElementById('content-root');
     if (root) root.innerHTML = html;
@@ -867,14 +923,14 @@ window.loadAdminManagement = async function(){
       } catch(_) { }
     }
     ensureAdminJS(function(){ try { window.initAdminManagement && window.initAdminManagement(); } catch(_){ } });
-    try { if (window.history && window.history.pushState) { window.history.pushState({ page: 'admin_mgmt' }, '', '/dashboard/Admin_management/'); } } catch(e){ }
-    if (typeof window.setActiveSidebar === 'function') { window.setActiveSidebar('/dashboard/Admin_management/'); }
+    try { if (window.history && window.history.pushState) { window.history.pushState({ page: 'admin_mgmt' }, '', ADMIN_PREFIX + '/Admin_management/'); } } catch(e){ }
+    if (typeof window.setActiveSidebar === 'function') { window.setActiveSidebar(ADMIN_PREFIX + '/Admin_management/'); }
     window.toggleSidebar && window.toggleSidebar(false);
     window.showNotification && window.showNotification('Admin Management', 'info');
     window.updateAriaStatus && window.updateAriaStatus('Admin management loaded');
   } catch (e) {
     window.updateAriaStatus && window.updateAriaStatus('Failed to load admin management');
-    window.location.href = '/dashboard/Admin_management/';
+    window.location.href = ADMIN_PREFIX + '/Admin_management/';
   } finally { window.stopLoading && window.stopLoading(); }
 };
 
@@ -908,7 +964,7 @@ document.addEventListener('DOMContentLoaded', function(){
       });
     }
     try {
-      var adminLink = document.querySelector("a[href='/dashboard/Admin_management/']");
+      var adminLink = document.querySelector("a[href='" + ADMIN_PREFIX + "/Admin_management/']");
       if (adminLink){
         adminLink.addEventListener('click', function(ev){
           if (typeof window.loadAdminManagement === 'function'){

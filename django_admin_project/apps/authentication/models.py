@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import User
 
 
@@ -11,6 +12,16 @@ class SuperAdmin(models.Model):
 
     def __str__(self) -> str:
         return f"SuperAdmin: {self.user.username}"
+
+    class Meta:
+        constraints = [
+            # Allow at most one row with is_super_admin=True
+            models.UniqueConstraint(
+                fields=["is_super_admin"],
+                condition=Q(is_super_admin=True),
+                name="unique_true_superadmin",
+            )
+        ]
 
 
 class AdminProfile(models.Model):
