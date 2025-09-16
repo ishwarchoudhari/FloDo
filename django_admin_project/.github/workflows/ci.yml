@@ -5,6 +5,12 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      generate_db_inventory:
+        description: "Generate db_inventory.json and upload as artifact"
+        required: false
+        default: "false"
 
 jobs:
   build-test:
@@ -12,6 +18,9 @@ jobs:
     defaults:
       run:
         working-directory: django_admin_project
+    env:
+      # Toggle this to '1' or set via workflow_dispatch input to generate db inventory
+      GENERATE_DB_INVENTORY: ${{ inputs.generate_db_inventory == 'true' && '1' || env.GENERATE_DB_INVENTORY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -52,6 +61,18 @@ jobs:
         run: |
           flake8 || true
           black --check . || true
+
+      - name: Generate DB inventory (optional)
+        if: env.GENERATE_DB_INVENTORY == '1'
+        run: |
+          python manage.py shell -c "import json; from django.db import connection; cur=connection.cursor(); tables=connection.introspection.table_names(); out={'total_tables': len(tables), 'tables': []};\nfor t in tables:\n    info={'name': t}\n    try:\n        cur.execute(f'SELECT COUNT(*) FROM {t}')\n        info['row_count']=cur.fetchone()[0]\n    except Exception as e:\n        info['row_count']=None; info['row_count_error']=str(e)\n    cols=[]\n    try:\n        cur.execute(f'PRAGMA table_info({t})')\n        for cid,name,ctype,notnull,dflt_value,pk in cur.fetchall():\n            cols.append({'name':name,'type':ctype,'notnull':bool(notnull),'default':dflt_value,'primary_key':bool(pk)})\n    except Exception:\n        desc = connection.introspection.get_table_description(cur, t)\n        for c in desc:\n            nm = getattr(c,'name',None) or (c[0] if isinstance(c,(list,tuple)) and c else None)\n            cols.append({'name':nm,'type':str(getattr(c,'type_code',None)),'notnull':not getattr(c,'null_ok',True),'default':getattr(c,'default',None),'primary_key':False})\n    info['columns']=cols\n    try:\n        info['constraints']=connection.introspection.get_constraints(cur, t)\n    except Exception as e:\n        info['constraints_error']=str(e)\n    out['tables'].append(info)\nopen('db_inventory.json','w', encoding='utf-8').write(json.dumps(out, indent=2, ensure_ascii=False))\nprint('WROTE: db_inventory.json')"
+
+      - name: Upload DB inventory artifact (optional)
+        if: env.GENERATE_DB_INVENTORY == '1'
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-inventory
+          path: django_admin_project/db_inventory.json
 
   docker-build:
     runs-on: ubuntu-latest
