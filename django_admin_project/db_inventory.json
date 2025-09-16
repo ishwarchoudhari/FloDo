@@ -1,0 +1,2818 @@
+{
+  "total_tables": 27,
+  "tables": [
+    {
+      "name": "auth_group",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(150)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "__unnamed_constraint_1__": {
+          "unique": true,
+          "columns": [
+            "name"
+          ],
+          "primary_key": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "__primary__": {
+          "columns": [
+            "id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "auth_group_permissions",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "group_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "permission_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "auth_group_permissions_permission_id_84c5c92e": {
+          "columns": [
+            "permission_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "auth_group_permissions_group_id_b120cbf9": {
+          "columns": [
+            "group_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "auth_group_permissions_group_id_permission_id_0cd325b0_uniq": {
+          "columns": [
+            "group_id",
+            "permission_id"
+          ],
+          "primary_key": false,
+          "unique": true,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC",
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "fk_0": {
+          "columns": [
+            "permission_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "auth_permission",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        },
+        "fk_1": {
+          "columns": [
+            "group_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "auth_group",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "auth_permission",
+      "row_count": 92,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "content_type_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "codename",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(255)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "auth_permission_content_type_id_2f476e4b": {
+          "columns": [
+            "content_type_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "auth_permission_content_type_id_codename_01ab375a_uniq": {
+          "columns": [
+            "content_type_id",
+            "codename"
+          ],
+          "primary_key": false,
+          "unique": true,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC",
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "fk_0": {
+          "columns": [
+            "content_type_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "django_content_type",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "auth_user",
+      "row_count": 2,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "password",
+          "type": "varchar(128)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "last_login",
+          "type": "datetime",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "is_superuser",
+          "type": "bool",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "username",
+          "type": "varchar(150)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "last_name",
+          "type": "varchar(150)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "email",
+          "type": "varchar(254)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "is_staff",
+          "type": "bool",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "is_active",
+          "type": "bool",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "date_joined",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "first_name",
+          "type": "varchar(150)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "__unnamed_constraint_1__": {
+          "unique": true,
+          "columns": [
+            "username"
+          ],
+          "primary_key": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "__primary__": {
+          "columns": [
+            "id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "auth_user_groups",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "group_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "auth_user_groups_group_id_97559544": {
+          "columns": [
+            "group_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "auth_user_groups_user_id_6a12ed8b": {
+          "columns": [
+            "user_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "auth_user_groups_user_id_group_id_94350c0c_uniq": {
+          "columns": [
+            "user_id",
+            "group_id"
+          ],
+          "primary_key": false,
+          "unique": true,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC",
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "fk_0": {
+          "columns": [
+            "group_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "auth_group",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        },
+        "fk_1": {
+          "columns": [
+            "user_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "auth_user",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "auth_user_user_permissions",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "permission_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "auth_user_user_permissions_permission_id_1fbb5f2c": {
+          "columns": [
+            "permission_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "auth_user_user_permissions_user_id_a95ead1b": {
+          "columns": [
+            "user_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "auth_user_user_permissions_user_id_permission_id_14a6b632_uniq": {
+          "columns": [
+            "user_id",
+            "permission_id"
+          ],
+          "primary_key": false,
+          "unique": true,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC",
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "fk_0": {
+          "columns": [
+            "permission_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "auth_permission",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        },
+        "fk_1": {
+          "columns": [
+            "user_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "auth_user",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "authentication_adminprofile",
+      "row_count": 1,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "avatar",
+          "type": "varchar(100)",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "display_name",
+          "type": "varchar(150)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "role",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "bio",
+          "type": "TEXT",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "location",
+          "type": "varchar(120)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "birth_date",
+          "type": "date",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "phone",
+          "type": "varchar(32)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "status",
+          "type": "varchar(20)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "last_sign_in",
+          "type": "datetime",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "social_links",
+          "type": "TEXT",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "__unnamed_constraint_1__": {
+          "check": true,
+          "columns": [
+            "social_links",
+            "social_links"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "index": false
+        },
+        "__unnamed_constraint_2__": {
+          "unique": true,
+          "columns": [
+            "user_id"
+          ],
+          "primary_key": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "__primary__": {
+          "columns": [
+            "id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "fk_0": {
+          "columns": [
+            "user_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "auth_user",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "authentication_superadmin",
+      "row_count": 1,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "is_super_admin",
+          "type": "bool",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "last_login_ip",
+          "type": "char(39)",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "__unnamed_constraint_1__": {
+          "unique": true,
+          "columns": [
+            "user_id"
+          ],
+          "primary_key": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "unique_true_superadmin": {
+          "columns": [
+            "is_super_admin"
+          ],
+          "primary_key": false,
+          "unique": true,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "fk_0": {
+          "columns": [
+            "user_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "auth_user",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "dashboard_activitylog",
+      "row_count": 6,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "table_name",
+          "type": "varchar(50)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "action",
+          "type": "varchar(10)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "row_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "row_details",
+          "type": "TEXT",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "timestamp",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "admin_user_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "__unnamed_constraint_1__": {
+          "check": true,
+          "columns": [
+            "row_details",
+            "row_details"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "index": false
+        },
+        "dashboard_activitylog_admin_user_id_89922c7c": {
+          "columns": [
+            "admin_user_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "fk_0": {
+          "columns": [
+            "admin_user_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "auth_user",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "dashboard_admin",
+      "row_count": 1,
+      "columns": [
+        {
+          "name": "unique_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "city",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "phone",
+          "type": "varchar(20)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "is_active",
+          "type": "bool",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "password_hash",
+          "type": "varchar(128)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "role",
+          "type": "varchar(20)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "role_approvedby_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "user_name",
+          "type": "varchar(150)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "__unnamed_constraint_1__": {
+          "unique": true,
+          "columns": [
+            "user_name"
+          ],
+          "primary_key": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "dashboard_admin_role_approvedby_id_484b25b8": {
+          "columns": [
+            "role_approvedby_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_admin_city_0a845fa9": {
+          "columns": [
+            "city"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_admin_name_d3cf93ea": {
+          "columns": [
+            "name"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "unique_id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "fk_0": {
+          "columns": [
+            "role_approvedby_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "auth_user",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "dashboard_artist_application",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "unique_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "city",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "phone",
+          "type": "varchar(20)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "approved",
+          "type": "bool",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "approved_at",
+          "type": "datetime",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "approval_admin_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "application_status",
+          "type": "varchar(32)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "email",
+          "type": "varchar(254)",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "years_experience",
+          "type": "integer unsigned",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "artist_application_id",
+          "type": "char(32)",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "__unnamed_constraint_1__": {
+          "check": true,
+          "columns": [
+            "years_experience"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "index": false
+        },
+        "__unnamed_constraint_2__": {
+          "unique": true,
+          "columns": [
+            "artist_application_id"
+          ],
+          "primary_key": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "dashboard_artist_application_user_id_52179c99": {
+          "columns": [
+            "user_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_artist_application_application_status_7d835f11": {
+          "columns": [
+            "application_status"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_artist_application_approval_admin_id_eb204e24": {
+          "columns": [
+            "approval_admin_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_artist_application_city_0fc972bb": {
+          "columns": [
+            "city"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_artist_application_name_55b269da": {
+          "columns": [
+            "name"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "unique_id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "fk_0": {
+          "columns": [
+            "user_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "auth_user",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        },
+        "fk_1": {
+          "columns": [
+            "approval_admin_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "auth_user",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "dashboard_artist_application_certificate",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "file",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "uploaded_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "application_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "dashboard_artist_application_certificate_application_id_bea05fd8": {
+          "columns": [
+            "application_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "fk_0": {
+          "columns": [
+            "application_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "dashboard_artist_application",
+            "unique_id"
+          ],
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "dashboard_artist_availability",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "unique_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "city",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "phone",
+          "type": "varchar(20)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "dashboard_table7_city_f8428873": {
+          "columns": [
+            "city"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_table7_name_564a0bfa": {
+          "columns": [
+            "name"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "unique_id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "dashboard_artist_calendar",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "unique_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "city",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "phone",
+          "type": "varchar(20)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "dashboard_table8_city_917d4e92": {
+          "columns": [
+            "city"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_table8_name_8e15867f": {
+          "columns": [
+            "name"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "unique_id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "dashboard_artist_service",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "unique_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "city",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "phone",
+          "type": "varchar(20)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "dashboard_table5_city_b8191b27": {
+          "columns": [
+            "city"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_table5_name_64ffb949": {
+          "columns": [
+            "name"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "unique_id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "dashboard_booking",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "unique_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "city",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "phone",
+          "type": "varchar(20)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "client_id",
+          "type": "char(32)",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "dashboard_booking_client_id_f88d4a69": {
+          "columns": [
+            "client_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_table9_city_efb7b769": {
+          "columns": [
+            "city"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_table9_name_faaf2016": {
+          "columns": [
+            "name"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "unique_id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "fk_0": {
+          "columns": [
+            "client_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "dashboard_client",
+            "client_id"
+          ],
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "dashboard_client",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "client_id",
+          "type": "char(32)",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "full_name",
+          "type": "varchar(255)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "phone",
+          "type": "varchar(32)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "password",
+          "type": "varchar(128)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "location",
+          "type": "varchar(255)",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "status",
+          "type": "varchar(8)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "__unnamed_constraint_1__": {
+          "unique": true,
+          "columns": [
+            "phone"
+          ],
+          "primary_key": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "__unnamed_constraint_2__": {
+          "unique": true,
+          "columns": [
+            "email"
+          ],
+          "primary_key": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "dashboard_c_email_0457a5_idx": {
+          "columns": [
+            "email"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_c_phone_c725c1_idx": {
+          "columns": [
+            "phone"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "client_id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "dashboard_client_log",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "log_id",
+          "type": "char(32)",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "action",
+          "type": "varchar(20)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "details",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "timestamp",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "client_id",
+          "type": "char(32)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "performed_by_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "__unnamed_constraint_1__": {
+          "check": true,
+          "columns": [
+            "details",
+            "details"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "index": false
+        },
+        "dashboard_client_log_performed_by_id_42e5d8ec": {
+          "columns": [
+            "performed_by_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_client_log_client_id_9fe37d1d": {
+          "columns": [
+            "client_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_c_timesta_f5df1c_idx": {
+          "columns": [
+            "timestamp"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_c_action_c01c86_idx": {
+          "columns": [
+            "action"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "log_id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "fk_0": {
+          "columns": [
+            "performed_by_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "auth_user",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        },
+        "fk_1": {
+          "columns": [
+            "client_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "dashboard_client",
+            "client_id"
+          ],
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "dashboard_message",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "unique_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "city",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "phone",
+          "type": "varchar(20)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "client_id",
+          "type": "char(32)",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "dashboard_message_client_id_99d42e13": {
+          "columns": [
+            "client_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_table10_city_95807554": {
+          "columns": [
+            "city"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_table10_name_6221a181": {
+          "columns": [
+            "name"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "unique_id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "fk_0": {
+          "columns": [
+            "client_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "dashboard_client",
+            "client_id"
+          ],
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "dashboard_payment",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "unique_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "city",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "phone",
+          "type": "varchar(20)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "dashboard_table4_city_b8ffc5a8": {
+          "columns": [
+            "city"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_table4_name_cf251937": {
+          "columns": [
+            "name"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "unique_id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "dashboard_user",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "unique_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "city",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "phone",
+          "type": "varchar(20)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "dashboard_table2_city_aa8cf568": {
+          "columns": [
+            "city"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_table2_name_6bca604e": {
+          "columns": [
+            "name"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "unique_id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "dashboard_verified_artist",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "unique_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "city",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "phone",
+          "type": "varchar(20)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "dashboard_table3_city_d47d8b42": {
+          "columns": [
+            "city"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "dashboard_table3_name_cadc4b0a": {
+          "columns": [
+            "name"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "unique_id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "django_admin_log",
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "object_id",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "object_repr",
+          "type": "varchar(200)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "action_flag",
+          "type": "smallint unsigned",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "change_message",
+          "type": "TEXT",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "content_type_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "action_time",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "__unnamed_constraint_1__": {
+          "check": true,
+          "columns": [
+            "action_flag"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "index": false
+        },
+        "django_admin_log_user_id_c564eba6": {
+          "columns": [
+            "user_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "django_admin_log_content_type_id_c4bce8eb": {
+          "columns": [
+            "content_type_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "fk_0": {
+          "columns": [
+            "user_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "auth_user",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        },
+        "fk_1": {
+          "columns": [
+            "content_type_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "django_content_type",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "django_content_type",
+      "row_count": 23,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "app_label",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "model",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "django_content_type_app_label_model_76bd3d3b_uniq": {
+          "columns": [
+            "app_label",
+            "model"
+          ],
+          "primary_key": false,
+          "unique": true,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC",
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "django_migrations",
+      "row_count": 29,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "app",
+          "type": "varchar(255)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(255)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "applied",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "__primary__": {
+          "columns": [
+            "id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "django_session",
+      "row_count": 4,
+      "columns": [
+        {
+          "name": "session_key",
+          "type": "varchar(40)",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "session_data",
+          "type": "TEXT",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "expire_date",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "django_session_expire_date_a5c62663": {
+          "columns": [
+            "expire_date"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "session_key"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        }
+      }
+    },
+    {
+      "name": "settings_app_appsettings",
+      "row_count": 1,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "app_name",
+          "type": "varchar(100)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "timezone",
+          "type": "varchar(50)",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "records_per_page",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "enable_notifications",
+          "type": "bool",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_by_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "constraints": {
+        "settings_app_appsettings_updated_by_id_e103e0b1": {
+          "columns": [
+            "updated_by_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": true,
+          "type": "idx",
+          "orders": [
+            "ASC"
+          ]
+        },
+        "__primary__": {
+          "columns": [
+            "id"
+          ],
+          "primary_key": true,
+          "unique": false,
+          "foreign_key": null,
+          "check": false,
+          "index": false
+        },
+        "fk_0": {
+          "columns": [
+            "updated_by_id"
+          ],
+          "primary_key": false,
+          "unique": false,
+          "foreign_key": [
+            "auth_user",
+            "id"
+          ],
+          "check": false,
+          "index": false
+        }
+      }
+    }
+  ]
+}

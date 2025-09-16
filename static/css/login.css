@@ -13,6 +13,33 @@ body {
 /* (Removed decorative blob and gradient-border animations) */
 
 /* Inputs polish (compatible with existing Tailwind classes) */
+
+/* --- OTP UX enhancements (non-intrusive) --- */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+  20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.3) translateY(20px); opacity: 0; }
+  50% { transform: scale(1.1) translateY(-10px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.animate-shake {
+  animation: shake 0.3s ease-in-out;
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.5s ease-out;
+}
+
+/* Slight focus scale for OTP boxes */
+.otp-box:focus {
+  transform: scale(1.05);
+}
+
 #loginForm input {
   /* Respect Tailwind classes; provide subtle light fallback only */
   background: rgba(255,255,255,0.85);

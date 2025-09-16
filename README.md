@@ -114,6 +114,35 @@ $env:DJANGO_SECRET_KEY = "dev-secret"   # set a strong secret in production
 $env:DJANGO_ALLOWED_HOSTS = "127.0.0.1,localhost"
 ```
 
+### Email/SMTP Configuration (for OTP emails)
+
+Set these variables in the same terminal session you run the server from. For Gmail, use an App Password (not your normal password).
+
+```powershell
+# Select SMTP backend (overrides console backend in DEBUG)
+$env:EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+# Sender and SMTP server
+$env:DEFAULT_FROM_EMAIL = "no-reply@example.com"   # or your Gmail address
+$env:EMAIL_HOST = "smtp.gmail.com"
+$env:EMAIL_PORT = "587"
+$env:EMAIL_USE_TLS = "True"    # STARTTLS on 587
+$env:EMAIL_USE_SSL = "False"
+
+# Credentials
+$env:EMAIL_HOST_USER = "you@gmail.com"
+$env:EMAIL_HOST_PASSWORD = "<GMAIL_APP_PASSWORD>"
+
+# Optional
+$env:EMAIL_TIMEOUT = "10"
+```
+
+Test a one-off email send via Django shell:
+
+```powershell
+python manage.py shell -c "from django.template.loader import render_to_string; from django.conf import settings; from django.core.mail import EmailMultiAlternatives; to=getattr(settings,'DEFAULT_FROM_EMAIL','no-reply@localhost'); ctx={'code':'123456','expiry_minutes':10,'app_name':getattr(settings,'APP_NAME','FloDo'),'login_url':'http://127.0.0.1:8000/Super-Admin/auth/login/'}; html=render_to_string('emails/otp_email.html',ctx); txt=render_to_string('emails/otp_email.txt',ctx); msg=EmailMultiAlternatives('FloDo OTP Test',txt,getattr(settings,'DEFAULT_FROM_EMAIL','no-reply@localhost'),[to]); msg.attach_alternative(html,'text/html'); print('Sent:', msg.send(fail_silently=False))"
+```
+
 ## 📚 Documentation
 
 - Start here: [`docs/index.md`](docs/index.md)
@@ -138,6 +167,22 @@ $env:DJANGO_ALLOWED_HOSTS = "127.0.0.1,localhost"
 - Settings center (profile, app settings, system info, exports)
 - Clean, responsive Tailwind UI with dark mode
 - CSRF protection, WhiteNoise static serving, production hardening
+
+### OTP Password Reset UX
+
+- Super‑Admin “Forgot password?” flows via AJAX under `/Super-Admin/auth/`.
+- OTP requests start a 10‑minute countdown (with animated visual timer).
+- OTP entry uses 6 split boxes (GitHub‑style): auto‑advance, backspace to previous, paste support.
+- Auto‑submit verifies the code once all digits are entered; error states show red ring + subtle shake.
+- After verification, the reset step requires password and confirm password with live match indicators; the Reset button only enables when matching.
+
+### Branded OTP Emails (HTML + Plain Text)
+
+- HTML template: `templates/emails/otp_email.html`
+- Plain text fallback: `templates/emails/otp_email.txt`
+- Emails sent with `EmailMultiAlternatives` and include:
+  - Greeting, highlighted OTP, expiry note, “Continue to Login” button, and FloDo signature.
+- Backend remains generic and secure (no user enumeration). Failing to send email does not break the flow.
 
 ## 🛡️ Security
 

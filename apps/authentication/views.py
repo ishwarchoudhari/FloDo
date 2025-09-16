@@ -18,6 +18,9 @@ import secrets
 import hmac
 import time
 from django.core.cache import caches
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+from django.urls import reverse
 
 # Optional: Redis-backed rate limiting (enabled only if REDIS_URL present)
 try:
@@ -446,17 +449,28 @@ def superadmin_password_reset_request(request: HttpRequest) -> JsonResponse:
     # Store OTP (even if email is missing, we still behave generically)
     payload = _store_otp(user, purpose="password_reset", attempts=5, ttl=600)
 
-    # Send Email if present
+    # Send Email if present (HTML + plain text)
     try:
         if user.email:
-            from django.core.mail import send_mail
-            send_mail(
-                subject="Your Super-Admin OTP Code",
-                message=f"Your one-time code is {payload['code']}. It expires in 10 minutes.",
-                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None) or "no-reply@localhost",
-                recipient_list=[user.email],
-                fail_silently=True,
-            )
+            subject = "Your Super-Admin OTP Code"
+            # Build absolute URL to login for email button
+            try:
+                login_path = reverse("authentication:login")
+                login_url = request.build_absolute_uri(login_path)
+            except Exception:
+                login_url = None
+            context = {
+                "code": payload["code"],
+                "expiry_minutes": 10,
+                "app_name": getattr(settings, "APP_NAME", "FloDo"),
+                "login_url": login_url or "/Super-Admin/auth/login/",
+            }
+            html_body = render_to_string("emails/otp_email.html", context)
+            text_body = render_to_string("emails/otp_email.txt", context)
+            from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "no-reply@localhost"
+            msg = EmailMultiAlternatives(subject, text_body, from_email, [user.email])
+            msg.attach_alternative(html_body, "text/html")
+            msg.send(fail_silently=True)
     except Exception:
         pass
 

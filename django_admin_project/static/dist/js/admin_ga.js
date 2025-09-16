@@ -1,0 +1,2 @@
+(()=>{(function(){try{var n=document.getElementById("ga-config");if(!n)return;var a=(n.getAttribute("data-ga-id")||"").trim();if(!a)return;var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id="+encodeURIComponent(a),t.onload=function(){try{let e=function(){dataLayer.push(arguments)};var r=e;window.dataLayer=window.dataLayer||[],e("js",new Date),e("config",a)}catch{}},document.head.appendChild(t)}catch{}})();})();
+//# sourceMappingURL=admin_ga.js.map

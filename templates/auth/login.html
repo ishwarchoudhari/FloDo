@@ -48,7 +48,7 @@
           <div id="fpMsg" class="text-sm mb-2 hidden"></div>
           <!-- Step 1: Send OTP -->
           <div id="fpStepSend" class="space-y-3">
-            <p class="text-sm text-gray-600 dark:text-gray-300">We will send a one-time code to the Super‑Admin email on file.</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300">OTP will be sent to the Super‑Admin email configured in Settings.</p>
             <button id="fpSendBtn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none">
               <svg class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" stroke-width="4"></path></svg>
               <span data-text>Send OTP</span>
@@ -57,18 +57,98 @@
           </div>
           <!-- Step 2: Verify OTP -->
           <div id="fpStepOtp" class="space-y-3 hidden">
-            <label for="fpOtpInput" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Enter 6‑digit code</label>
-            <input id="fpOtpInput" type="text" inputmode="numeric" pattern="\\d{6}" maxlength="6" placeholder="123456" class="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
-            <button id="fpVerifyBtn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none">
-              <svg class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" stroke-width="4"></path></svg>
-              <span data-text>Verify Code</span>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Enter 6‑digit code</label>
+            <!-- Hidden original input to keep JS/API compatibility -->
+            <input id="fpOtpInput" type="hidden" />
+
+            <!-- Split OTP boxes with Clear button -->
+            <div class="flex items-center justify-center">
+              <div id="otpGroup" class="flex items-center gap-3 select-none">
+                <input id="otp0" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" aria-label="OTP digit 1"
+                       class="otp-box w-12 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-bold rounded-xl border-2 border-white/20 bg-white/5 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 hover:border-white/30" />
+                <input id="otp1" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="OTP digit 2"
+                       class="otp-box w-12 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-bold rounded-xl border-2 border-white/20 bg-white/5 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 hover:border-white/30" />
+                <input id="otp2" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="OTP digit 3"
+                       class="otp-box w-12 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-bold rounded-xl border-2 border-white/20 bg-white/5 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 hover:border-white/30" />
+                <input id="otp3" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="OTP digit 4"
+                       class="otp-box w-12 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-bold rounded-xl border-2 border-white/20 bg-white/5 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 hover:border-white/30" />
+                <input id="otp4" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="OTP digit 5"
+                       class="otp-box w-12 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-bold rounded-xl border-2 border-white/20 bg-white/5 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 hover:border-white/30" />
+                <input id="otp5" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="OTP digit 6"
+                       class="otp-box w-12 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-bold rounded-xl border-2 border-white/20 bg-white/5 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 hover:border-white/30" />
+              </div>
+
+              <button id="otpClear" type="button" aria-label="Clear all digits" 
+                    class="ml-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-slate-400 hover:text-white transition-all duration-200 flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
             </button>
+          </div>
+          <!-- Progress Bar -->
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs text-slate-400">
+              <span>Enter all digits</span>
+              <span id="progressText">0/6</span>
+            </div>
+            <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+              <div id="progressBar" class="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
+            </div>
+          </div>
+
+            <!-- Accessibility live region -->
+            <div id="fpOtpLive" class="sr-only" role="status" aria-live="polite"></div>
+
+            <!-- Desktop paste hint -->
+            <p class="hidden sm:block text-xs text-gray-500 dark:text-gray-400 text-center">Tip: You can paste the entire 6‑digit code.</p>
+
+            <!-- Input progress (fills as digits typed) -->
+            <div class="w-full h-1 bg-gray-200 dark:bg-gray-800 rounded overflow-hidden">
+              <div id="fpOtpFill" class="h-1 bg-emerald-500 transition-[width] duration-200 ease-linear" style="width:0%"></div>
+            </div>
+            <!-- OTP countdown helper and progress bar -->
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-600 dark:text-gray-300">Enter the code before it expires</span>
+              <span id="fpCountdownOtp" class="text-green-600">Expires in 600s</span>
+            </div>
+            <div class="w-full h-1 bg-gray-200 dark:bg-gray-800 rounded overflow-hidden">
+              <div id="fpProgressOtp" class="h-1 bg-blue-600 transition-[width] duration-300 ease-linear" style="width:100%"></div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="fpVerifyBtn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none">
+                <svg class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" stroke-width="4"></path></svg>
+                <span data-text>Verify Code</span>
+              </button>
+              <button id="fpResendBtn" type="button" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 cursor-not-allowed opacity-60" disabled>
+                <span id="fpResendLabel">Resend in 30s</span>
+              </button>
+            </div>
           </div>
           <!-- Step 3: Reset Password -->
           <div id="fpStepReset" class="space-y-3 hidden">
             <label for="fpNewPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-200">New Password</label>
-            <input id="fpNewPassword" type="password" minlength="8" placeholder="At least 8 characters" class="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
-            <button id="fpResetBtn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 focus:outline-none">
+            <div class="relative">
+              <input id="fpNewPassword" type="password" minlength="8" placeholder="At least 8 characters" class="w-full pr-10 border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+              <!-- New password match/mismatch icons -->
+              <svg id="fpPwNewIconOk" class="hidden absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414l2.293 2.293 6.543-6.543a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+              <svg id="fpPwNewIconBad" class="hidden absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm2.828-10.828a1 1 0 10-1.414-1.414L10 7.172 8.586 5.758a1 1 0 00-1.414 1.414L8.586 8.586 7.172 10a1 1 0 101.414 1.414L10 9.828l1.414 1.586A1 1 0 0012.828 10l-1.414-1.414 1.414-1.414z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <label for="fpConfirmPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Confirm New Password</label>
+            <div class="relative">
+              <input id="fpConfirmPassword" type="password" minlength="8" placeholder="Re-enter new password" class="w-full pr-10 border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+              <!-- Match icon (hidden until passwords match) -->
+              <svg id="fpPwMatchIcon" class="hidden absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414l2.293 2.293 6.543-6.543a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+              <svg id="fpPwConfirmIconBad" class="hidden absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm2.828-10.828a1 1 0 10-1.414-1.414L10 7.172 8.586 5.758a1 1 0 00-1.414 1.414L8.586 8.586 7.172 10a1 1 0 101.414 1.414L10 9.828l1.414 1.586A1 1 0 0012.828 10l-1.414-1.414 1.414-1.414z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <button id="fpResetBtn" disabled class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 focus:outline-none opacity-60 cursor-not-allowed">
               <svg class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" stroke-width="4"></path></svg>
               <span data-text>Reset Password</span>
             </button>

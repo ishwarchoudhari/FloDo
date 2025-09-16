@@ -1,0 +1,11 @@
+Hello,
+
+Use the following one-time passcode to continue with your Super-Admin password reset.
+
+Your OTP: {{ code }}
+Expires in {{ expiry_minutes }} minutes.
+
+If you did not request this, you can safely ignore this email.
+
+Regards,
+The {{ app_name }} Team
