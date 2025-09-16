@@ -18,3 +18,7 @@ Use the sidebar (folder structure) to navigate, or start here:
 - Contributing: ./contributing.md
 
 If you’re viewing this in GitHub, you can enable GitHub Pages to serve this `docs/` directory as a static site.
+
+---
+
+[![Docs](https://img.shields.io/badge/Docs-Site-blue)](https://ishwarchoudhari.github.io/FloDo/)

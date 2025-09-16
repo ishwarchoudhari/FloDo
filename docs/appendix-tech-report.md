@@ -160,3 +160,7 @@ python manage.py collectstatic --noinput
 - Use CSRF tokens for all non‑GET requests (header or `csrfmiddlewaretoken` in body).
 - For production, enable HTTPS, secure cookies, HSTS, and consider CSP.
 - Static assets are served via WhiteNoise; ensure `collectstatic` on deploy.
+
+---
+
+[![Docs](https://img.shields.io/badge/Docs-Site-blue)](https://ishwarchoudhari.github.io/FloDo/)

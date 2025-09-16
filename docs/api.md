@@ -189,3 +189,7 @@ All APIs use JSON error messages with HTTP error codes when applicable:
 403 { "success": false, "error": "Forbidden" }
 404 { "success": false, "error": "Not found" }
 ```
+
+---
+
+[![Docs](https://img.shields.io/badge/Docs-Site-blue)](https://ishwarchoudhari.github.io/FloDo/)

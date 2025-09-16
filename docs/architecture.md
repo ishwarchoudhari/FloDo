@@ -47,3 +47,7 @@ This project is a Django 4.x application with a clean separation of concerns:
 - `dashboard.ActivityLog` — CRUD activity
 
 See `README.md` for an ER diagram and complete table inventory.
+
+---
+
+[![Docs](https://img.shields.io/badge/Docs-Site-blue)](https://ishwarchoudhari.github.io/FloDo/)

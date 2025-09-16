@@ -30,3 +30,7 @@ This project enables Django’s built-in security features and recommends the fo
 ## Secrets
 
 - Use environment variables or a secrets manager (e.g., Azure Key Vault, AWS Secrets Manager).
+
+---
+
+[![Docs](https://img.shields.io/badge/Docs-Site-blue)](https://ishwarchoudhari.github.io/FloDo/)

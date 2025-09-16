@@ -77,3 +77,7 @@ $env:DJANGO_DEBUG = "True"
 $env:DJANGO_SECRET_KEY = "dev-secret"     # change in production
 $env:DJANGO_ALLOWED_HOSTS = "127.0.0.1,localhost"
 ```
+
+---
+
+[![Docs](https://img.shields.io/badge/Docs-Site-blue)](https://ishwarchoudhari.github.io/FloDo/)

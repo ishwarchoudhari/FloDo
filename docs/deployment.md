@@ -77,3 +77,7 @@ Use a reverse proxy (Nginx/Apache) to terminate TLS and forward to the app serve
 
 - Settings → Pages → Deploy from a branch → `main` → `/docs`.
 - Docs published at: `https://<username>.github.io/<repo>/`.
+
+---
+
+[![Docs](https://img.shields.io/badge/Docs-Site-blue)](https://ishwarchoudhari.github.io/FloDo/)

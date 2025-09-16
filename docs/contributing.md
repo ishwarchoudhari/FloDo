@@ -43,3 +43,7 @@ python manage.py test
 ## License
 
 - By contributing, you agree your contributions will be licensed under the repository’s license.
+
+---
+
+[![Docs](https://img.shields.io/badge/Docs-Site-blue)](https://ishwarchoudhari.github.io/FloDo/)

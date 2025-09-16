@@ -2,6 +2,9 @@
 # FloDo — Django Admin Dashboard (Django 4.2.x)
 
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://ishwarchoudhari.github.io/FloDo/)
+[![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/Django-4.2-092E20?logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## 📚 Official Documentation
 
@@ -143,6 +146,14 @@ CSRF protection is enabled globally (Fetch includes `X-CSRFToken` and/or `csrfmi
 ## 🚀 Deployment
 
 See the docs for production guidance, including static/media serving, ASGI, and security settings.
+
+### Deploy on
+
+- [Render](https://render.com/): simple Docker/WSGI/ASGI deploy
+- [Railway](https://railway.app/): one‑click Docker or buildpack
+- [Fly.io](https://fly.io/): global Docker deploy with volumes
+- Azure App Service / AWS Elastic Beanstalk / GCP App Engine: PaaS options for Django
+- Static docs (this repo): GitHub Pages — Settings → Pages → main → /docs
 
 ## 🤝 Contributing
 
