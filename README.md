@@ -1,6 +1,8 @@
 
 # FloDo — Django Admin Dashboard (Django 4.2.x)
 
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://ishwarchoudhari.github.io/FloDo/)
+
 ## 📚 Official Documentation
 
 This repository includes an official documentation site under the `docs/` directory:
@@ -9,9 +11,9 @@ This repository includes an official documentation site under the `docs/` direct
 - Getting Started: [`docs/getting-started.md`](docs/getting-started.md)
 - Architecture: [`docs/architecture.md`](docs/architecture.md)
 - API Reference: [`docs/api.md`](docs/api.md)
-- Security: [`docs/security.md`](docs/security.md) (coming soon)
-- Deployment: [`docs/deployment.md`](docs/deployment.md) (coming soon)
-- Contributing: [`docs/contributing.md`](docs/contributing.md) (coming soon)
+- Security: [`docs/security.md`](docs/security.md)
+- Deployment: [`docs/deployment.md`](docs/deployment.md)
+- Contributing: [`docs/contributing.md`](docs/contributing.md)
 
 To publish documentation with GitHub Pages:
 
