@@ -1,0 +1,65 @@
+[
+  {"model": "settings_app.appsettings", "pk": 1, "fields": {"app_name": "Admin Dashboard", "timezone": "UTC", "records_per_page": 10, "enable_notifications": true, "updated_by": 1, "updated_at": "2025-01-01T00:00:00Z"}},
+
+  {"model": "auth.user", "pk": 1, "fields": {"password": "pbkdf2_sha256$600000$seed$3W2h3C0hmq1r9aXq7o7o3wYk3G7o+0zv6Ywq1k1Yq3M=", "last_login": null, "is_superuser": true, "username": "admin", "first_name": "", "last_name": "", "email": "admin@example.com", "is_staff": true, "is_active": true, "date_joined": "2025-01-01T00:00:00Z"}},
+
+  {"model": "dashboard.table1", "pk": 1, "fields": {"name": "John Doe", "city": "New York", "phone": "+1 212-555-0101", "created_at": "2025-01-01T00:00:00Z", "updated_at": "2025-01-01T00:00:00Z"}},
+  {"model": "dashboard.table1", "pk": 2, "fields": {"name": "Jane Smith", "city": "Los Angeles", "phone": "+1 310-555-0102", "created_at": "2025-01-01T00:01:00Z", "updated_at": "2025-01-01T00:01:00Z"}},
+  {"model": "dashboard.table1", "pk": 3, "fields": {"name": "Alice Johnson", "city": "Chicago", "phone": "+1 773-555-0103", "created_at": "2025-01-01T00:02:00Z", "updated_at": "2025-01-01T00:02:00Z"}},
+  {"model": "dashboard.table1", "pk": 4, "fields": {"name": "Bob Williams", "city": "Houston", "phone": "+1 713-555-0104", "created_at": "2025-01-01T00:03:00Z", "updated_at": "2025-01-01T00:03:00Z"}},
+  {"model": "dashboard.table1", "pk": 5, "fields": {"name": "Carol Davis", "city": "Phoenix", "phone": "+1 602-555-0105", "created_at": "2025-01-01T00:04:00Z", "updated_at": "2025-01-01T00:04:00Z"}},
+
+  {"model": "dashboard.table2", "pk": 1, "fields": {"name": "Ethan Brown", "city": "Philadelphia", "phone": "+1 215-555-0106", "created_at": "2025-01-01T00:00:00Z", "updated_at": "2025-01-01T00:00:00Z"}},
+  {"model": "dashboard.table2", "pk": 2, "fields": {"name": "Grace Lee", "city": "San Antonio", "phone": "+1 210-555-0107", "created_at": "2025-01-01T00:01:00Z", "updated_at": "2025-01-01T00:01:00Z"}},
+  {"model": "dashboard.table2", "pk": 3, "fields": {"name": "Henry Clark", "city": "San Diego", "phone": "+1 619-555-0108", "created_at": "2025-01-01T00:02:00Z", "updated_at": "2025-01-01T00:02:00Z"}},
+  {"model": "dashboard.table2", "pk": 4, "fields": {"name": "Isabella Lewis", "city": "Dallas", "phone": "+1 214-555-0109", "created_at": "2025-01-01T00:03:00Z", "updated_at": "2025-01-01T00:03:00Z"}},
+  {"model": "dashboard.table2", "pk": 5, "fields": {"name": "Jack Walker", "city": "San Jose", "phone": "+1 408-555-0110", "created_at": "2025-01-01T00:04:00Z", "updated_at": "2025-01-01T00:04:00Z"}},
+
+  {"model": "dashboard.table3", "pk": 1, "fields": {"name": "Liam Hall", "city": "Austin", "phone": "+1 512-555-0111", "created_at": "2025-01-01T00:00:00Z", "updated_at": "2025-01-01T00:00:00Z"}},
+  {"model": "dashboard.table3", "pk": 2, "fields": {"name": "Mia Allen", "city": "Jacksonville", "phone": "+1 904-555-0112", "created_at": "2025-01-01T00:01:00Z", "updated_at": "2025-01-01T00:01:00Z"}},
+  {"model": "dashboard.table3", "pk": 3, "fields": {"name": "Noah Young", "city": "Fort Worth", "phone": "+1 817-555-0113", "created_at": "2025-01-01T00:02:00Z", "updated_at": "2025-01-01T00:02:00Z"}},
+  {"model": "dashboard.table3", "pk": 4, "fields": {"name": "Olivia Hernandez", "city": "Columbus", "phone": "+1 614-555-0114", "created_at": "2025-01-01T00:03:00Z", "updated_at": "2025-01-01T00:03:00Z"}},
+  {"model": "dashboard.table3", "pk": 5, "fields": {"name": "Paul King", "city": "Charlotte", "phone": "+1 980-555-0115", "created_at": "2025-01-01T00:04:00Z", "updated_at": "2025-01-01T00:04:00Z"}},
+
+  {"model": "dashboard.table4", "pk": 1, "fields": {"name": "Quinn Wright", "city": "San Francisco", "phone": "+1 415-555-0116", "created_at": "2025-01-01T00:00:00Z", "updated_at": "2025-01-01T00:00:00Z"}},
+  {"model": "dashboard.table4", "pk": 2, "fields": {"name": "Ruby Lopez", "city": "Indianapolis", "phone": "+1 317-555-0117", "created_at": "2025-01-01T00:01:00Z", "updated_at": "2025-01-01T00:01:00Z"}},
+  {"model": "dashboard.table4", "pk": 3, "fields": {"name": "Samuel Hill", "city": "Seattle", "phone": "+1 206-555-0118", "created_at": "2025-01-01T00:02:00Z", "updated_at": "2025-01-01T00:02:00Z"}},
+  {"model": "dashboard.table4", "pk": 4, "fields": {"name": "Tara Scott", "city": "Denver", "phone": "+1 303-555-0119", "created_at": "2025-01-01T00:03:00Z", "updated_at": "2025-01-01T00:03:00Z"}},
+  {"model": "dashboard.table4", "pk": 5, "fields": {"name": "Uma Green", "city": "Washington", "phone": "+1 202-555-0120", "created_at": "2025-01-01T00:04:00Z", "updated_at": "2025-01-01T00:04:00Z"}},
+
+  {"model": "dashboard.table5", "pk": 1, "fields": {"name": "Victor Adams", "city": "Boston", "phone": "+1 617-555-0121", "created_at": "2025-01-01T00:00:00Z", "updated_at": "2025-01-01T00:00:00Z"}},
+  {"model": "dashboard.table5", "pk": 2, "fields": {"name": "Wendy Baker", "city": "Nashville", "phone": "+1 615-555-0122", "created_at": "2025-01-01T00:01:00Z", "updated_at": "2025-01-01T00:01:00Z"}},
+  {"model": "dashboard.table5", "pk": 3, "fields": {"name": "Xavier Carter", "city": "El Paso", "phone": "+1 915-555-0123", "created_at": "2025-01-01T00:02:00Z", "updated_at": "2025-01-01T00:02:00Z"}},
+  {"model": "dashboard.table5", "pk": 4, "fields": {"name": "Yara Diaz", "city": "Detroit", "phone": "+1 313-555-0124", "created_at": "2025-01-01T00:03:00Z", "updated_at": "2025-01-01T00:03:00Z"}},
+  {"model": "dashboard.table5", "pk": 5, "fields": {"name": "Zack Evans", "city": "Memphis", "phone": "+1 901-555-0125", "created_at": "2025-01-01T00:04:00Z", "updated_at": "2025-01-01T00:04:00Z"}},
+
+  {"model": "dashboard.table6", "pk": 1, "fields": {"name": "Amber Flores", "city": "Portland", "phone": "+1 503-555-0126", "created_at": "2025-01-01T00:00:00Z", "updated_at": "2025-01-01T00:00:00Z"}},
+  {"model": "dashboard.table6", "pk": 2, "fields": {"name": "Blake Garcia", "city": "Oklahoma City", "phone": "+1 405-555-0127", "created_at": "2025-01-01T00:01:00Z", "updated_at": "2025-01-01T00:01:00Z"}},
+  {"model": "dashboard.table6", "pk": 3, "fields": {"name": "Cora Harris", "city": "Las Vegas", "phone": "+1 702-555-0128", "created_at": "2025-01-01T00:02:00Z", "updated_at": "2025-01-01T00:02:00Z"}},
+  {"model": "dashboard.table6", "pk": 4, "fields": {"name": "Derek James", "city": "Louisville", "phone": "+1 502-555-0129", "created_at": "2025-01-01T00:03:00Z", "updated_at": "2025-01-01T00:03:00Z"}},
+  {"model": "dashboard.table6", "pk": 5, "fields": {"name": "Elena Kelly", "city": "Baltimore", "phone": "+1 410-555-0130", "created_at": "2025-01-01T00:04:00Z", "updated_at": "2025-01-01T00:04:00Z"}},
+
+  {"model": "dashboard.table7", "pk": 1, "fields": {"name": "Felix Long", "city": "Milwaukee", "phone": "+1 414-555-0131", "created_at": "2025-01-01T00:00:00Z", "updated_at": "2025-01-01T00:00:00Z"}},
+  {"model": "dashboard.table7", "pk": 2, "fields": {"name": "Gina Martinez", "city": "Albuquerque", "phone": "+1 505-555-0132", "created_at": "2025-01-01T00:01:00Z", "updated_at": "2025-01-01T00:01:00Z"}},
+  {"model": "dashboard.table7", "pk": 3, "fields": {"name": "Hugo Nelson", "city": "Tucson", "phone": "+1 520-555-0133", "created_at": "2025-01-01T00:02:00Z", "updated_at": "2025-01-01T00:02:00Z"}},
+  {"model": "dashboard.table7", "pk": 4, "fields": {"name": "Ivy Ortiz", "city": "Fresno", "phone": "+1 559-555-0134", "created_at": "2025-01-01T00:03:00Z", "updated_at": "2025-01-01T00:03:00Z"}},
+  {"model": "dashboard.table7", "pk": 5, "fields": {"name": "Jonah Perez", "city": "Mesa", "phone": "+1 480-555-0135", "created_at": "2025-01-01T00:04:00Z", "updated_at": "2025-01-01T00:04:00Z"}},
+
+  {"model": "dashboard.table8", "pk": 1, "fields": {"name": "Kara Quinn", "city": "Sacramento", "phone": "+1 916-555-0136", "created_at": "2025-01-01T00:00:00Z", "updated_at": "2025-01-01T00:00:00Z"}},
+  {"model": "dashboard.table8", "pk": 2, "fields": {"name": "Leo Ramirez", "city": "Atlanta", "phone": "+1 404-555-0137", "created_at": "2025-01-01T00:01:00Z", "updated_at": "2025-01-01T00:01:00Z"}},
+  {"model": "dashboard.table8", "pk": 3, "fields": {"name": "Maya Sanchez", "city": "Kansas City", "phone": "+1 816-555-0138", "created_at": "2025-01-01T00:02:00Z", "updated_at": "2025-01-01T00:02:00Z"}},
+  {"model": "dashboard.table8", "pk": 4, "fields": {"name": "Nolan Turner", "city": "Colorado Springs", "phone": "+1 719-555-0139", "created_at": "2025-01-01T00:03:00Z", "updated_at": "2025-01-01T00:03:00Z"}},
+  {"model": "dashboard.table8", "pk": 5, "fields": {"name": "Opal Underwood", "city": "Omaha", "phone": "+1 402-555-0140", "created_at": "2025-01-01T00:04:00Z", "updated_at": "2025-01-01T00:04:00Z"}},
+
+  {"model": "dashboard.table9", "pk": 1, "fields": {"name": "Piper Vaughn", "city": "Raleigh", "phone": "+1 919-555-0141", "created_at": "2025-01-01T00:00:00Z", "updated_at": "2025-01-01T00:00:00Z"}},
+  {"model": "dashboard.table9", "pk": 2, "fields": {"name": "Ronan White", "city": "Miami", "phone": "+1 305-555-0142", "created_at": "2025-01-01T00:01:00Z", "updated_at": "2025-01-01T00:01:00Z"}},
+  {"model": "dashboard.table9", "pk": 3, "fields": {"name": "Sage Xiong", "city": "Long Beach", "phone": "+1 562-555-0143", "created_at": "2025-01-01T00:02:00Z", "updated_at": "2025-01-01T00:02:00Z"}},
+  {"model": "dashboard.table9", "pk": 4, "fields": {"name": "Theo Young", "city": "Oakland", "phone": "+1 510-555-0144", "created_at": "2025-01-01T00:03:00Z", "updated_at": "2025-01-01T00:03:00Z"}},
+  {"model": "dashboard.table9", "pk": 5, "fields": {"name": "Una Zane", "city": "Minneapolis", "phone": "+1 612-555-0145", "created_at": "2025-01-01T00:04:00Z", "updated_at": "2025-01-01T00:04:00Z"}},
+
+  {"model": "dashboard.table10", "pk": 1, "fields": {"name": "Ava Brooks", "city": "Tulsa", "phone": "+1 539-555-0146", "created_at": "2025-01-01T00:00:00Z", "updated_at": "2025-01-01T00:00:00Z"}},
+  {"model": "dashboard.table10", "pk": 2, "fields": {"name": "Caleb Diaz", "city": "Arlington", "phone": "+1 817-555-0147", "created_at": "2025-01-01T00:01:00Z", "updated_at": "2025-01-01T00:01:00Z"}},
+  {"model": "dashboard.table10", "pk": 3, "fields": {"name": "Daisy Ellis", "city": "New Orleans", "phone": "+1 504-555-0148", "created_at": "2025-01-01T00:02:00Z", "updated_at": "2025-01-01T00:02:00Z"}},
+  {"model": "dashboard.table10", "pk": 4, "fields": {"name": "Evan Fisher", "city": "Wichita", "phone": "+1 316-555-0149", "created_at": "2025-01-01T00:03:00Z", "updated_at": "2025-01-01T00:03:00Z"}},
+  {"model": "dashboard.table10", "pk": 5, "fields": {"name": "Faith Gomez", "city": "Cleveland", "phone": "+1 216-555-0150", "created_at": "2025-01-01T00:04:00Z", "updated_at": "2025-01-01T00:04:00Z"}}
+]

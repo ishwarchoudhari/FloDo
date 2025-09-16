@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %} · Settings{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold text-blue-700 dark:text-blue-300 mb-6">Settings</h1>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="bg-white dark:bg-gray-800 rounded shadow border border-gray-200 dark:border-gray-700">
+    <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-900 dark:text-gray-100">User Profile</div>
+    <div class="p-4">
+      <form method="post" action="{% url 'settings_app:profile' %}" class="space-y-3">
+        {% csrf_token %}
+        <div>
+          <label class="block text-sm font-medium mb-1 text-gray-800 dark:text-gray-200">Username</label>
+          <input name="username" value="{{ user_form.username.value }}" class="w-full border border-gray-300 dark:border-gray-700 rounded px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"/>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1 text-gray-800 dark:text-gray-200">Email</label>
+          <input name="email" type="email" value="{{ user_form.email.value }}" class="w-full border border-gray-300 dark:border-gray-700 rounded px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"/>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1 text-gray-800 dark:text-gray-200">Password (leave blank to keep)</label>
+          <input name="password" type="password" class="w-full border border-gray-300 dark:border-gray-700 rounded px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"/>
+        </div>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Save Profile</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="bg-white dark:bg-gray-800 rounded shadow border border-gray-200 dark:border-gray-700">
+    <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-900 dark:text-gray-100">Application Settings</div>
+    <div class="p-4">
+      <form method="post" action="{% url 'settings_app:app' %}" class="space-y-3">
+        {% csrf_token %}
+        <div>
+          <label class="block text-sm font-medium mb-1 text-gray-800 dark:text-gray-200">App Name</label>
+          <input name="app_name" value="{{ app_form.app_name.value }}" class="w-full border border-gray-300 dark:border-gray-700 rounded px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"/>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1 text-gray-800 dark:text-gray-200">Timezone</label>
+          <input name="timezone" value="{{ app_form.timezone.value }}" class="w-full border border-gray-300 dark:border-gray-700 rounded px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"/>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1 text-gray-800 dark:text-gray-200">Records per page</label>
+          <input name="records_per_page" type="number" value="{{ app_form.records_per_page.value|default:10 }}" class="w-full border border-gray-300 dark:border-gray-700 rounded px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"/>
+        </div>
+        <div class="flex items-center space-x-2">
+          <input name="enable_notifications" type="checkbox" {% if app_form.enable_notifications.value %}checked{% endif %}/>
+          <span class="text-sm text-gray-700 dark:text-gray-300">Enable notifications</span>
+        </div>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Save Settings</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="bg-white dark:bg-gray-800 rounded shadow border border-gray-200 dark:border-gray-700 lg:col-span-2">
+    <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-900 dark:text-gray-100">Database (read-only)</div>
+    <div class="p-4 grid sm:grid-cols-2 gap-4 text-sm">
+      {% for k, v in db_settings.items %}
+      <div class="flex justify-between border rounded px-3 py-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"><span class="font-medium text-gray-900 dark:text-gray-100">{{ k }}</span><span class="text-gray-700 dark:text-gray-300">{{ v }}</span></div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="bg-white dark:bg-gray-800 rounded shadow border border-gray-200 dark:border-gray-700">
+    <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-900 dark:text-gray-100">Backup / Export</div>
+    <div class="p-4 space-y-2 text-sm">
+      <p class="text-gray-700 dark:text-gray-300">Export any table as CSV or JSON:</p>
+      <div class="grid grid-cols-5 gap-2">
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'csv' 1 %}">T1 CSV</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'json' 1 %}">T1 JSON</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'csv' 2 %}">T2 CSV</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'json' 2 %}">T2 JSON</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'csv' 3 %}">T3 CSV</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'json' 3 %}">T3 JSON</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'csv' 4 %}">T4 CSV</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'json' 4 %}">T4 JSON</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'csv' 5 %}">T5 CSV</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'json' 5 %}">T5 JSON</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'csv' 6 %}">T6 CSV</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'json' 6 %}">T6 JSON</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'csv' 7 %}">T7 CSV</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'json' 7 %}">T7 JSON</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'csv' 8 %}">T8 CSV</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'json' 8 %}">T8 JSON</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'csv' 9 %}">T9 CSV</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'json' 9 %}">T9 JSON</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'csv' 10 %}">T10 CSV</a>
+        <a class="px-2 py-1 border rounded text-center" href="{% url 'settings_app:export_table' 'json' 10 %}">T10 JSON</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white dark:bg-gray-800 rounded shadow border border-gray-200 dark:border-gray-700">
+    <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-900 dark:text-gray-100">System Info</div>
+    <div class="p-4 text-sm space-y-2">
+      <button id="btnSysInfo" class="px-3 py-1 border rounded hover:bg-gray-50 dark:hover:bg-gray-700">Refresh System Info</button>
+      <pre id="sysInfo" data-endpoint="{% url 'settings_app:system_info' %}" class="bg-gray-50 dark:bg-gray-900 p-3 rounded border border-gray-200 dark:border-gray-700 overflow-auto text-gray-800 dark:text-gray-200"></pre>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{% load static %}
+<script src="{% static 'js/settings.js' %}"></script>
+{% endblock %}

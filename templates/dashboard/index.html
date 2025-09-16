@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} · Dashboard{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'js/dashboard.js' %}?v=dev"></script>
+  <script>
+    (function(){
+      try {
+        // Hydrate donut and bar charts if present
+        if (typeof window.initDashboardCharts === 'function') window.initDashboardCharts();
+        if (typeof window.initDashboardDonuts === 'function') window.initDashboardDonuts();
+        // Populate Recent Client Activity table on first load
+        if (typeof window.refreshClientLogs === 'function') window.refreshClientLogs();
+        // Keep charts live via notifications WS if enabled
+        if (typeof window.initDashboardStatsWS === 'function') window.initDashboardStatsWS();
+        // Hide skeletons once widgets are ready
+        function hideSkels(){
+          try { document.querySelectorAll('[data-skel]').forEach(function(el){ el.classList.add('hidden'); }); } catch(_){ }
+        }
+        // Charts: give init a short beat to mount, then hide
+        setTimeout(hideSkels, 500);
+        // Recent Client Activity: observe tbody for real rows
+        (function observeClientLogs(){
+          try {
+            var tbody = document.querySelector('#client-logs-table tbody');
+            if (!tbody) return;
+            var obs = new MutationObserver(function(){
+              try {
+                if (tbody && tbody.querySelectorAll('tr').length > 1) {
+                  tbody.removeAttribute('aria-busy');
+                }
+              } catch(_){ }
+            });
+            obs.observe(tbody, { childList: true });
+          } catch(_){ }
+        })();
+      } catch(_){ }
+    })();
+  </script>
+{% endblock %}
+{% block content %}
+  <style>
+    /* Lightweight skeleton styles (dark-mode aware) */
+    .skel { position: relative; overflow: hidden; background: #eef2f7; }
+    .dark .skel { background: #1f2937; }
+    .skel::after {
+      content: ""; position: absolute; inset: 0; transform: translateX(-100%);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+      animation: skel-shimmer 1.2s infinite;
+    }
+    .dark .skel::after {
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
+    }
+    @keyframes skel-shimmer { 100% { transform: translateX(100%); } }
+    .skel-rect { border-radius: .5rem; height: 2.75rem; }
+    .skel-chart { border-radius: .75rem; height: 11rem; }
+    @media (min-width: 768px){ .skel-chart { height: 14rem; } }
+    @media (min-width: 1280px){ .skel-chart { height: 16rem; } }
+    .skel-table-row > td { padding: .5rem .75rem; }
+    .skel-pill { height: 1.25rem; width: 6rem; border-radius: 999px; }
+  </style>
+  <!-- Dashboard Overview: lightweight stats instead of heavy CRUD tables (keeps dashboard fast) -->
+  <h1 class="text-2xl font-semibold text-blue-700 dark:text-blue-300 mb-4">Dashboard Overview</h1> <!-- Renamed heading to reflect overview role -->
+
+  
+  <!-- Per-table mini cards: show counts and a quick deep-link action reusing existing AJAX loader -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4"> <!-- Responsive, modern grid -->
+    {% for stat in table_stats %} <!-- Use server-provided list to avoid custom filters -->
+      <div class="group relative overflow-hidden bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-200 p-5 flex flex-col min-h-[150px]"> <!-- Modern card -->
+        <div class="absolute inset-0 pointer-events-none bg-gradient-to-br from-blue-500/5 via-transparent to-transparent dark:from-blue-400/5"></div>
+        <div class="flex items-start justify-between mb-1">
+          <h3 class="font-semibold text-gray-900 dark:text-gray-100 tracking-tight">{{ stat.label }}</h3>
+          <span class="text-[11px] text-gray-500 dark:text-gray-400 select-none">rows</span>
+        </div>
+        <div class="mt-1 text-3xl font-extrabold text-gray-900 dark:text-gray-100">{{ stat.count }}</div>
+        <div class="mt-auto pt-4">
+          <a href="{% url 'dashboard:tables' %}" class="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800 dark:hover:bg-blue-900/30 transition-colors">
+            Open in Tables
+          </a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Key Entities (Donut Charts) -->
+  <div id="donut-cards" class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-fr"
+       data-stats='[
+       {% for stat in table_stats %}{% if not forloop.first %},{% endif %}{"label":"{{ stat.label|escapejs }}","count":{{ stat.count|default:0 }}}{% endfor %}
+       ]'>
+    <!-- Users -->
+    <div class="group relative overflow-hidden bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-200 p-5 md:p-6 lg:p-8" title="Users share out of Users, Artists and Bookings">
+      <div class="absolute inset-0 bg-gradient-to-br from-blue-500/6 via-transparent to-transparent dark:from-blue-400/10 pointer-events-none"></div>
+      <div class="flex items-start justify-between mb-2 md:mb-3">
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 tracking-tight">Users</h3>
+        <span class="inline-flex items-center gap-1.5 text-[11px] md:text-xs font-semibold px-2.5 py-1 rounded-full bg-green-50 text-green-700 dark:bg-green-900/25 dark:text-green-300 border border-green-200 dark:border-green-800">
+          <span class="relative inline-flex items-center justify-center">
+            <span class="absolute inline-flex w-2 h-2 rounded-full bg-green-400/60 dark:bg-green-300/50 animate-ping"></span>
+            <span class="relative w-2 h-2 rounded-full bg-green-500 dark:bg-green-400 animate-pulse"></span>
+          </span>
+          Live
+        </span>
+      </div>
+      <div data-skel class="skel skel-chart mb-2"></div>
+      <div id="donut-users" class="h-44 md:h-56 xl:h-64"></div>
+      <div class="mt-3 md:mt-4 text-xs md:text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
+        <span class="inline-flex items-center gap-1 font-medium">
+          <svg class="w-3.5 h-3.5 text-blue-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a8 8 0 100 16 8 8 0 000-16Zm1 11H9v-1h2v1Zm0-3H9V5h2v5Z"/></svg>
+          Share relative to Users, Artists, Bookings
+        </span>
+        <span class="ms-auto text-gray-700 dark:text-gray-200">
+          {% for s in table_stats %}{% if s.label == 'User' %}Total: <strong>{{ s.count }}</strong>{% endif %}{% endfor %}
+        </span>
+        <span id="users-pct" class="ms-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border border-blue-200 dark:border-blue-800">0%</span>
+      </div>
+    </div>
+    <!-- Artists -->
+    <div class="group relative overflow-hidden bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-200 p-5 md:p-6 lg:p-8" title="Artists share out of Users, Artists and Bookings">
+      <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/6 via-transparent to-transparent dark:from-emerald-400/10 pointer-events-none"></div>
+      <div class="flex items-start justify-between mb-2 md:mb-3">
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 tracking-tight">Artists</h3>
+        <span class="inline-flex items-center gap-1.5 text-[11px] md:text-xs font-semibold px-2.5 py-1 rounded-full bg-green-50 text-green-700 dark:bg-green-900/25 dark:text-green-300 border border-green-200 dark:border-green-800">
+          <span class="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400 animate-pulse"></span>
+          Live
+        </span>
+      </div>
+      <div data-skel class="skel skel-chart mb-2"></div>
+      <div id="donut-artists" class="h-44 md:h-56 xl:h-64"></div>
+      <div class="mt-3 md:mt-4 text-xs md:text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
+        <span class="inline-flex items-center gap-1 font-medium">
+          <svg class="w-3.5 h-3.5 text-emerald-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a8 8 0 100 16 8 8 0 000-16Zm1 11H9v-1h2v1Zm0-3H9V5h2v5Z"/></svg>
+          Share relative to Users, Artists, Bookings
+        </span>
+        <span class="ms-auto text-gray-700 dark:text-gray-200">
+          {% for s in table_stats %}{% if s.label == 'Verified Artist' or s.label == 'Artist' or s.label == 'Artists' %}Total: <strong>{{ s.count }}</strong>{% endif %}{% endfor %}
+        </span>
+        <span id="artists-pct" class="ms-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">0%</span>
+      </div>
+    </div>
+    <!-- Bookings -->
+    <div class="group relative overflow-hidden bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-200 p-5 md:p-6 lg:p-8" title="Bookings share out of Users, Artists and Bookings">
+      <div class="absolute inset-0 bg-gradient-to-br from-amber-500/6 via-transparent to-transparent dark:from-amber-400/10 pointer-events-none"></div>
+      <div class="flex items-start justify-between mb-2 md:mb-3">
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 tracking-tight">Bookings</h3>
+        <span class="inline-flex items-center gap-1.5 text-[11px] md:text-xs font-semibold px-2.5 py-1 rounded-full bg-green-50 text-green-700 dark:bg-green-900/25 dark:text-green-300 border border-green-200 dark:border-green-800">
+          <span class="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400 animate-pulse"></span>
+          Live
+        </span>
+      </div>
+      <div data-skel class="skel skel-chart mb-2"></div>
+      <div id="donut-bookings" class="h-44 md:h-56 xl:h-64"></div>
+      <div class="mt-3 md:mt-4 text-xs md:text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
+        <span class="inline-flex items-center gap-1 font-medium">
+          <svg class="w-3.5 h-3.5 text-amber-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a8 8 0 100 16 8 8 0 000-16Zm1 11H9v-1h2v1Zm0-3H9V5h2v5Z"/></svg>
+          Share relative to Users, Artists, Bookings
+        </span>
+        <span class="ms-auto text-gray-700 dark:text-gray-200">
+          {% for s in table_stats %}{% if s.label == 'Booking' or s.label == 'Bookings' %}Total: <strong>{{ s.count }}</strong>{% endif %}{% endfor %}
+        </span>
+        <span id="bookings-pct" class="ms-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300 border border-amber-200 dark:border-amber-800">0%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Overview (Charts) -->
+  <div class="mt-8 group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/8 via-transparent to-transparent dark:from-indigo-400/10 pointer-events-none"></div>
+    <div class="px-4 py-3 flex items-center justify-between border-b border-gray-200 dark:border-gray-800">
+      <div>
+        <h2 class="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight">Data Overview</h2>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Distribution of rows across tables</p>
+      </div>
+      <button type="button" id="dashboardChartRefresh" class="inline-flex items-center gap-2 text-sm md:text-[13px] px-3 py-1.5 md:px-3.5 md:py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+        <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M3 10a7 7 0 111.342 4.121l1.42-1.02A5 5 0 1010 5v2L6 3l4-4v2a8 8 0 11-7 9z"/></svg>
+        Refresh
+      </button>
+    </div>
+    <div class="p-4">
+      <!-- Chart host; data is embedded to avoid inline scripts -->
+      <div data-skel class="skel skel-chart mb-2"></div>
+      <div id="chart-table-distribution" class="relative w-full h-64 md:h-72 xl:h-80"
+           data-stats='[
+           {% for stat in table_stats %}{% if not forloop.first %},{% endif %}{"label":"{{ stat.label|escapejs }}","count":{{ stat.count|default:0 }}}{% endfor %}
+           ]'>
+        <div class="text-sm text-gray-500 dark:text-gray-400">Preparing chart…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin (Table1) Overview - read-only cards populated by dashboard.js if container exists -->
+  <h2 class="text-xl font-semibold text-blue-700 dark:text-blue-300 mt-10 mb-3">Admins Overview</h2>
+  <div id="admin-overview" class="bg-white dark:bg-gray-800 rounded shadow border border-gray-200 dark:border-gray-700 p-3">
+    <div class="text-sm text-gray-500">Loading admins overview…</div>
+  </div>
+
+  <!-- Activity Logs (full width) -->
+  <div class="mt-10">
+    <h2 class="text-xl font-semibold text-blue-700 dark:text-blue-300 mb-3">Activity Logs</h2>
+    <div class="bg-white dark:bg-gray-800 rounded shadow border border-gray-200 dark:border-gray-700">
+      <div class="px-4 py-3">
+        <!-- Filter chips -->
+        <div class="flex flex-wrap items-center gap-2 mb-3" role="toolbar" aria-label="Filter activity logs">
+          <button type="button" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs bg-gray-100 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 is-active" data-log-filter="" aria-pressed="true">All</button>
+          <button type="button" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300" data-log-filter="Client" aria-pressed="false">Client</button>
+          <button type="button" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300" data-log-filter="Admin" aria-pressed="false">Admin</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table id="logs-table" class="min-w-full text-sm w-full border-collapse text-gray-900 dark:text-gray-100">
+            <thead>
+              <tr class="text-left border-b border-gray-200 dark:border-gray-700">
+                <th class="py-2 pr-2">Time</th>
+                <th class="py-2 pr-2">Table</th>
+                <th class="py-2 pr-2">Action</th>
+                <th class="py-2 pr-2">Row ID</th>
+                <th class="py-2 pr-2">User</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for x in logs_recent %}
+              <tr class="border-b border-gray-200 dark:border-gray-700 {% if x.is_recent %}bg-blue-50 dark:bg-blue-900/20{% endif %}">
+                <td class="py-2 pr-2">{{ x.timestamp|timesince }} ago</td>
+                <td class="py-2 pr-2">{{ x.table_name }}</td>
+                <td class="py-2 pr-2">{{ x.action }}</td>
+                <td class="py-2 pr-2">{{ x.row_id }}</td>
+                <td class="py-2 pr-2">{{ x.admin_user }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td class="py-3 text-gray-500 dark:text-gray-300" colspan="5">No activity yet.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Client Activity (full width, matching style) -->
+  <div class="mt-6">
+    <h2 class="text-xl font-semibold text-blue-700 dark:text-blue-300 mb-3">Recent Client Activity</h2>
+    <div class="bg-white dark:bg-gray-800 rounded shadow border border-gray-200 dark:border-gray-700">
+      <div class="px-4 py-3">
+        <div class="overflow-x-auto">
+          <table id="client-logs-table" class="min-w-full text-sm w-full border-collapse text-gray-900 dark:text-gray-100">
+            <thead>
+              <tr class="text-left border-b border-gray-200 dark:border-gray-700">
+                <th class="py-2 pr-2">Time</th>
+                <th class="py-2 pr-2">Full name</th>
+                <th class="py-2 pr-2">Email</th>
+                <th class="py-2 pr-2">Location</th>
+                <th class="py-2 pr-2">Phone</th>
+                <th class="py-2 pr-2">Action</th>
+              </tr>
+            </thead>
+            <tbody aria-busy="true">
+              <tr class="skel-table-row">
+                <td colspan="6">
+                  <div class="skel skel-rect mb-2"></div>
+                  <div class="skel skel-rect mb-2"></div>
+                  <div class="skel skel-rect"></div>
+                </td>
+              </tr>
+              <tr class="skel-table-row">
+                <td colspan="6">
+                  <div class="skel skel-rect mb-2"></div>
+                  <div class="skel skel-rect mb-2"></div>
+                  <div class="skel skel-rect"></div>
+                </td>
+              </tr>
+              <tr class="skel-table-row">
+                <td colspan="6">
+                  <div class="skel skel-rect mb-2"></div>
+                  <div class="skel skel-rect mb-2"></div>
+                  <div class="skel skel-rect"></div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../js/admin_ga.js"],
+  "sourcesContent": ["// static/js/admin_ga.js\n// Initialize Google Analytics if GA_GTAG_ID is present via meta#ga-config\n(function(){\n  try {\n    var meta = document.getElementById('ga-config');\n    if (!meta) return;\n    var gaId = (meta.getAttribute('data-ga-id') || '').trim();\n    if (!gaId) return;\n    // Dynamically load gtag.js\n    var s = document.createElement('script');\n    s.async = true;\n    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(gaId);\n    s.onload = function(){\n      try {\n        window.dataLayer = window.dataLayer || [];\n        function gtag(){ dataLayer.push(arguments); }\n        gtag('js', new Date());\n        gtag('config', gaId);\n      } catch(_){}\n    };\n    document.head.appendChild(s);\n  } catch(_) { /* no-op */ }\n})();\n"],
+  "mappings": "OAEC,UAAU,CACT,GAAI,CACF,IAAIA,EAAO,SAAS,eAAe,WAAW,EAC9C,GAAI,CAACA,EAAM,OACX,IAAIC,GAAQD,EAAK,aAAa,YAAY,GAAK,IAAI,KAAK,EACxD,GAAI,CAACC,EAAM,OAEX,IAAIC,EAAI,SAAS,cAAc,QAAQ,EACvCA,EAAE,MAAQ,GACVA,EAAE,IAAM,+CAAiD,mBAAmBD,CAAI,EAChFC,EAAE,OAAS,UAAU,CACnB,GAAI,CAEF,IAASC,EAAT,UAAe,CAAE,UAAU,KAAK,SAAS,CAAG,EAAnC,IAAAA,IADT,OAAO,UAAY,OAAO,WAAa,CAAC,EAExCA,EAAK,KAAM,IAAI,IAAM,EACrBA,EAAK,SAAUF,CAAI,CACrB,MAAU,CAAC,CACb,EACA,SAAS,KAAK,YAAYC,CAAC,CAC7B,MAAW,CAAc,CAC3B,GAAG",
+  "names": ["meta", "gaId", "s", "gtag"]
+}

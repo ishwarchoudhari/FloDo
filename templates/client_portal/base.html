@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" class="{% if request.COOKIES.theme == 'dark' %}dark{% endif %}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ APP_NAME }} • Client Portal {% block title %}{% endblock %}</title>
+  {% load static %}
+  <script>
+    (function(){
+      try {
+        var t = localStorage.getItem('theme');
+        var isDark = (t === 'dark') || (t !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) document.documentElement.classList.add('dark');
+      } catch(_){}
+    })();
+  </script>
+  <!-- Prefer local Tailwind build when available -->
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <!-- Keep Tailwind config for CDN fallback -->
+  <script src="{% static 'js/tailwind-config.js' %}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      try {
+        var probe = document.createElement('div');
+        probe.style.position = 'absolute';
+        probe.style.left = '-9999px';
+        probe.className = 'hidden';
+        document.body.appendChild(probe);
+        var isHiddenApplied = getComputedStyle(probe).display === 'none';
+        document.body.removeChild(probe);
+        if (!isHiddenApplied) {
+          var s = document.createElement('script');
+          s.src = 'https://cdn.tailwindcss.com/3.4.13';
+          document.head.appendChild(s);
+        }
+      } catch (_) {}
+    });
+  </script>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' ry='12' fill='%231e293b'/%3E%3Ctext x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Segoe UI,Roboto,Helvetica,Arial,sans-serif' font-size='28' fill='%23ffffff'%3E𝙿%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&display=swap" rel="stylesheet">
+  <style>
+    html, body, button, input, select, textarea { font-family: 'Open Sans', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+  <a href="#content-root" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 px-3 py-2 rounded shadow">Skip to main content</a>
+
+  {% include 'client_portal/partials/_header.html' %}
+
+  <main id="content-root" class="flex-1 px-4 sm:px-6 lg:px-8 pt-16 pb-6">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include 'client_portal/partials/_footer.html' %}
+
+  {% if messages %}
+    <div id="toast-root" class="fixed right-4 bottom-4 z-[10000]"></div>
+    <script nonce="{{ csp_nonce }}">
+      (function(){
+        function makeToast(msg){
+          try {
+            var root = document.getElementById('toast-root'); if (!root) return;
+            var card = document.createElement('div');
+            card.className = 'mb-2 px-4 py-3 rounded-lg text-sm text-white shadow-lg bg-gradient-to-tr from-pink-600 to-fuchsia-600 opacity-0 translate-y-2 transition duration-300';
+            card.textContent = msg || 'Notification';
+            root.appendChild(card);
+            requestAnimationFrame(function(){ card.classList.remove('opacity-0','translate-y-2'); });
+            setTimeout(function(){ card.classList.add('opacity-0','translate-y-2'); setTimeout(function(){ try { card.remove(); } catch(_){} }, 300); }, 3000);
+          } catch(_){}
+        }
+        var msgs = [];
+        {% for m in messages %}
+          msgs.push({"level": {{ m.level }}, "text": {{ m.message|safe|escapejs }} });
+        {% endfor %}
+        if (msgs && msgs.length){ msgs.forEach(function(it){ makeToast(it.text); }); }
+      })();
+    </script>
+  {% endif %}
+
+  {% block scripts %}{% endblock %}
+  {% load static %}
+  <script src="{% static 'js/portal_base.js' %}"></script>
+</body>
+</html>

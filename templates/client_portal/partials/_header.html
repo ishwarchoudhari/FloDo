@@ -1,0 +1,108 @@
+{% load static %}
+<header class="fixed inset-x-0 top-0 z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60 border-b border-gray-200/60 dark:border-gray-800 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <!-- Brand + Nav -->
+    <div class="flex items-center gap-3">
+      <a href="{% url 'client_portal:home' %}" class="inline-flex items-center gap-3 font-extrabold tracking-tight text-xl">
+        <span class="inline-flex w-10 h-10 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-500 to-lime-500 text-white shadow-sm">F</span>
+        <span class="text-gray-900 dark:text-white">FloDo</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-6 ml-8 text-sm text-gray-700 dark:text-gray-200">
+        <a class="px-3 py-2 rounded-md hover:bg-emerald-50 dark:hover:bg-gray-800 hover:text-emerald-700 dark:hover:text-emerald-400 transition" href="{% url 'client_portal:home' %}">Home</a>
+        <a class="px-3 py-2 rounded-md hover:bg-emerald-50 dark:hover:bg-gray-800 hover:text-emerald-700 dark:hover:text-emerald-400 transition" href="{% url 'client_portal:browse_artists' %}">Browse Artists</a>
+        <a class="px-3 py-2 rounded-md hover:bg-emerald-50 dark:hover:bg-gray-800 hover:text-emerald-700 dark:hover:text-emerald-400 transition" href="{% url 'client_portal:customer_dashboard' %}">Bookings</a>
+        {% if request.session.client_id %}
+          <a class="px-3 py-2 rounded-md hover:bg-emerald-50 dark:hover:bg-gray-800 hover:text-emerald-700 dark:hover:text-emerald-400 transition" href="{% url 'client_portal:artist_apply' %}">Apply</a>
+        {% endif %}
+      </nav>
+      <!-- Inline search (desktop) -->
+      <form action="{% url 'client_portal:browse_artists' %}" method="get" class="hidden lg:flex items-center gap-3 ml-8">
+        <div class="relative">
+          <input name="q" placeholder="Search artists" class="pl-10 pr-4 py-2 rounded-full bg-white/90 dark:bg-gray-800/80 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 border border-gray-200 dark:border-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.9 14.32a8 8 0 111.414-1.414l3.387 3.387a1 1 0 11-1.414 1.414l-3.387-3.387zM14 8a6 6 0 11-12 0 6 6 0 0112 0z" clip-rule="evenodd"/></svg>
+        </div>
+        <button class="px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm">Search</button>
+      </form>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-2 md:gap-3">
+      <!-- Theme toggle -->
+      <button id="btn-theme" type="button" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="Toggle dark mode">
+        <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3a1 1 0 011 1v1a1 1 0 11-2 0V4a1 1 0 011-1zm0 11a4 4 0 100-8 4 4 0 000 8zm7-4a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1zM3 10a1 1 0 00-1-1H1a1 1 0 100 2h1a1 1 0 001-1zm12.657 5.657a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM5.05 6.464A1 1 0 106.464 5.05l.707-.707A1 1 0 105.757 2.93l-.707.707A1 1 0 105.05 6.464zm9.9-3.535a1 1 0 011.414 0l.707.707A1 1 0 0115.95 5.05l-.707-.707a1 1 0 010-1.414zM4.343 15.657a1 1 0 00-1.414 0l-.707.707a1 1 0 001.414 1.414l.707-.707a1 1 0 000-1.414z"/></svg>
+        <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 dark:hidden" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8 8 0 1010.586 10.586z"/></svg>
+      </button>
+      <!-- Notification bell (WebSocket-driven) -->
+      <a href="#" id="btn-bell" class="relative inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="Notifications">
+        <span id="notif-dot" class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-pink-500 hidden"></span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v2.586l-.707.707A1 1 0 004 13h12a1 1 0 00.707-1.707L16 10.586V8a6 6 0 00-6-6zm0 16a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+      </a>
+      <!-- Auth/User (Client Portal) -->
+      {% if request.session.client_id %}
+        {% with nm=request.session.client_full_name|default:'User' %}
+        <div class="relative hidden sm:flex items-center">
+          <button id="user-menu-btn" type="button" class="inline-flex items-center gap-2 px-2 py-1.5 rounded-lg border border-white/20 bg-white/5 hover:bg-white/10 focus:outline-none" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-600 text-white font-semibold">{{ nm|first|upper }}</span>
+            <span class="text-sm">{{ nm }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-80" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </button>
+          <div id="user-menu-panel" class="absolute right-0 top-12 w-44 rounded-lg border border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-gray-900/95 backdrop-blur text-sm shadow-lg hidden" role="menu" aria-labelledby="user-menu-btn">
+            <a href="{% url 'client_portal:client_profile' %}" class="block px-3 py-2 hover:bg-white/10" role="menuitem">Profile</a>
+            <a href="{% url 'client_portal:customer_dashboard' %}" class="block px-3 py-2 hover:bg-white/10" role="menuitem">Bookings</a>
+            <a href="{% url 'client_portal:artist_apply' %}" class="block px-3 py-2 hover:bg-white/10" role="menuitem">Apply</a>
+            <div class="my-1 border-t border-gray-200 dark:border-gray-800"></div>
+            <a href="{% url 'client_portal:client_logout' %}" class="block px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-emerald-700 dark:text-emerald-300" role="menuitem">Logout</a>
+          </div>
+        </div>
+        {% endwith %}
+      {% else %}
+        <a href="{% url 'client_portal:client_login' %}" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 4.5A1.5 1.5 0 014.5 3h5A1.5 1.5 0 0111 4.5V6a.5.5 0 11-1 0V4.5a.5.5 0 00-.5-.5h-5a.5.5 0 00-.5.5v11a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V14a.5.5 0 111 0v1.5A1.5 1.5 0 019.5 17h-5A1.5 1.5 0 013 15.5v-11z" clip-rule="evenodd"/><path d="M12.146 10.354a.5.5 0 010-.708l2-2a.5.5 0 11.708.708L13.707 10l1.147 1.646a.5.5 0 01-.708.708l-2-2z"/></svg>
+          <span>Sign in</span>
+        </a>
+        <a href="{% url 'client_portal:client_signup' %}" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-emerald-500 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M8 9a3 3 0 116 0 3 3 0 01-6 0z"/><path fill-rule="evenodd" d="M2 15.5A4.5 4.5 0 016.5 11h7A4.5 4.5 0 0118 15.5V17a1 1 0 01-1 1H3a1 1 0 01-1-1v-1.5z" clip-rule="evenodd"/></svg>
+          <span>Create account</span>
+        </a>
+      {% endif %}
+
+      <!-- Mobile menu button -->
+      <button id="btn-mobile" class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 5h14a1 1 0 100-2H3a1 1 0 000 2zm14 4H3a1 1 0 000 2h14a1 1 0 100-2zm0 6H3a1 1 0 000 2h14a1 1 0 100-2z" clip-rule="evenodd"/></svg>
+      </button>
+    </div>
+  </div>
+  <!-- Mobile nav -->
+  <div id="mobile-nav" class="md:hidden hidden border-t border-gray-200 dark:border-gray-800">
+    <nav class="px-4 py-3 grid gap-2 text-sm text-gray-800 dark:text-white bg-white/95 dark:bg-gray-900/95">
+      <a class="hover:text-blue-600" href="{% url 'client_portal:home' %}">Home</a>
+      <a class="hover:text-blue-600" href="{% url 'client_portal:browse_artists' %}">Browse Artists</a>
+      <a class="hover:text-blue-600" href="{% url 'client_portal:customer_dashboard' %}">Bookings</a>
+      {% if request.session.client_id %}
+        <a class="hover:text-blue-600" href="{% url 'client_portal:artist_apply' %}">Apply</a>
+      {% endif %}
+      <div class="flex gap-2 pt-2">
+        {% if request.session.client_id %}
+          {% with nm=request.session.client_full_name|default:'User' %}
+          <div class="relative inline-block">
+            <button id="user-menu-btn-mobile" type="button" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-gray-800/60" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel-mobile">
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-600 text-white font-semibold">{{ nm|first|upper }}</span>
+              <span class="text-sm">{{ nm }}</span>
+            </button>
+            <div id="user-menu-panel-mobile" class="mt-2 w-44 rounded-lg border border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-gray-900/95 text-sm shadow-lg hidden" role="menu" aria-labelledby="user-menu-btn-mobile">
+              <a href="{% url 'client_portal:client_profile' %}" class="block px-3 py-2 hover:bg-white/10" role="menuitem">Profile</a>
+              <a href="{% url 'client_portal:customer_dashboard' %}" class="block px-3 py-2 hover:bg-white/10" role="menuitem">Bookings</a>
+              <a href="{% url 'client_portal:artist_apply' %}" class="block px-3 py-2 hover:bg-white/10" role="menuitem">Apply</a>
+              <div class="my-1 border-t border-gray-200 dark:border-gray-800"></div>
+              <a href="{% url 'client_portal:client_logout' %}" class="block px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-emerald-700 dark:text-emerald-300" role="menuitem">Logout</a>
+            </div>
+          </div>
+          {% endwith %}
+        {% else %}
+          <a href="{% url 'client_portal:client_login' %}" class="inline-flex px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">Sign in</a>
+          <a href="{% url 'client_portal:client_signup' %}" class="inline-flex px-3 py-2 rounded-lg border border-emerald-500 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10">Create account</a>
+        {% endif %}
+      </div>
+    </nav>
+  </div>
+</header>

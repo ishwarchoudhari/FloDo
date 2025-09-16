@@ -1,0 +1,308 @@
+
+{% extends "client_portal/base.html" %}
+{% block title %} • Auth{% endblock %}
+{% block content %}
+<section class="max-w-3xl mx-auto mt-10">
+  <div class="grid md:grid-cols-2 gap-0 bg-white/70 dark:bg-gray-900/60 backdrop-blur rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-xl">
+    <!-- Left: Hero / copy -->
+    <div class="hidden md:flex flex-col justify-center p-8 bg-gradient-to-br from-emerald-600/80 to-lime-600/60 text-white">
+      <h2 class="text-2xl font-extrabold mb-2">Welcome to FloDo Portal</h2>
+      <p class="text-white/90">Browse artists, book services, and manage your account. Toggle dark mode anytime using the header switch.</p>
+      <div class="mt-6 text-sm text-white/90">
+        <p>• No signup required to browse</p>
+        <p>• Create an account to track bookings</p>
+        <p>• Secure login with your phone or email</p>
+      </div>
+    </div>
+
+    <!-- Right: Auth Card -->
+    <div class="w-full p-6 sm:p-8">
+      <!-- Tabs -->
+      <div class="flex items-center gap-2 mb-6">
+        <button id="tab-login" class="tab-btn px-4 py-2 rounded-lg bg-emerald-600 text-white">Sign In</button>
+        <button id="tab-signup" class="tab-btn px-4 py-2 rounded-lg bg-transparent text-emerald-700 dark:text-emerald-300 border border-emerald-500 hover:bg-emerald-500/10">Create Account</button>
+      </div>
+
+      <!-- Alerts -->
+      <div id="auth-alert" class="hidden mb-4 px-3 py-2 rounded-lg text-sm" role="status" aria-live="polite"></div>
+
+      <!-- Sign In Form -->
+      <form id="form-login" class="space-y-4" autocomplete="on" method="post" action="{% url 'client_portal:client_api_login' %}">
+        {% csrf_token %}
+        <div class="relative group">
+          <label for="login-identifier" class="block text-sm text-gray-700 dark:text-gray-300">Phone or Email</label>
+          <span class="pointer-events-none absolute left-3 top-10 sm:top-9 text-gray-400 group-focus-within:text-emerald-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M2 4.5A2.5 2.5 0 014.5 2h15A2.5 2.5 0 0122 4.5v15a2.5 2.5 0 01-2.5 2.5h-15A2.5 2.5 0 012 19.5v-15zm3 2A1.5 1.5 0 006.5 8h11A1.5 1.5 0 0019 6.5V6a1 1 0 00-1-1H6a1 1 0 00-1 1v.5zM5 10v9.5a.5.5 0 00.5.5h13a.5.5 0 00.5-.5V10H5z"/></svg>
+          </span>
+          <input id="login-identifier" name="identifier" required aria-describedby="login-identifier-hint" autocomplete="username" placeholder="you@example.com or +1 555 000 0000" class="mt-1 w-full border rounded-lg pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+          <p id="login-identifier-hint" class="mt-1 text-xs text-gray-500">Use your email or phone number.</p>
+          <p class="hidden mt-1 text-xs text-red-600" id="login-identifier-error">Please enter a valid email or phone number.</p>
+        </div>
+        <div class="relative group">
+          <label for="login-password" class="block text-sm text-gray-700 dark:text-gray-300">Password</label>
+          <span class="pointer-events-none absolute left-3 top-10 sm:top-9 text-gray-400 group-focus-within:text-emerald-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a5 5 0 00-5 5v3H6a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2v-8a2 2 0 00-2-2h-1V6a5 5 0 00-5-5zm-3 8V6a3 3 0 116 0v3H9z"/></svg>
+          </span>
+          <input id="login-password" type="password" name="password" autocomplete="current-password" required placeholder="••••••••" class="mt-1 w-full border rounded-lg pl-9 pr-10 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+          <button type="button" class="absolute right-2 top-9 sm:top-8 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" id="toggle-login-password" aria-label="Show password">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5c-5 0-9.27 3.11-11 7 1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 110-10 5 5 0 010 10z"/></svg>
+          </button>
+          <div class="mt-2 flex items-center justify-between">
+            <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <input type="checkbox" name="remember" class="h-4 w-4 rounded border-gray-300 dark:border-gray-700 text-emerald-600 focus:ring-emerald-500" />
+              Remember me
+            </label>
+          </div>
+        </div>
+        <div class="flex items-center justify-between gap-3">
+          <button type="submit" class="relative inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-70 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60">
+            <svg class="spinner hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 018-8" stroke-width="4" stroke-linecap="round"></path></svg>
+            <span class="btn-text">Sign In</span>
+            <svg class="success-check hidden h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 12.75l-2-2a1 1 0 10-1.414 1.414l2.707 2.707a1 1 0 001.414 0L19 8.586A1 1 0 1017.586 7.17L9 15.75z"/></svg>
+          </button>
+          <a class="underline text-sm" href="{% url 'client_portal:client_forgot_password' %}">Forgot password?</a>
+        </div>
+      </form>
+
+      <!-- Social login (optional placeholders) -->
+      <div class="mt-6">
+        <div class="flex items-center gap-3 text-xs text-gray-500">
+          <div class="flex-1 h-px bg-gray-200 dark:bg-gray-800"></div>
+          <span>or continue with</span>
+          <div class="flex-1 h-px bg-gray-200 dark:bg-gray-800"></div>
+        </div>
+        <div class="mt-3 grid grid-cols-2 gap-3">
+          <button type="button" class="inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-60" aria-disabled="true">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/></svg>
+            <span class="text-sm">Google</span>
+          </button>
+          <button type="button" class="inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-60" aria-disabled="true">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12a10 10 0 10-11.5 9.9v-7h-2v-3h2v-2.3c0-2 1.2-3.1 3-3.1.9 0 1.8.16 1.8.16v2h-1c-1 0-1.3.63-1.3 1.3V12h2.2l-.35 3h-1.86v7A10 10 0 0022 12z"/></svg>
+            <span class="text-sm">Facebook</span>
+          </button>
+        </div>
+        <p class="mt-2 text-xs text-gray-500">Social logins are placeholders and can be wired when backend is ready.</p>
+      </div>
+
+      <!-- Sign Up Form -->
+      <form id="form-signup" class="space-y-4 hidden" autocomplete="on" method="post" action="{% url 'client_portal:client_api_signup' %}">
+        {% csrf_token %}
+        <div class="grid sm:grid-cols-2 gap-3">
+          <div>
+            <label for="signup-fullname" class="block text-sm text-gray-700 dark:text-gray-300">Full name</label>
+            <input id="signup-fullname" name="full_name" required placeholder="John Doe" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+          </div>
+          <div>
+            <label for="signup-phone" class="block text-sm text-gray-700 dark:text-gray-300">Phone</label>
+            <div class="relative group">
+              <span class="pointer-events-none absolute left-3 top-3 text-gray-400 group-focus-within:text-emerald-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.36 11.36 0 003.56.57 1 1 0 011 1v3.6a1 1 0 01-1 1A17 17 0 013 5a1 1 0 011-1h3.6a1 1 0 011 1 11.36 11.36 0 00.57 3.56 1 1 0 01-.24 1.01l-2.31 2.22z"/></svg>
+              </span>
+              <input id="signup-phone" name="phone" required inputmode="tel" placeholder="+1 555 000 0000" class="mt-1 w-full border rounded-lg pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+            </div>
+          </div>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <div>
+            <label for="signup-email" class="block text-sm text-gray-700 dark:text-gray-300">Email (optional)</label>
+            <div class="relative group">
+              <span class="pointer-events-none absolute left-3 top-3 text-gray-400 group-focus-within:text-emerald-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M2 5.5A2.5 2.5 0 014.5 3h15A2.5 2.5 0 0122 5.5v13a2.5 2.5 0 01-2.5 2.5h-15A2.5 2.5 0 012 18.5v-13zm2.5-.5a.5.5 0 00-.5.5v.3l8 5 8-5V5.5a.5.5 0 00-.5-.5h-15z"/></svg>
+              </span>
+              <input id="signup-email" type="email" name="email" placeholder="you@example.com" aria-describedby="signup-email-hint" class="mt-1 w-full border rounded-lg pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+            </div>
+            <p id="signup-email-hint" class="mt-1 text-xs text-gray-500">We’ll use this for receipts and notifications.</p>
+            <p id="signup-email-error" class="hidden mt-1 text-xs text-red-600">Please enter a valid email (e.g., name@domain.com).</p>
+          </div>
+          <div>
+            <label for="signup-password" class="block text-sm text-gray-700 dark:text-gray-300">Password</label>
+            <div class="relative group">
+              <span class="pointer-events-none absolute left-3 top-3 text-gray-400 group-focus-within:text-emerald-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a5 5 0 00-5 5v3H6a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2v-8a2 2 0 00-2-2h-1V6a5 5 0 00-5-5zm-3 8V6a3 3 0 116 0v3H9z"/></svg>
+              </span>
+              <input id="signup-password" type="password" name="password" autocomplete="new-password" required aria-describedby="pwd-hint" placeholder="At least 8 characters" class="mt-1 w-full border rounded-lg pl-9 pr-10 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+              <button type="button" class="absolute right-2 top-2.5 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" id="toggle-signup-password" aria-label="Show password">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5c-5 0-9.27 3.11-11 7 1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 110-10 5 5 0 010 10z"/></svg>
+              </button>
+            </div>
+            <div class="mt-2" aria-live="polite">
+              <div class="h-1.5 rounded bg-gray-200 dark:bg-gray-800 overflow-hidden">
+                <div id="pwd-bar" class="h-1.5 bg-red-500 w-1/5 transition-all"></div>
+              </div>
+              <p id="pwd-hint" class="mt-1 text-xs text-gray-500">Use 8+ chars with upper, lower, number, and symbol.</p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-700 dark:text-gray-300">Location (optional)</label>
+          <input name="location" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+        </div>
+        <div class="flex items-center justify-end gap-3">
+          <button type="submit" class="relative inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-70 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60">
+            <svg class="spinner hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 018-8" stroke-width="4" stroke-linecap="round"></path></svg>
+            <span class="btn-text">Create Account</span>
+            <svg class="success-check hidden h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 12.75l-2-2a1 1 0 10-1.414 1.414l2.707 2.707a1 1 0 001.414 0L19 8.586A1 1 0 1017.586 7.17L9 15.75z"/></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ csp_nonce }}">
+  (function(){
+    const qs = (s, r=document) => r.querySelector(s);
+    const alertBox = qs('#auth-alert');
+    const tabLogin = qs('#tab-login');
+    const tabSignup = qs('#tab-signup');
+    const formLogin = qs('#form-login');
+    const formSignup = qs('#form-signup');
+
+    function showAlert(msg, ok){
+      alertBox.classList.remove('hidden');
+      alertBox.textContent = msg;
+      alertBox.className = 'mb-4 px-3 py-2 rounded-lg text-sm ' + (ok ? 'bg-emerald-600/20 text-emerald-200 border border-emerald-500/40' : 'bg-red-600/20 text-red-200 border border-red-500/40');
+    }
+    function clearAlert(){ alertBox.classList.add('hidden'); alertBox.textContent=''; }
+
+    function setTab(which){
+      if(which === 'login'){
+        tabLogin.classList.add('bg-emerald-600','text-white');
+        tabSignup.classList.remove('bg-emerald-600','text-white');
+        formLogin.classList.remove('hidden');
+        formSignup.classList.add('hidden');
+      } else {
+        tabSignup.classList.add('bg-emerald-600','text-white');
+        tabLogin.classList.remove('bg-emerald-600','text-white');
+        formSignup.classList.remove('hidden');
+        formLogin.classList.add('hidden');
+      }
+      clearAlert();
+    }
+    tabLogin.addEventListener('click', e=>{e.preventDefault(); setTab('login');});
+    tabSignup.addEventListener('click', e=>{e.preventDefault(); setTab('signup');});
+
+    // CSRF: rely on hidden input csrfmiddlewaretoken sent in FormData
+
+    async function postForm(url, form){
+      const data = new FormData(form);
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: data,
+        credentials: 'same-origin'
+      });
+      const json = await res.json().catch(()=>({ok:false,error:'Invalid server response'}));
+      if(!res.ok || !json.ok){ throw new Error(json.error||('HTTP '+res.status)); }
+      return json;
+    }
+
+    // Floating label-like validation hints / real-time feedback
+    function validateIdentifier(value){
+      const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const phone = /^[+]?\d[\d\s-]{6,}$/;
+      return email.test(value) || phone.test(value);
+    }
+
+    function updatePasswordStrength(pwd){
+      let score = 0;
+      if(pwd.length >= 8) score++;
+      if(/[a-z]/.test(pwd)) score++;
+      if(/[A-Z]/.test(pwd)) score++;
+      if(/\d/.test(pwd)) score++;
+      if(/[^A-Za-z0-9]/.test(pwd)) score++;
+      const bar = document.getElementById('pwd-bar');
+      if(!bar) return;
+      const widths = ['w-1/5','w-2/5','w-3/5','w-4/5','w-full'];
+      bar.className = 'h-1.5 transition-all ' + (score<=2?'bg-red-500':score===3?'bg-amber-500':'bg-emerald-500') + ' ' + widths[Math.max(0, Math.min(score-1, 4))];
+    }
+
+    // Show/Hide password toggles
+    function attachToggle(btnId, inputId){
+      const btn = document.getElementById(btnId);
+      const inp = document.getElementById(inputId);
+      if(!btn || !inp) return;
+      btn.addEventListener('click', ()=>{
+        const isPwd = inp.type === 'password';
+        inp.type = isPwd ? 'text' : 'password';
+        btn.setAttribute('aria-label', isPwd ? 'Hide password' : 'Show password');
+      });
+    }
+
+    // Field listeners
+    const loginId = document.getElementById('login-identifier');
+    const loginIdErr = document.getElementById('login-identifier-error');
+    if(loginId && loginIdErr){
+      loginId.addEventListener('input', ()=>{
+        const ok = validateIdentifier(loginId.value.trim());
+        loginId.classList.toggle('border-red-500', !ok && loginId.value.length>0);
+        loginId.setAttribute('aria-invalid', (!ok && loginId.value.length>0).toString());
+        loginIdErr.classList.toggle('hidden', ok || loginId.value.length===0);
+      });
+    }
+
+    const signupPwd = document.getElementById('signup-password');
+    if(signupPwd){ signupPwd.addEventListener('input', ()=> updatePasswordStrength(signupPwd.value)); }
+
+    attachToggle('toggle-login-password','login-password');
+    attachToggle('toggle-signup-password','signup-password');
+
+    function setLoading(form, loading){
+      try{
+        const btn = form.querySelector('button[type="submit"]');
+        if(!btn) return;
+        const spinner = btn.querySelector('.spinner');
+        const text = btn.querySelector('.btn-text');
+        const check = btn.querySelector('.success-check');
+        btn.disabled = !!loading;
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if(spinner) {
+          spinner.classList.toggle('hidden', !loading);
+          spinner.classList.toggle('animate-spin', !prefersReduced && loading);
+        }
+        if(text) text.textContent = loading ? 'Working…' : (btn === formLogin.querySelector('button[type="submit"]') ? 'Sign In' : 'Create Account');
+        if(!loading && check){
+          // Brief success confirmation animation
+          check.classList.remove('hidden');
+          setTimeout(()=>{ try { check.classList.add('hidden'); } catch(_){} }, 500);
+        }
+      }catch(_){ }
+    }
+
+    formLogin.addEventListener('submit', async (e)=>{
+      e.preventDefault(); clearAlert();
+      try{
+        setLoading(formLogin, true);
+        const json = await postForm('{% url "client_portal:client_api_login" %}', formLogin);
+        showAlert('Signed in. Redirecting...', true);
+        const to = (json && json.redirect) || '{% url "client_portal:customer_dashboard" %}';
+        setTimeout(()=>{ window.location.assign(to); }, 400);
+      }catch(err){ showAlert(err.message||'Login failed', false); }
+      finally { setLoading(formLogin, false); }
+    });
+
+    formSignup.addEventListener('submit', async (e)=>{
+      e.preventDefault(); clearAlert();
+      try{
+        setLoading(formSignup, true);
+        const json = await postForm('{% url "client_portal:client_api_signup" %}', formSignup);
+        // If server indicates auto-login and provides a redirect, go there
+        if (json && json.redirect){
+          showAlert('Account created. Redirecting...', true);
+          setTimeout(()=>{ window.location.assign(json.redirect); }, 400);
+          return;
+        }
+        // Fallback: old flow (no auto-login)
+        showAlert('Account created. Please sign in.', true);
+        setTab('login');
+      }catch(err){ showAlert(err.message||'Signup failed', false); }
+      finally { setLoading(formSignup, false); }
+    });
+
+    // Default to login tab
+    setTab('login');
+  })();
+</script>
+{% endblock %}

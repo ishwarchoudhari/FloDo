@@ -1,0 +1,49 @@
+version: '3.9'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["daphne", "-b", "0.0.0.0", "-p", "8000", "django_admin_project.asgi:application"]
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_DEBUG: "False"
+      DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost"
+      DJANGO_SECRET_KEY: "CHANGE_ME_IN_PROD"
+      REDIS_URL: "redis://redis:6379/0"
+      DB_ENGINE: "django.db.backends.postgresql"
+      DB_NAME: "flodo"
+      DB_USER: "flodo"
+      DB_PASSWORD: "flodo"
+      DB_HOST: "postgres"
+      DB_PORT: "5432"
+      # Optional Sentry
+      # SENTRY_DSN: "https://public@sentry.example.com/1"
+    depends_on:
+      - redis
+      - postgres
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: flodo
+      POSTGRES_USER: flodo
+      POSTGRES_PASSWORD: flodo
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
+volumes:
+  pg-data:
+  redis-data:

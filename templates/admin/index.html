@@ -1,0 +1,53 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static analytical %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+  <div class="space-y-6">
+    <div class="bg-white rounded shadow border p-4">
+      <h2 class="text-lg font-semibold mb-3">Admin Overview</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="col-span-1 lg:col-span-2">
+          <div class="bg-white rounded border p-4">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-medium">Visitors (last 7 days)</h3>
+              <span class="text-xs text-gray-500">Google Analytics</span>
+            </div>
+            <canvas id="gaVisitorsChart" height="110"></canvas>
+          </div>
+        </div>
+        <div class="col-span-1">
+          <div class="bg-white rounded border p-4">
+            <h3 class="font-medium mb-2">Quick Links</h3>
+            <ul class="list-disc ml-5 text-sm">
+              <li><a class="text-blue-600 hover:underline" href="{% url 'admin:index' %}">All apps</a></li>
+              <li><a class="text-blue-600 hover:underline" href="{% url 'admin:auth_user_changelist' %}">Users</a></li>
+              <li><a class="text-blue-600 hover:underline" href="{% url 'admin:auth_group_changelist' %}">Groups</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded shadow border p-4">
+      <h2 class="text-lg font-semibold mb-3">Applications</h2>
+      {% include "admin/app_list.html" with app_list=app_list %}
+    </div>
+  </div>
+
+  {# Google Analytics tag intentionally omitted when GA ID is not configured.
+     If you later set GA_GTAG_ID in environment and want auto-injection,
+     re-enable django-analytical tag here. #}
+
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  {# Optional Google Analytics GA4 snippet when GA_GTAG_ID is configured #}
+  <meta id="ga-config" data-ga-id="{{ GA_GTAG_ID|default:'' }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-6v0blzqj6xgkCw+oZKxJ5b8bqk0nJk7v6uX+1v6oT0v3f2J8Kq3e7b5d8f1dJb2s" crossorigin="anonymous"></script>
+  {% load static %}
+  <script src="{% static 'js/admin_ga.js' %}"></script>
+  <script src="{% static 'js/admin_dashboard_chart.js' %}"></script>
+{% endblock %}

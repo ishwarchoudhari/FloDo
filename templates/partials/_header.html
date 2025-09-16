@@ -1,0 +1,83 @@
+{% load static %}
+<header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 shadow-sm fixed top-0 inset-x-0 z-40 h-16 transition-colors">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+    <!-- Left: Mobile hamburger + Logo / App Name -->
+    <div class="flex items-center space-x-2">
+      {% if request.user.is_authenticated %}
+      <button type="button" class="md:hidden p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 dark:focus:ring-offset-gray-800" aria-controls="sidebar" aria-expanded="false" aria-label="Open sidebar">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700 dark:text-gray-200" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M3.75 5.25a.75.75 0 000 1.5h16.5a.75.75 0 000-1.5H3.75zm0 6a.75.75 0 000 1.5h16.5a.75.75 0 000-1.5H3.75zm0 6a.75.75 0 000 1.5h16.5a.75.75 0 000-1.5H3.75z" clip-rule="evenodd"/></svg>
+      </button>
+      {% endif %}
+      <a href="{% url 'dashboard:index' %}" class="flex items-center space-x-2">
+        <span class="text-xl font-semibold text-blue-700 dark:text-blue-300">{{ APP_NAME }}</span>
+      </a>
+    </div>
+    <!-- Right side controls -->
+    <div class="flex items-center space-x-4">
+      <!-- Theme toggle is available to all users (including unauthenticated) -->
+      <button id="themeToggle" type="button" aria-pressed="false" class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 dark:focus:ring-offset-gray-800" title="Toggle dark mode">
+        <span class="sr-only">Toggle dark mode</span>
+        <!-- Sun (visible in dark mode to indicate switching back) -->
+        <svg data-icon="sun" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-500 hidden" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.76 4.84l-1.8-1.79-1.42 1.41 1.79 1.8 1.43-1.42zM1 13h3v-2H1v2zm10 10h2v-3h-2v3zm9-10v-2h-3v2h3zm-4.24-8.16l1.8-1.79 1.41 1.41-1.79 1.8-1.42-1.42zM12 6a6 6 0 100 12A6 6 0 0012 6zm7 14.66l1.79 1.8 1.42-1.42-1.8-1.79-1.41 1.41zM4.24 19.76l-1.8 1.79 1.42 1.42 1.79-1.8-1.41-1.41z"/></svg>
+        <!-- Moon (visible in light mode) -->
+        <svg data-icon="moon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700 dark:text-gray-200" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 12.79A9 9 0 1111.21 3c.43 0 .85.03 1.26.1A7 7 0 0021 12.79z"/></svg>
+      </button>
+      {% if request.user.is_authenticated %}
+      <!-- Notification dropdown -->
+      <div class="relative">
+        <button id="notifBtn" class="relative p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
+          <span class="sr-only">Notifications</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700 dark:text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V8.25a6 6 0 10-12 0v1.5a8.967 8.967 0 01-2.31 6.022c1.733.64 3.56 1.085 5.453 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+          <span id="notifBadge" class="hidden absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5 leading-none"></span>
+        </button>
+        <div id="notifMenu" class="hidden absolute right-0 mt-2 w-96 sm:w-[28rem] bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-xl ring-1 ring-black/5 z-50 pointer-events-auto">
+          <div class="p-3 border-b border-gray-200 dark:border-gray-700 text-base font-semibold text-gray-900 dark:text-gray-100">Notifications</div>
+          <ul id="notifList" class="max-h-96 overflow-y-auto p-3 space-y-2"></ul>
+          <div id="notifEmpty" class="p-4 text-sm text-gray-600 dark:text-gray-300">No new notifications</div>
+          <div class="border-t border-gray-200 dark:border-gray-700 p-3 text-sm text-right bg-white dark:bg-gray-800">
+            <a href="{% url 'dashboard:index' %}#logs" class="text-blue-600 dark:text-blue-400 hover:underline">View all logs</a>
+          </div>
+        </div>
+      </div>
+      <!-- Help icon -->
+      <a href="https://docs.djangoproject.com/" target="_blank" class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700" title="Help">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700 dark:text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.228 9c.549-1.165 1.843-2 3.272-2 1.657 0 3 1.343 3 3 0 1.43-.835 2.723-2 3.272V14m0 2h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      </a>
+      <!-- User dropdown -->
+      <div class="relative">
+        <button class="flex items-center space-x-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600">
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ request.user.username|default:'Guest' }}</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
+        </button>
+        <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-lg z-20">
+          <a href="{% url 'settings_app:index' %}" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100">Settings</a>
+          <form id="logoutForm" method="post" action="{% url 'authentication:logout' %}" class="border-t border-gray-200 dark:border-gray-700">
+            {% csrf_token %}
+            <button type="submit" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100">Sign out</button>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      {# Public (unauthenticated) header: show Client Portal auth links only on portal pages #}
+      {% with rm=request.resolver_match %}
+        {% if rm and rm.namespace == 'client_portal' %}
+          <div class="flex items-center gap-2">
+            <a href="{% url 'client_portal:client_auth' %}"
+               class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-pink-600 text-white hover:bg-pink-700 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 4.5A1.5 1.5 0 014.5 3h5A1.5 1.5 0 0111 4.5V6a.5.5 0 11-1 0V4.5a.5.5 0 00-.5-.5h-5a.5.5 0 00-.5.5v11a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V14a.5.5 0 111 0v1.5A1.5 1.5 0 019.5 17h-5A1.5 1.5 0 013 15.5v-11z" clip-rule="evenodd"></path><path d="M12.146 10.354a.5.5 0 010-.708l2-2a.5.5 0 11.708.708L13.707 10l1.147 1.646a.5.5 0 01-.708.708l-2-2z"></path></svg>
+              <span>Portal Sign in</span>
+            </a>
+            <a href="{% url 'client_portal:client_auth' %}"
+               class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-pink-500 text-pink-200 hover:bg-pink-500/10 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M8 9a3 3 0 116 0 3 3 0 01-6 0z"></path><path fill-rule="evenodd" d="M2 15.5A4.5 4.5 0 016.5 11h7A4.5 4.5 0 0118 15.5V17a1 1 0 01-1 1H3a1 1 0 01-1-1v-1.5z" clip-rule="evenodd"></path></svg>
+              <span>Create account</span>
+            </a>
+          </div>
+        {% else %}
+          {# On admin/auth pages, render no portal auth buttons to avoid confusion #}
+        {% endif %}
+      {% endwith %}
+      {% endif %}
+    </div>
+  </div>
+</header>

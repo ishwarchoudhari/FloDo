@@ -1,0 +1,2 @@
+(()=>{(function(){try{var e=document.getElementById("gaVisitorsChart");if(!e||typeof Chart>"u")return;var t={labels:["-6d","-5d","-4d","-3d","-2d","-1d","Today"],datasets:[{label:"Users",data:[12,19,7,15,22,18,25],backgroundColor:"rgba(59, 130, 246, 0.2)",borderColor:"rgba(59, 130, 246, 1)",tension:.35}]};new Chart(e,{type:"line",data:t,options:{responsive:!0,maintainAspectRatio:!1,scales:{y:{beginAtZero:!0,ticks:{precision:0}}},plugins:{legend:{display:!1}}}})}catch{}})();})();
+//# sourceMappingURL=admin_dashboard_chart.js.map

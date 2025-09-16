@@ -1,0 +1,139 @@
+<!-- partials/sidebar.html -->
+{% if request.user.is_authenticated %}
+<aside id="sidebar" class="hidden md:block fixed left-0 top-16 bottom-0 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-sm z-40 transition-colors" aria-label="Sidebar Navigation">
+  <div class="flex flex-col h-full px-4 pt-4 pb-4 overflow-y-auto">
+    <!-- User Profile Card -->
+    <div class="user-profile-card p-4 mb-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition duration-200 transform hover:-translate-y-px cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900"
+         role="button" tabindex="0" aria-label="Open Admin Profile"
+         {% with ap=request.user.admin_profile %}
+         data-admin-avatar-url="{% if ap and ap.avatar %}{{ ap.avatar.url }}{% else %}{% endif %}"
+         {% endwith %}
+    >
+      <!-- Avatar + basic info -->
+      <div class="flex items-center mb-3">
+        <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-300 dark:bg-gray-700 flex items-center justify-center mr-3">
+          {% with ap=request.user.admin_profile %}
+            {% if ap and ap.avatar %}
+              <img src="{{ ap.avatar.url }}" alt="Profile" class="w-full h-full object-cover" loading="lazy" />
+            {% else %}
+              <svg class="w-7 h-7 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+              </svg>
+            {% endif %}
+          {% endwith %}
+        </div>
+        <div class="flex-1 user-details opacity-100">
+          <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ user.username|default:"Admin User" }}</h4>
+          <p class="text-xs text-gray-500 dark:text-gray-300">
+            {% if request.user.admin_profile and request.user.admin_profile.role %}
+              {{ request.user.admin_profile.role }}
+            {% else %}
+              Super-Admin
+            {% endif %}
+          </p>
+          <p class="text-xs text-gray-500 dark:text-gray-300">{% if user.last_login %}{{ user.last_login|timesince }} ago{% else %}Last Sign-In{% endif %}</p>
+        </div>
+      </div>
+
+      <!-- Status Badge with Dropdown -->
+      <div class="relative">
+        <div class="status-dropdown">
+          <button type="button" class="status-trigger w-full text-left focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600 dark:focus:ring-offset-gray-900" aria-haspopup="menu" aria-expanded="false" aria-controls="status-dropdown-menu">
+            <span id="current-status" class="inline-flex items-center bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 text-xs font-medium px-2.5 py-0.5 rounded-full">
+              <span class="w-2 h-2 me-1 bg-green-500 rounded-full"></span>
+              Available
+            </span>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div id="status-dropdown-menu" class="hidden absolute top-full left-0 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10" role="menu" aria-label="Change status">
+            <div class="py-1">
+              <button type="button" class="flex items-center w-full px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100" role="menuitemradio" aria-checked="true" tabindex="-1" data-status="available">
+                <span class="w-2 h-2 me-2 bg-green-500 rounded-full"></span>
+                Available
+              </button>
+              <button type="button" class="flex items-center w-full px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100" role="menuitemradio" aria-checked="false" tabindex="-1" data-status="unavailable">
+                <span class="w-2 h-2 me-2 bg-red-500 rounded-full"></span>
+                Unavailable
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="flex-1 pb-4" role="navigation" aria-label="Primary">
+      <ul class="space-y-2">
+        <li>
+          <a href="{% url 'dashboard:index' %}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 dark:focus-visible:ring-offset-gray-900">
+            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 13h4v8H3v-8zm7-6h4v14h-4V7zm7 10h4v4h-4v-4z"/></svg>
+            Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'dashboard:tables' %}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 dark:focus-visible:ring-offset-gray-900">
+            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 3h16v4H4V3zm0 6h16v12H4V9zm2 2v8h12v-8H6z"/></svg>
+            Tables
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'dashboard:artist_applications' %}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 dark:focus-visible:ring-offset-gray-900">
+            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm-7 9a7 7 0 0114 0v1H5v-1z"/></svg>
+            Artist Applications
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'dashboard:clients' %}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 dark:focus-visible:ring-offset-gray-900">
+            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.96 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            Clients
+          </a>
+        </li>
+        
+        <!-- Divider -->
+        <li role="separator" class="my-2 border-b border-gray-200 dark:border-gray-700"></li>
+        <li>
+          <span class="flex items-center px-3 py-2 text-sm font-medium text-gray-400 dark:text-gray-500 cursor-not-allowed">
+            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2h2v2h6V2h2v2h3v18H4V4h3V2zm-1 6v12h12V8H6z"/></svg>
+            Calendar
+          </span>
+        </li>
+        <li>
+          <span class="flex items-center px-3 py-2 text-sm font-medium text-gray-400 dark:text-gray-500 cursor-not-allowed">
+            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            Tasks
+          </span>
+        </li>
+        <li>
+          <span class="flex items-center px-3 py-2 text-sm font-medium text-gray-400 dark:text-gray-500 cursor-not-allowed">
+            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 7h20v4a2 2 0 110 4v4H2v-4a2 2 0 110-4V7zm4 2v6h12V9H6z"/></svg>
+            Tickets
+          </span>
+        </li>
+        <li>
+          <span class="flex items-center px-3 py-2 text-sm font-medium text-gray-400 dark:text-gray-500 cursor-not-allowed">
+            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-2h2v2zm1.07-7.75l-.9.92A2.5 2.5 0 0012 13h-1v-1a3.5 3.5 0 011.02-2.49l1.24-1.26a1.5 1.5 0 10-2.12-2.12l-.64.64-1.42-1.42.64-.64a3.5 3.5 0 114.95 4.95z"/></svg>
+            Help
+          </span>
+        </li>
+        <li>
+          <span class="flex items-center px-3 py-2 text-sm font-medium text-gray-400 dark:text-gray-500 cursor-not-allowed">
+            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm3.54 3.54a7.5 7.5 0 012.92 2.92l-2.12 2.12a4.5 4.5 0 00-2.92-2.92l2.12-2.12zM6.54 5.46l2.12 2.12a4.5 4.5 0 00-2.92 2.92L3.62 8.38a7.5 7.5 0 012.92-2.92zM5.46 17.46a7.5 7.5 0 01-1.84-3.08l2.97-.79a4.5 4.5 0 002.74 2.74l-.79 2.97a7.5 7.5 0 01-3.08-1.84zm9.83 1.84l-.79-2.97a4.5 4.5 0 002.74-2.74l2.97.79a7.5 7.5 0 01-1.84 3.08 7.5 7.5 0 01-3.08 1.84z"/></svg>
+            Support
+          </span>
+        </li>
+        <!-- Divider -->
+        <li role="separator" class="my-2 border-b border-gray-200 dark:border-gray-700"></li>
+        <li>
+          <a href="{% url 'dashboard:admin_mgmt' %}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 dark:focus-visible:ring-offset-gray-900">
+            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1a5 5 0 00-5 5v3H5v14h14V9h-2V6a5 5 0 00-5-5zm-3 8V6a3 3 0 016 0v3H9z"/></svg>
+            Admin Management
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</aside>
+<!-- Mobile overlay to close sidebar -->
+<div id="sidebar-overlay" class="hidden fixed inset-0 bg-black/30 z-30 md:hidden" aria-hidden="true"></div>
+{% endif %}

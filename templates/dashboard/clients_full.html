@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} • Clients{% endblock %}
+{% block content %}
+<section class="max-w-7xl mx-auto">
+  <header class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
+    <div>
+      <h1 class="typo-h1">Clients</h1>
+      <p class="typo-body text-gray-600 dark:text-gray-300">All customer signups from the Client Portal.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <input id="cliSearch" type="search" placeholder="Search name, phone, email, location" class="w-72 max-w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800" />
+      <select id="cliPerPage" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+      </select>
+      <button id="cliRefresh" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">Refresh</button>
+    </div>
+  </header>
+
+  <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
+        <tr>
+          <th class="px-3 py-2 text-left">Name</th>
+          <th class="px-3 py-2 text-left">Phone</th>
+          <th class="px-3 py-2 text-left">Email</th>
+          <th class="px-3 py-2 text-left">Location</th>
+          <th class="px-3 py-2 text-left">Status</th>
+          <th class="px-3 py-2 text-left">Created</th>
+        </tr>
+      </thead>
+      <tbody id="cliBody" class="divide-y divide-gray-200 dark:divide-gray-700"></tbody>
+    </table>
+  </div>
+
+  <footer class="flex items-center justify-between mt-3">
+    <div class="text-sm text-gray-600 dark:text-gray-400">
+      <span id="cliTotal">0</span> total • Page <span id="cliPage">1</span> of <span id="cliNumPages">1</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="cliPrev" class="px-3 py-1.5 rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition">Prev</button>
+      <button id="cliNext" class="px-3 py-1.5 rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition">Next</button>
+    </div>
+  </footer>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  const qs = (s,r=document)=>r.querySelector(s);
+  const body = qs('#cliBody');
+  const totalEl = qs('#cliTotal');
+  const pageEl = qs('#cliPage');
+  const numPagesEl = qs('#cliNumPages');
+  const searchEl = qs('#cliSearch');
+  const perPageEl = qs('#cliPerPage');
+  const prevBtn = qs('#cliPrev');
+  const nextBtn = qs('#cliNext');
+  const refreshBtn = qs('#cliRefresh');
+
+  let state = { page: 1, num_pages: 1, total: 0, q: '', per_page: parseInt(perPageEl.value||'10',10) };
+  let inFlight = false;
+  let latestCreatedISO = '';
+
+  function ensureStyles(){
+    if (document.getElementById('clientsGlowStyles')) return;
+    const style = document.createElement('style');
+    style.id = 'clientsGlowStyles';
+    style.textContent = `
+@keyframes rowPulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.24)}70%{box-shadow:0 0 0 8px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+.row-new{animation:rowPulse 1500ms ease-out 1}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function fmtDate(iso){ try { return new Date(iso).toLocaleString(); } catch(_){ return iso||''; } }
+
+  function render(rows){
+    body.innerHTML = '';
+    if (!rows || !rows.length){
+      const tr = document.createElement('tr');
+      const td = document.createElement('td'); td.colSpan = 6; td.className='px-3 py-6 text-center text-gray-500 dark:text-gray-400'; td.textContent='No clients found.'; tr.appendChild(td); body.appendChild(tr); return;
+    }
+    ensureStyles();
+    rows.forEach(c=>{
+      const tr = document.createElement('tr');
+      tr.className='hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors';
+      try {
+        if (latestCreatedISO && c.created_at && new Date(c.created_at) > new Date(latestCreatedISO)){
+          tr.classList.add('row-new');
+          setTimeout(()=>{ tr.classList.remove('row-new'); }, 1800);
+        }
+      } catch(_){}
+      tr.innerHTML = `
+        <td class="px-3 py-2">${c.full_name||'-'}</td>
+        <td class="px-3 py-2">${c.phone||'-'}</td>
+        <td class="px-3 py-2">${c.email||'-'}</td>
+        <td class="px-3 py-2">${c.location||'-'}</td>
+        <td class="px-3 py-2"><span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs ${c.status==='Active'?'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300':'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}">${c.status||'-'}</span></td>
+        <td class="px-3 py-2">${fmtDate(c.created_at)}</td>
+      `;
+      body.appendChild(tr);
+    });
+  }
+
+  async function fetchPage(){
+    if (inFlight) return; inFlight = true;
+    const params = new URLSearchParams({ page: String(state.page), per_page: String(state.per_page) });
+    if (state.q) params.set('q', state.q);
+    const res = await fetch(`/dashboard/api/clients/?${params.toString()}`, { credentials:'same-origin', headers: { 'X-Requested-With':'XMLHttpRequest' }});
+    const data = await res.json().catch(()=>({success:false}));
+    inFlight = false;
+    if (!data || !data.success) return;
+    state.num_pages = data.num_pages||1; state.total = data.total||0;
+    // track newest created timestamp for highlight
+    try {
+      if (Array.isArray(data.results) && data.results.length){
+        const newest = data.results[0].created_at;
+        if (newest) latestCreatedISO = newest;
+      }
+    } catch(_){}
+    render(data.results||[]);
+    totalEl.textContent = String(state.total);
+    pageEl.textContent = String(state.page);
+    numPagesEl.textContent = String(state.num_pages);
+  }
+
+  function refresh(){ fetchPage().catch(()=>{}); }
+  window.refreshClientsNow = refresh; // optional global hook
+
+  searchEl.addEventListener('input', ()=>{ state.q = searchEl.value.trim(); state.page = 1; refresh(); });
+  perPageEl.addEventListener('change', ()=>{ state.per_page = parseInt(perPageEl.value||'10',10); state.page = 1; refresh(); });
+  prevBtn.addEventListener('click', ()=>{ if (state.page>1){ state.page--; refresh(); }});
+  nextBtn.addEventListener('click', ()=>{ if (state.page<state.num_pages){ state.page++; refresh(); }});
+  refreshBtn.addEventListener('click', refresh);
+
+  // Gentle polling
+  refresh();
+  setInterval(refresh, 5000);
+
+  // Optional WS direct hook: listen for Client CREATE and refresh
+  try {
+    const proto = (location.protocol === 'https:') ? 'wss' : 'ws';
+    const endpoint = `${proto}://${location.host}/ws/notifications/`;
+    const ws = new WebSocket(endpoint);
+    ws.onmessage = function(evt){
+      try {
+        const msg = JSON.parse(evt.data||'{}');
+        if (msg && msg.type === 'activity_log' && msg.data && msg.data.table_name === 'Client'){
+          // Refresh list quickly when a new client is created
+          refresh();
+        }
+      } catch(_){ }
+    };
+  } catch(_){ }
+})();
+</script>
+{% endblock %}
