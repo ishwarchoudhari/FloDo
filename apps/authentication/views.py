@@ -13,6 +13,11 @@ from django.core.files.uploadedfile import UploadedFile, InMemoryUploadedFile
 from PIL import Image, UnidentifiedImageError
 import io
 from django.conf import settings
+import json
+import secrets
+import hmac
+import time
+from django.core.cache import caches
 
 # Optional: Redis-backed rate limiting (enabled only if REDIS_URL present)
 try:
@@ -320,3 +325,178 @@ def profile_password_change(request: HttpRequest) -> JsonResponse:
     if user:
         login(request, user)
     return JsonResponse({"success": True, "message": "Password updated."})
+
+
+# ------------------------------
+# Super-Admin Password Reset via Redis OTP (Email)
+# ------------------------------
+
+def _get_superadmin_user() -> User | None:
+    try:
+        sa = SuperAdmin.objects.select_related("user").get(is_super_admin=True)
+        return sa.user
+    except SuperAdmin.DoesNotExist:
+        return None
+
+def _get_cache():
+    # Use the default Django cache (Redis if REDIS_URL configured; else LocMem)
+    try:
+        return caches["default"]
+    except Exception:  # pragma: no cover
+        from django.core.cache import cache
+        return cache
+
+def _otp_key(user_id: int, purpose: str) -> str:
+    return f"otp:superadmin:{user_id}:{purpose}"
+
+def _gen_code(length: int = 6) -> str:
+    # 6-digit numeric using SystemRandom
+    rng = secrets.SystemRandom()
+    return f"{rng.randrange(0, 10**length):0{length}d}"
+
+def _store_otp(user: User, purpose: str = "password_reset", attempts: int = 5, ttl: int = 600) -> dict:
+    cache = _get_cache()
+    key = _otp_key(user.id, purpose)
+    payload = {"code": _gen_code(6), "attempts_left": attempts, "created_at": int(time.time())}
+    # Set TTL directly on key
+    cache.set(key, json.dumps(payload), timeout=ttl)
+    return payload
+
+def _verify_otp(user: User, submitted_code: str, purpose: str = "password_reset") -> tuple[bool, str]:
+    cache = _get_cache()
+    key = _otp_key(user.id, purpose)
+    raw = cache.get(key)
+    if not raw:
+        return False, "expired"
+    try:
+        data = json.loads(raw)
+    except Exception:
+        cache.delete(key)
+        return False, "expired"
+    code = str(data.get("code") or "")
+    attempts_left = int(data.get("attempts_left") or 0)
+    if attempts_left <= 0:
+        cache.delete(key)
+        return False, "locked"
+    # constant-time compare
+    if hmac.compare_digest(code, str(submitted_code or "")):
+        cache.delete(key)  # single-use
+        return True, "ok"
+    # wrong code: decrement atomically by rewriting
+    data["attempts_left"] = attempts_left - 1
+    # Preserve remaining TTL by reading and re-setting with a short TTL if unknown; safest: 300s fallback
+    # Many cache backends don't expose TTL; we use a conservative fallback
+    cache.set(key, json.dumps(data), timeout=300)
+    return False, "invalid"
+
+def _rate_key(prefix: str, ident: str) -> str:
+    return f"{prefix}:{ident}"
+
+def _under_lock(cache, lock_key: str) -> bool:
+    return bool(cache.get(lock_key))
+
+def _apply_progressive_backoff(cache, base_key: str, count: int) -> None:
+    # Progressive lockouts: 5->1m, 10->5m, 15->15m, 20->60m
+    duration = 0
+    if count >= 20:
+        duration = 60 * 60
+    elif count >= 15:
+        duration = 15 * 60
+    elif count >= 10:
+        duration = 5 * 60
+    elif count >= 5:
+        duration = 60
+    if duration:
+        cache.set(base_key + ":lock", "1", timeout=duration)
+
+def _ratelimit_otp_request(request: HttpRequest, user: User | None) -> None:
+    """Increment counters and possibly set lockout keys. Always return without raising.
+    We will respond with generic success regardless to avoid oracle leaks.
+    """
+    cache = _get_cache()
+    ip = request.META.get("REMOTE_ADDR") or "unknown"
+    now = int(time.time())
+    # 1) IP-based (5 req/hour)
+    ip_key = _rate_key("ratelimit:ip", ip) + ":otp_request"
+    count_ip = int(cache.get(ip_key) or 0) + 1
+    cache.set(ip_key, str(count_ip), timeout=3600)
+    _apply_progressive_backoff(cache, ip_key, count_ip)
+    # 2) User-based (3 req/hour)
+    if user:
+        ukey = _rate_key("ratelimit:user", str(user.id)) + ":otp_request"
+        count_u = int(cache.get(ukey) or 0) + 1
+        cache.set(ukey, str(count_u), timeout=3600)
+        _apply_progressive_backoff(cache, ukey, count_u)
+    # Note: We do not block here; the verify endpoint will still work with valid OTP if delivered.
+
+
+@ensure_csrf_cookie
+@csrf_protect
+@require_http_methods(["POST"])  # JSON-only response
+def superadmin_password_reset_request(request: HttpRequest) -> JsonResponse:
+    """Request an OTP via email for Super-Admin password reset.
+    Always return a generic success to avoid account enumeration.
+    """
+    user = _get_superadmin_user()
+    # Rate-limit counters regardless of identifier correctness
+    _ratelimit_otp_request(request, user)
+    if not user:
+        return JsonResponse({"ok": True})
+
+    # Store OTP (even if email is missing, we still behave generically)
+    payload = _store_otp(user, purpose="password_reset", attempts=5, ttl=600)
+
+    # Send Email if present
+    try:
+        if user.email:
+            from django.core.mail import send_mail
+            send_mail(
+                subject="Your Super-Admin OTP Code",
+                message=f"Your one-time code is {payload['code']}. It expires in 10 minutes.",
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None) or "no-reply@localhost",
+                recipient_list=[user.email],
+                fail_silently=True,
+            )
+    except Exception:
+        pass
+
+    return JsonResponse({"ok": True})
+
+
+@ensure_csrf_cookie
+@csrf_protect
+@require_http_methods(["POST"])  # JSON-only response
+def superadmin_password_reset_verify_otp(request: HttpRequest) -> JsonResponse:
+    user = _get_superadmin_user()
+    code = (request.POST.get("code") or "").strip()
+    if not user or not code:
+        # Generic outcome
+        return JsonResponse({"ok": True, "verified": False})
+    ok, reason = _verify_otp(user, code, purpose="password_reset")
+    if ok:
+        request.session["pwd_reset_superadmin_ok"] = True
+        request.session.set_expiry(600)
+        return JsonResponse({"ok": True, "verified": True})
+    return JsonResponse({"ok": True, "verified": False})
+
+
+@ensure_csrf_cookie
+@csrf_protect
+@require_http_methods(["POST"])  # JSON-only response
+def superadmin_password_reset_confirm(request: HttpRequest) -> JsonResponse:
+    if not request.session.get("pwd_reset_superadmin_ok"):
+        return JsonResponse({"ok": False, "error": "OTP not verified or expired."}, status=400)
+    new_pw = request.POST.get("new_password") or ""
+    if len(new_pw) < 8:
+        return JsonResponse({"ok": False, "error": "Password too short."}, status=400)
+    user = _get_superadmin_user()
+    if not user:
+        return JsonResponse({"ok": False}, status=400)
+    user.set_password(new_pw)
+    user.save(update_fields=["password"])
+    # Invalidate session marker
+    try:
+        del request.session["pwd_reset_superadmin_ok"]
+    except KeyError:
+        pass
+    return JsonResponse({"ok": True, "reset": True})

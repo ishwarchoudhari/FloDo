@@ -238,6 +238,25 @@ LOGIN_REDIRECT_URL = "/Super-Admin/dashboard/"
 LOGOUT_REDIRECT_URL = "/Super-Admin/auth/login/"
 
 # ---------------------------------------------------------------------------
+# Email settings (env-driven). Safe defaults: console in DEBUG, SMTP otherwise.
+# Used by OTP email delivery in authentication.views.
+# ---------------------------------------------------------------------------
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@localhost")
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.console.EmailBackend" if DEBUG else "django.core.mail.backends.smtp.EmailBackend",
+)
+
+# Only relevant for SMTP backend. Values are ignored by the console backend.
+EMAIL_HOST = os.getenv("EMAIL_HOST", "localhost")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() in ("1", "true", "yes")
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False").lower() in ("1", "true", "yes")
+EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT", "10"))
+
+# ---------------------------------------------------------------------------
 # Session configuration
 # ---------------------------------------------------------------------------
 # Use database-backed sessions explicitly (Django default, but set for clarity)

@@ -112,4 +112,149 @@ document.addEventListener('DOMContentLoaded', () => {
       setBusy(false);
     }
   });
+
+  // ------------------------------
+  // Super-Admin Forgot Password (OTP) – zero reload
+  // ------------------------------
+  const fpToggle = document.getElementById('forgotPwdToggle');
+  const fpWrap = document.getElementById('forgotPwdWrap');
+  const fpStepSend = document.getElementById('fpStepSend');
+  const fpStepOtp = document.getElementById('fpStepOtp');
+  const fpStepReset = document.getElementById('fpStepReset');
+  const fpSendBtn = document.getElementById('fpSendBtn');
+  const fpOtpInput = document.getElementById('fpOtpInput');
+  const fpVerifyBtn = document.getElementById('fpVerifyBtn');
+  const fpNewPassword = document.getElementById('fpNewPassword');
+  const fpResetBtn = document.getElementById('fpResetBtn');
+  const fpMsg = document.getElementById('fpMsg');
+  const fpCountdown = document.getElementById('fpCountdown');
+
+  let countdownTimer = null;
+  function showStep(step){
+    if (!fpWrap) return;
+    [fpStepSend, fpStepOtp, fpStepReset].forEach(s => s && s.classList.add('hidden'));
+    if (step === 1 && fpStepSend) fpStepSend.classList.remove('hidden');
+    if (step === 2 && fpStepOtp) fpStepOtp.classList.remove('hidden');
+    if (step === 3 && fpStepReset) fpStepReset.classList.remove('hidden');
+  }
+  function setFpBusy(el, busy, labelBusy='Working…', labelIdle){
+    if (!el) return;
+    const txt = el.querySelector('[data-text]');
+    const sp = el.querySelector('svg');
+    el.disabled = !!busy;
+    if (busy){
+      el.classList.add('opacity-80','cursor-not-allowed');
+      if (sp) sp.classList.remove('hidden');
+      if (txt) txt.textContent = labelBusy;
+    } else {
+      el.classList.remove('opacity-80','cursor-not-allowed');
+      if (sp) sp.classList.add('hidden');
+      if (txt && labelIdle) txt.textContent = labelIdle;
+    }
+  }
+  function setFpMsg(type, text){
+    if (!fpMsg) return;
+    fpMsg.textContent = text || '';
+    fpMsg.classList.add('hidden');
+    fpMsg.classList.remove('text-red-600','text-green-600');
+    if (text){
+      fpMsg.classList.remove('hidden');
+      fpMsg.classList.add(type === 'error' ? 'text-red-600' : 'text-green-600');
+    }
+  }
+  function startOtpCountdown(sec){
+    if (!fpCountdown) return;
+    if (countdownTimer) clearInterval(countdownTimer);
+    let remaining = sec;
+    fpCountdown.textContent = `Expires in ${remaining}s`;
+    fpCountdown.classList.remove('hidden');
+    countdownTimer = setInterval(() => {
+      remaining -= 1;
+      if (remaining <= 0){
+        clearInterval(countdownTimer); countdownTimer = null;
+        fpCountdown.textContent = 'Code expired. Request a new one.';
+        return;
+      }
+      fpCountdown.textContent = `Expires in ${remaining}s`;
+    }, 1000);
+  }
+
+  async function requestOtp(){
+    if (fpMsg) setFpMsg('info','');
+    setFpBusy(fpSendBtn, true, 'Sending…', 'Send OTP');
+    try {
+      const res = await fetchWithCSRF('/Super-Admin/auth/password-reset/request/', { method: 'POST' });
+      const data = await res.json();
+      showNotification('If an account exists, an OTP has been sent.', 'info');
+      showStep(2);
+      startOtpCountdown(600);
+    } catch {
+      setFpMsg('error','Network error. Try again.');
+    } finally {
+      setFpBusy(fpSendBtn, false, 'Sending…', 'Send OTP');
+    }
+  }
+
+  async function verifyOtp(){
+    setFpMsg('info','');
+    const code = (fpOtpInput && fpOtpInput.value || '').trim();
+    if (!/^\d{6}$/.test(code)){
+      setFpMsg('error','Please enter a valid 6-digit code.');
+      return;
+    }
+    setFpBusy(fpVerifyBtn, true, 'Verifying…', 'Verify Code');
+    try {
+      const fd = new FormData();
+      fd.append('code', code);
+      const res = await fetchWithCSRF('/Super-Admin/auth/password-reset/verify-otp/', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data && data.ok && data.verified){
+        showNotification('OTP verified. You can set a new password now.', 'success');
+        showStep(3);
+      } else {
+        setFpMsg('error','Incorrect or expired code. Try again.');
+      }
+    } catch {
+      setFpMsg('error','Network error. Try again.');
+    } finally {
+      setFpBusy(fpVerifyBtn, false, 'Verifying…', 'Verify Code');
+    }
+  }
+
+  async function confirmReset(){
+    setFpMsg('info','');
+    const npw = (fpNewPassword && fpNewPassword.value) || '';
+    if (!npw || npw.length < 8){ setFpMsg('error','Password must be at least 8 characters.'); return; }
+    setFpBusy(fpResetBtn, true, 'Updating…', 'Reset Password');
+    try {
+      const fd = new FormData();
+      fd.append('new_password', npw);
+      const res = await fetchWithCSRF('/Super-Admin/auth/password-reset/confirm/', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data && data.ok && data.reset){
+        showNotification('Password reset successful. Please sign in.', 'success');
+        // Return to step 1 and close panel
+        showStep(1);
+        if (fpWrap) fpWrap.classList.add('hidden');
+      } else {
+        setFpMsg('error', (data && data.error) || 'Unable to reset password.');
+      }
+    } catch {
+      setFpMsg('error','Network error. Try again.');
+    } finally {
+      setFpBusy(fpResetBtn, false, 'Updating…', 'Reset Password');
+    }
+  }
+
+  if (fpToggle && fpWrap){
+    fpToggle.addEventListener('click', (e)=>{
+      e.preventDefault();
+      fpWrap.classList.toggle('hidden');
+      showStep(1);
+      setFpMsg('info','');
+    });
+  }
+  if (fpSendBtn) fpSendBtn.addEventListener('click', (e)=>{ e.preventDefault(); requestOtp(); });
+  if (fpVerifyBtn) fpVerifyBtn.addEventListener('click', (e)=>{ e.preventDefault(); verifyOtp(); });
+  if (fpResetBtn) fpResetBtn.addEventListener('click', (e)=>{ e.preventDefault(); confirmReset(); });
 });

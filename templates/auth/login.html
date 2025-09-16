@@ -37,6 +37,43 @@
         </button>
 
         <p id="loginHelp" class="text-center text-sm text-gray-600 dark:text-gray-300">First time? <a class="text-blue-700 dark:text-blue-400 hover:underline" href="{% url 'authentication:signup' %}">Create super-admin</a></p>
+
+        <!-- Forgot Password trigger -->
+        <p class="text-center text-sm mt-2">
+          <a id="forgotPwdToggle" href="#" class="text-blue-700 dark:text-blue-400 hover:underline">Forgot password?</a>
+        </p>
+
+        <!-- Forgot Password Panel (hidden by default) -->
+        <div id="forgotPwdWrap" class="hidden mt-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900">
+          <div id="fpMsg" class="text-sm mb-2 hidden"></div>
+          <!-- Step 1: Send OTP -->
+          <div id="fpStepSend" class="space-y-3">
+            <p class="text-sm text-gray-600 dark:text-gray-300">We will send a one-time code to the Super‑Admin email on file.</p>
+            <button id="fpSendBtn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none">
+              <svg class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" stroke-width="4"></path></svg>
+              <span data-text>Send OTP</span>
+            </button>
+            <div id="fpCountdown" class="text-xs text-gray-500 hidden"></div>
+          </div>
+          <!-- Step 2: Verify OTP -->
+          <div id="fpStepOtp" class="space-y-3 hidden">
+            <label for="fpOtpInput" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Enter 6‑digit code</label>
+            <input id="fpOtpInput" type="text" inputmode="numeric" pattern="\\d{6}" maxlength="6" placeholder="123456" class="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+            <button id="fpVerifyBtn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none">
+              <svg class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" stroke-width="4"></path></svg>
+              <span data-text>Verify Code</span>
+            </button>
+          </div>
+          <!-- Step 3: Reset Password -->
+          <div id="fpStepReset" class="space-y-3 hidden">
+            <label for="fpNewPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-200">New Password</label>
+            <input id="fpNewPassword" type="password" minlength="8" placeholder="At least 8 characters" class="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+            <button id="fpResetBtn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 focus:outline-none">
+              <svg class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" stroke-width="4"></path></svg>
+              <span data-text>Reset Password</span>
+            </button>
+          </div>
+        </div>
       </form>
     </div>
   </div>
