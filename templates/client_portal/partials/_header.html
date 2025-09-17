@@ -1,14 +1,14 @@
 {% load static %}
 <header class="fixed inset-x-0 top-0 z-50 bg-white backdrop-blur supports-[backdrop-filter]:bg-white/90 border-b border-gray-200 shadow-sm">
-  <div class="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
+  <div class="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-5">
     
     <!-- Brand + Navigation -->
     <div class="flex items-center gap-6 min-w-0">
-      <a href="{% url 'client_portal:home' %}" class="inline-flex items-center gap-3 font-extrabold tracking-tight text-xl">
+      <a href="{% url 'client_portal:home' %}" class="inline-flex items-center gap-3 font-extrabold tracking-tight text-2xl">
         <span class="inline-flex w-10 h-10 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-500 to-lime-500 text-white shadow-sm">F</span>
         <span class="text-black">FloDo</span>
       </a>
-      <nav class="hidden md:flex items-center gap-6 text-[15px] font-semibold text-black">
+      <nav class="hidden md:flex items-center gap-6 text-base font-semibold text-black">
         <a class="h-10 px-3 inline-flex items-center hover:text-emerald-700 transition" href="{% url 'client_portal:home' %}">Home</a>
         <a class="h-10 px-3 inline-flex items-center hover:text-emerald-700 transition" href="{% url 'client_portal:browse_artists' %}">Browse Artists</a>
         <a class="h-10 px-3 inline-flex items-center hover:text-emerald-700 transition" href="{% url 'client_portal:customer_dashboard' %}">Bookings</a>
