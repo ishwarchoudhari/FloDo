@@ -2,8 +2,8 @@
 {% extends "client_portal/base.html" %}
 {% block title %} • Auth{% endblock %}
 {% block content %}
-<section class="max-w-3xl mx-auto mt-10">
-  <div class="grid md:grid-cols-2 gap-0 bg-white/70 dark:bg-gray-900/60 backdrop-blur rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-xl">
+<section class="max-w-3xl mx-auto mt-12">
+  <div class="grid md:grid-cols-2 gap-0 bg-white/80 dark:bg-gray-900/70 backdrop-blur rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-xl">
     <!-- Left: Hero / copy -->
     <div class="hidden md:flex flex-col justify-center p-8 bg-gradient-to-br from-emerald-600/80 to-lime-600/60 text-white">
       <h2 class="text-2xl font-extrabold mb-2">Welcome to FloDo Portal</h2>
@@ -19,8 +19,8 @@
     <div class="w-full p-6 sm:p-8">
       <!-- Tabs -->
       <div class="flex items-center gap-2 mb-6">
-        <button id="tab-login" class="tab-btn px-4 py-2 rounded-lg bg-emerald-600 text-white">Sign In</button>
-        <button id="tab-signup" class="tab-btn px-4 py-2 rounded-lg bg-transparent text-emerald-700 dark:text-emerald-300 border border-emerald-500 hover:bg-emerald-500/10">Create Account</button>
+        <button id="tab-login" class="tab-btn py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-full bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/60">Sign In</button>
+        <button id="tab-signup" class="tab-btn py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-full border border-emerald-500 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 focus:outline-hidden">Create Account</button>
       </div>
 
       <!-- Alerts -->
@@ -34,7 +34,7 @@
           <span class="pointer-events-none absolute left-3 top-10 sm:top-9 text-gray-400 group-focus-within:text-emerald-500">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M2 4.5A2.5 2.5 0 014.5 2h15A2.5 2.5 0 0122 4.5v15a2.5 2.5 0 01-2.5 2.5h-15A2.5 2.5 0 012 19.5v-15zm3 2A1.5 1.5 0 006.5 8h11A1.5 1.5 0 0019 6.5V6a1 1 0 00-1-1H6a1 1 0 00-1 1v.5zM5 10v9.5a.5.5 0 00.5.5h13a.5.5 0 00.5-.5V10H5z"/></svg>
           </span>
-          <input id="login-identifier" name="identifier" required aria-describedby="login-identifier-hint" autocomplete="username" placeholder="you@example.com or +1 555 000 0000" class="mt-1 w-full border rounded-lg pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+          <input id="login-identifier" name="identifier" required aria-describedby="login-identifier-hint" autocomplete="username" placeholder="you@example.com or +1 555 000 0000" class="mt-1 w-full border rounded-full pl-9 pr-3 py-2.5 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
           <p id="login-identifier-hint" class="mt-1 text-xs text-gray-500">Use your email or phone number.</p>
           <p class="hidden mt-1 text-xs text-red-600" id="login-identifier-error">Please enter a valid email or phone number.</p>
         </div>
@@ -43,8 +43,8 @@
           <span class="pointer-events-none absolute left-3 top-10 sm:top-9 text-gray-400 group-focus-within:text-emerald-500">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a5 5 0 00-5 5v3H6a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2v-8a2 2 0 00-2-2h-1V6a5 5 0 00-5-5zm-3 8V6a3 3 0 116 0v3H9z"/></svg>
           </span>
-          <input id="login-password" type="password" name="password" autocomplete="current-password" required placeholder="••••••••" class="mt-1 w-full border rounded-lg pl-9 pr-10 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
-          <button type="button" class="absolute right-2 top-9 sm:top-8 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" id="toggle-login-password" aria-label="Show password">
+          <input id="login-password" type="password" name="password" autocomplete="current-password" required placeholder="••••••••" class="mt-1 w-full border rounded-full pl-9 pr-10 py-2.5 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+          <button type="button" class="absolute right-2 top-9 sm:top-8 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800" id="toggle-login-password" aria-label="Show password">
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5c-5 0-9.27 3.11-11 7 1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 110-10 5 5 0 010 10z"/></svg>
           </button>
           <div class="mt-2 flex items-center justify-between">
@@ -55,7 +55,7 @@
           </div>
         </div>
         <div class="flex items-center justify-between gap-3">
-          <button type="submit" class="relative inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-70 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60">
+          <button type="submit" class="relative inline-flex items-center gap-x-2 py-3 px-4 text-sm font-medium rounded-full bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-70 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60">
             <svg class="spinner hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 018-8" stroke-width="4" stroke-linecap="round"></path></svg>
             <span class="btn-text">Sign In</span>
             <svg class="success-check hidden h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 12.75l-2-2a1 1 0 10-1.414 1.414l2.707 2.707a1 1 0 001.414 0L19 8.586A1 1 0 1017.586 7.17L9 15.75z"/></svg>
@@ -90,7 +90,7 @@
         <div class="grid sm:grid-cols-2 gap-3">
           <div>
             <label for="signup-fullname" class="block text-sm text-gray-700 dark:text-gray-300">Full name</label>
-            <input id="signup-fullname" name="full_name" required placeholder="John Doe" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+            <input id="signup-fullname" name="full_name" required placeholder="John Doe" class="mt-1 w-full border rounded-full px-4 py-2.5 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
           </div>
           <div>
             <label for="signup-phone" class="block text-sm text-gray-700 dark:text-gray-300">Phone</label>
@@ -98,7 +98,7 @@
               <span class="pointer-events-none absolute left-3 top-3 text-gray-400 group-focus-within:text-emerald-500">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.36 11.36 0 003.56.57 1 1 0 011 1v3.6a1 1 0 01-1 1A17 17 0 013 5a1 1 0 011-1h3.6a1 1 0 011 1 11.36 11.36 0 00.57 3.56 1 1 0 01-.24 1.01l-2.31 2.22z"/></svg>
               </span>
-              <input id="signup-phone" name="phone" required inputmode="tel" placeholder="+1 555 000 0000" class="mt-1 w-full border rounded-lg pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+              <input id="signup-phone" name="phone" required inputmode="tel" placeholder="+1 555 000 0000" class="mt-1 w-full border rounded-full pl-9 pr-3 py-2.5 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
             </div>
           </div>
         </div>
@@ -109,7 +109,7 @@
               <span class="pointer-events-none absolute left-3 top-3 text-gray-400 group-focus-within:text-emerald-500">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M2 5.5A2.5 2.5 0 014.5 3h15A2.5 2.5 0 0122 5.5v13a2.5 2.5 0 01-2.5 2.5h-15A2.5 2.5 0 012 18.5v-13zm2.5-.5a.5.5 0 00-.5.5v.3l8 5 8-5V5.5a.5.5 0 00-.5-.5h-15z"/></svg>
               </span>
-              <input id="signup-email" type="email" name="email" placeholder="you@example.com" aria-describedby="signup-email-hint" class="mt-1 w-full border rounded-lg pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+              <input id="signup-email" type="email" name="email" placeholder="you@example.com" aria-describedby="signup-email-hint" class="mt-1 w-full border rounded-full pl-9 pr-3 py-2.5 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
             </div>
             <p id="signup-email-hint" class="mt-1 text-xs text-gray-500">We’ll use this for receipts and notifications.</p>
             <p id="signup-email-error" class="hidden mt-1 text-xs text-red-600">Please enter a valid email (e.g., name@domain.com).</p>
@@ -120,13 +120,13 @@
               <span class="pointer-events-none absolute left-3 top-3 text-gray-400 group-focus-within:text-emerald-500">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a5 5 0 00-5 5v3H6a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2v-8a2 2 0 00-2-2h-1V6a5 5 0 00-5-5zm-3 8V6a3 3 0 116 0v3H9z"/></svg>
               </span>
-              <input id="signup-password" type="password" name="password" autocomplete="new-password" required aria-describedby="pwd-hint" placeholder="At least 8 characters" class="mt-1 w-full border rounded-lg pl-9 pr-10 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
-              <button type="button" class="absolute right-2 top-2.5 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" id="toggle-signup-password" aria-label="Show password">
+              <input id="signup-password" type="password" name="password" autocomplete="new-password" required aria-describedby="pwd-hint" placeholder="At least 8 characters" class="mt-1 w-full border rounded-full pl-9 pr-10 py-2.5 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+              <button type="button" class="absolute right-2 top-2.5 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800" id="toggle-signup-password" aria-label="Show password">
                 <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5c-5 0-9.27 3.11-11 7 1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 110-10 5 5 0 010 10z"/></svg>
               </button>
             </div>
             <div class="mt-2" aria-live="polite">
-              <div class="h-1.5 rounded bg-gray-200 dark:bg-gray-800 overflow-hidden">
+              <div class="h-1.5 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
                 <div id="pwd-bar" class="h-1.5 bg-red-500 w-1/5 transition-all"></div>
               </div>
               <p id="pwd-hint" class="mt-1 text-xs text-gray-500">Use 8+ chars with upper, lower, number, and symbol.</p>
@@ -135,10 +135,10 @@
         </div>
         <div>
           <label class="block text-sm text-gray-700 dark:text-gray-300">Location (optional)</label>
-          <input name="location" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+          <input name="location" class="mt-1 w-full border rounded-full px-4 py-2.5 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
         </div>
         <div class="flex items-center justify-end gap-3">
-          <button type="submit" class="relative inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-70 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60">
+          <button type="submit" class="relative inline-flex items-center gap-x-2 py-3 px-4 text-sm font-medium rounded-full bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-70 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60">
             <svg class="spinner hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 018-8" stroke-width="4" stroke-linecap="round"></path></svg>
             <span class="btn-text">Create Account</span>
             <svg class="success-check hidden h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 12.75l-2-2a1 1 0 10-1.414 1.414l2.707 2.707a1 1 0 001.414 0L19 8.586A1 1 0 1017.586 7.17L9 15.75z"/></svg>
