@@ -59,6 +59,13 @@ class Table5(BaseTable):
         db_table = "dashboard_artist_service"  # added: was dashboard_table5
 
 
+def validate_file_size(value):
+    max_bytes = 10 * 1024 * 1024  # 10MB
+    if value and hasattr(value, "size") and value.size > max_bytes:
+        from django.core.exceptions import ValidationError
+        raise ValidationError("File too large (max 10MB)")
+
+
 class Table6(BaseTable):
     # Extended fields for Artist Application (backward-compatible)
     artist_application_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, null=True, blank=True)
@@ -80,15 +87,32 @@ class Table6(BaseTable):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="artist_applications")
     email = models.EmailField(null=True, blank=True)
     years_experience = models.PositiveIntegerField(default=0)
+    # Additive client linkage and profile metadata (nullable for backward-compat)
+    client = models.ForeignKey('Client', null=True, blank=True, on_delete=models.SET_NULL, related_name='artist_applications', db_index=True)
+    GENDER_CHOICES = (
+        ('male', 'Male'),
+        ('female', 'Female'),
+        ('other', 'Other'),
+        ('prefer_not_to_say', 'Prefer not to say'),
+    )
+    gender = models.CharField(max_length=24, null=True, blank=True, choices=GENDER_CHOICES)
+    dob = models.DateField(null=True, blank=True)
+    profile_picture = models.ImageField(upload_to='artist_profiles/%Y/%m/%d/', null=True, blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=["png","jpg","jpeg","webp"]), validate_file_size])
+    specialization = models.CharField(max_length=255, null=True, blank=True)
+    instagram_url = models.URLField(max_length=512, null=True, blank=True)
+    instagram_username = models.CharField(max_length=255, null=True, blank=True)
+    beauty_studio_location = models.TextField(null=True, blank=True)
+    additional_notes = models.TextField(null=True, blank=True)
+    reapply_reason = models.TextField(null=True, blank=True)
+    verified_badge = models.BooleanField(default=False)
+    mfa_enabled = models.BooleanField(default=False)
+    supporting_details = models.JSONField(null=True, blank=True)
     class Meta:  # added
         db_table = "dashboard_artist_application"  # added: was dashboard_table6
 
 
-def validate_file_size(value):
-    max_bytes = 10 * 1024 * 1024  # 10MB
-    if value and hasattr(value, "size") and value.size > max_bytes:
-        from django.core.exceptions import ValidationError
-        raise ValidationError("File too large (max 10MB)")
+ 
 
 
 class ArtistApplicationCertificate(models.Model):
@@ -101,6 +125,16 @@ class ArtistApplicationCertificate(models.Model):
         ],
     )
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    # Extended to support pictures/profile pic and metadata (backward-compatible)
+    CATEGORY_CHOICES = (
+        ('certificate', 'Certificate'),
+        ('supporting_picture', 'Supporting Picture'),
+        ('profile_picture', 'Profile Picture'),
+    )
+    category = models.CharField(max_length=32, default='certificate', choices=CATEGORY_CHOICES)
+    description = models.CharField(max_length=255, null=True, blank=True)
+    uploaded_by_client = models.ForeignKey('Client', null=True, blank=True, on_delete=models.SET_NULL)
+    external_url = models.URLField(max_length=512, null=True, blank=True)
 
     class Meta:
         db_table = "dashboard_artist_application_certificate"
@@ -166,6 +200,10 @@ class Client(models.Model):
     location = models.CharField(max_length=255, null=True, blank=True)
     STATUS_CHOICES = (("Active", "Active"), ("Inactive", "Inactive"))
     status = models.CharField(max_length=8, choices=STATUS_CHOICES, default="Active")
+    # Added: single-session enforcement (stores the only valid session key for this client)
+    active_session_key = models.CharField(max_length=64, null=True, blank=True)  # Added
+    # Added: Super-admin override to allow reapplication for artist applications
+    allow_reapply = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

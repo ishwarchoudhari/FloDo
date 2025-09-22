@@ -26,16 +26,14 @@ class SecurityHeadersMiddleware:
         response["Cross-Origin-Resource-Policy"] = "same-origin"
         response["Cross-Origin-Embedder-Policy"] = "require-corp"
 
-        # Report-only CSP to avoid breakage in development. Tailor sources to current templates.
+        # Report-only CSP (requested baseline). Does not block, only reports.
+        # default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; report-uri /csp-report/
         csp_ro = (
             "default-src 'self'; "
-            "script-src 'self' https://cdn.tailwindcss.com 'unsafe-inline'; "
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-            "img-src 'self' data: blob:; "
-            "font-src 'self' https://fonts.gstatic.com data:; "
-            "connect-src 'self' ws: wss:; "
-            "frame-ancestors 'none'; "
-            "base-uri 'self'"
+            "img-src 'self' data:; "
+            "style-src 'self' 'unsafe-inline'; "
+            "script-src 'self'; "
+            "report-uri /csp-report/"
         )
         response["Content-Security-Policy-Report-Only"] = csp_ro
         return response

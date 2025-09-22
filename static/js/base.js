@@ -128,6 +128,75 @@ const AUTH_BASE = ADMIN_PREFIX + '/auth';
   }
 })();
 
+// ---- Minimal Auth/Login + OTP handlers (fallback if auth.js is absent) ----
+(function authFallback(){
+  function q(id){ return document.getElementById(id); }
+  function fetchCSRF(url, opts){ try { return (window.fetchWithCSRF||window.fetch)(url, opts||{}); } catch(_){ return fetch(url, opts||{}); } }
+
+  function bindLogin(){
+    var form = q('loginForm'); if (!form) return;
+    var btn = q('loginBtn'); var spinner = q('btnSpinner'); var text = q('btnText'); var err = q('loginError');
+    form.addEventListener('submit', async function(ev){
+      try {
+        if (!window.fetchWithCSRF) return; // allow native POST if wrapper unavailable
+        ev.preventDefault();
+        if (err) { err.classList.add('hidden'); err.textContent=''; }
+        if (spinner) spinner.classList.remove('hidden');
+        if (text) text.textContent = 'Signing in…';
+        var fd = new FormData(form);
+        const res = await fetchCSRF(window.location.pathname, { method:'POST', body: fd, headers: { 'X-Requested-With':'XMLHttpRequest' } });
+        if (!res.ok){
+          try { var j = await res.json(); if (err) { err.textContent = (j && (j.error||j.errors)) ? (j.error||JSON.stringify(j.errors)) : 'Login failed'; err.classList.remove('hidden'); } } catch(_){ if (err){ err.textContent='Login failed'; err.classList.remove('hidden'); } }
+          return;
+        }
+        var data = {};
+        try { data = await res.json(); } catch(_){ }
+        var next = (data && data.redirect) ? data.redirect : (fd.get('next')||'/');
+        window.location.href = next;
+      } catch(_){ if (err){ err.textContent='Network error'; err.classList.remove('hidden'); } }
+      finally { if (spinner) spinner.classList.add('hidden'); if (text) text.textContent = 'Sign in'; }
+    });
+  }
+
+  function bindForgotPassword(){
+    var toggle = q('forgotPwdToggle'); var wrap = q('forgotPwdWrap'); if (!toggle || !wrap) return;
+    toggle.addEventListener('click', function(e){ e.preventDefault(); wrap.classList.toggle('hidden'); });
+    var sendBtn = q('fpSendBtn'); var verifyBtn = q('fpVerifyBtn'); var resetBtn = q('fpResetBtn');
+    var msg = q('fpMsg'); var stepSend = q('fpStepSend'); var stepOtp = q('fpStepOtp'); var stepReset = q('fpStepReset');
+    var otpHidden = q('fpOtpInput');
+    function showMsg(t, ok){ if (!msg) return; msg.textContent = t||''; msg.classList.remove('hidden'); msg.classList.toggle('text-red-600', !ok); }
+    if (sendBtn){ sendBtn.addEventListener('click', async function(){ try {
+      var s = sendBtn.querySelector('svg'); var label = sendBtn.querySelector('[data-text]'); if (s) s.classList.remove('hidden'); if (label) label.textContent='Sending…';
+      var res = await fetchCSRF('/Super-Admin/auth/password-reset/request/', { method:'POST', headers:{ 'X-Requested-With':'XMLHttpRequest' } });
+      var ok = res.ok; showMsg(ok ? 'OTP sent if a Super-Admin exists.' : 'Unable to send OTP', ok);
+      if (stepSend && stepOtp){ stepSend.classList.add('hidden'); stepOtp.classList.remove('hidden'); }
+    } catch(_){ showMsg('Network error', false); } finally { var s = sendBtn.querySelector('svg'); var label = sendBtn.querySelector('[data-text]'); if (s) s.classList.add('hidden'); if (label) label.textContent='Send OTP'; } }); }
+
+    function collectOtp(){ var v=''; for (var i=0;i<6;i++){ var el = q('otp'+i); if (el && el.value) v+=el.value; } return v; }
+    if (verifyBtn){ verifyBtn.addEventListener('click', async function(){ try {
+      var s = verifyBtn.querySelector('svg'); var label = verifyBtn.querySelector('[data-text]'); if (s) s.classList.remove('hidden'); if (label) label.textContent='Verifying…';
+      var code = collectOtp(); if (otpHidden) otpHidden.value = code;
+      var fd = new FormData(); fd.append('code', code||'');
+      var res = await fetchCSRF('/Super-Admin/auth/password-reset/verify-otp/', { method:'POST', body: fd, headers:{ 'X-Requested-With':'XMLHttpRequest' } });
+      var j = {}; try { j = await res.json(); } catch(_){ }
+      if (j && j.verified){ if (stepOtp && stepReset){ stepOtp.classList.add('hidden'); stepReset.classList.remove('hidden'); } showMsg('Code verified. Set a new password.', true); }
+      else { showMsg('Invalid or expired code.', false); }
+    } catch(_){ showMsg('Network error', false); } finally { var s = verifyBtn.querySelector('svg'); var label = verifyBtn.querySelector('[data-text]'); if (s) s.classList.add('hidden'); if (label) label.textContent='Verify Code'; } }); }
+
+    if (resetBtn){ resetBtn.addEventListener('click', async function(){ try {
+      var s = resetBtn.querySelector('svg'); var label = resetBtn.querySelector('[data-text]'); if (s) s.classList.remove('hidden'); if (label) label.textContent='Resetting…';
+      var pw = q('fpNewPassword'); var pw2 = q('fpConfirmPassword'); var fd = new FormData(); fd.append('new_password', (pw&&pw.value)||'');
+      var res = await fetchCSRF('/Super-Admin/auth/password-reset/confirm/', { method:'POST', body: fd, headers:{ 'X-Requested-With':'XMLHttpRequest' } });
+      var j = {}; try { j = await res.json(); } catch(_){ }
+      if (j && j.ok){ showMsg('Password has been reset. Please sign in.', true); wrap.classList.add('hidden'); }
+      else { showMsg((j && j.error) || 'Unable to reset password', false); }
+    } catch(_){ showMsg('Network error', false); } finally { var s = resetBtn.querySelector('svg'); var label = resetBtn.querySelector('[data-text]'); if (s) s.classList.add('hidden'); if (label) label.textContent='Reset Password'; } }); }
+  }
+
+  function init(){ try { bindLogin(); bindForgotPassword(); } catch(_){ } }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+
 // Helper to update aria-live status text
 window.updateAriaStatus = function(msg){
   var el = document.getElementById('aria-status');
@@ -135,7 +204,7 @@ window.updateAriaStatus = function(msg){
 };
 
 // Optional WebSocket to keep dashboard charts live using existing notifications WS
-window.initDashboardStatsWS = function(){
+  window.initDashboardStatsWS = function(){
   try {
     if (window.__dashWS && (window.__dashWS.readyState === 0 || window.__dashWS.readyState === 1)) return;
     var proto = (window.location.protocol === 'https:') ? 'wss://' : 'ws://';
@@ -148,6 +217,7 @@ window.initDashboardStatsWS = function(){
         var msg = JSON.parse(ev.data||'{}');
         // Any activity implies potential table count change; refresh lightweightly
         if (typeof window.refreshDashboardCharts === 'function') window.refreshDashboardCharts();
+        try { window.__handleArtistAppsBadge && window.__handleArtistAppsBadge(msg); } catch(_){ }
       } catch(_){ }
     };
     ws.onclose = function(){
@@ -157,6 +227,48 @@ window.initDashboardStatsWS = function(){
     ws.onerror = function(){ try { ws.close(); } catch(_){ } };
   } catch(_){ }
 };
+
+// ---- Artist Applications sidebar badge (precise count via API) ----
+(function artistAppsBadge(){
+  var API = '/dashboard/api/artist-applications/pending_count/';
+  var POLL_MS = 20000; // 20s, lightweight
+  function getBadge(){ return document.getElementById('badge-artist-apps'); }
+  function render(n){ var el = getBadge(); if (!el) return; if (n>0){ el.textContent = String(n>99? '99+': n); el.classList.remove('hidden'); el.setAttribute('aria-hidden','false'); } else { el.textContent=''; el.classList.add('hidden'); el.setAttribute('aria-hidden','true'); } }
+  async function fetchCount(){
+    try {
+      var res = await fetch(API, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
+      if (!res.ok) return null;
+      var j = await res.json();
+      if (j && j.success === true && typeof j.count === 'number') return j.count;
+      if (j && typeof j.count === 'number') return j.count; // tolerate different shapes
+    } catch(_){ }
+    return null;
+  }
+  async function refresh(){
+    var n = await fetchCount();
+    if (typeof n === 'number') render(n);
+  }
+  // Expose refresh so websocket can trigger precise update
+  window.__refreshArtistAppsBadge = refresh;
+  window.__handleArtistAppsBadge = function(msg){
+    try {
+      if (!msg || typeof msg !== 'object') return;
+      var d = msg.data || msg.payload || {};
+      var t = String((d.table_name||d.table||'')||'');
+      if (!/artist\s*-?_?application/i.test(t)) return;
+      refresh();
+    } catch(_){ }
+  };
+  function maybeClearOnPage(){
+    try {
+      // If reviewing the list page, still show precise count (most likely 0). No hard reset.
+      // Just refresh once immediately when on that page.
+      if (location && /\/Super-Admin\/artist-applications\/?(\?|$)/.test(location.pathname+location.search)) { refresh(); }
+    } catch(_){ }
+  }
+  function start(){ refresh(); maybeClearOnPage(); try { if (window.__aaBadgeTimer) clearInterval(window.__aaBadgeTimer); window.__aaBadgeTimer = setInterval(refresh, POLL_MS); } catch(_){ } }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
 
 // ------------------ Dashboard Chart (Table Distribution) ------------------
 // Inline SVG bar chart: reads stats from #chart-table-distribution[data-stats]
@@ -637,9 +749,9 @@ window.loadAdminProfile = async function(){
       try {
         const container = document.getElementById('content-root');
         if (!container) return;
-        const editBtn = container.querySelector('div.border-b button');
+        const editBtn = container.querySelector('#profile-edit-btn');
         if (editBtn) editBtn.addEventListener('click', function(){ if (typeof window.profileEnterEditMode==='function') window.profileEnterEditMode(); });
-        const cancelBtn = container.querySelector('#profile-edit-mode button[type="button"]:not(.bg-gray-800)');
+        const cancelBtn = container.querySelector('#profile-cancel-btn');
         if (cancelBtn) cancelBtn.addEventListener('click', function(){ if (typeof window.profileCancelEdit==='function') window.profileCancelEdit(); });
         const avatarInput = container.querySelector('#avatar-input');
         if (avatarInput) avatarInput.addEventListener('change', function(){ if (typeof window.profileUploadAvatar==='function') window.profileUploadAvatar(avatarInput); });
@@ -701,6 +813,10 @@ window.profileEnterEditMode = function(){
   if (!v || !e) return;
   v.classList.add('hidden');
   e.classList.remove('hidden');
+  try {
+    var btn = document.getElementById('profile-edit-btn');
+    if (btn) btn.setAttribute('aria-expanded','true');
+  } catch(_){}
   window.updateAriaStatus && window.updateAriaStatus('Edit mode enabled');
 };
 window.profileCancelEdit = function(){
@@ -709,6 +825,10 @@ window.profileCancelEdit = function(){
   if (!v || !e) return;
   e.classList.add('hidden');
   v.classList.remove('hidden');
+  try {
+    var btn = document.getElementById('profile-edit-btn');
+    if (btn) btn.setAttribute('aria-expanded','false');
+  } catch(_){}
   window.updateAriaStatus && window.updateAriaStatus('Edit mode cancelled');
 };
 window.profileSave = async function(ev){

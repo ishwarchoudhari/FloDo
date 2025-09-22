@@ -1,34 +1,68 @@
 {% extends "client_portal/base.html" %}
 {% block title %}Client Signup{% endblock %}
 {% block content %}
-<section class="max-w-md mx-auto mt-8">
-  <h1 class="text-2xl font-extrabold mb-4">Create your account</h1>
-  <form method="post" class="space-y-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 shadow-sm">
+<section class="max-w-md mx-auto mt-8 font-semibold">
+  <h1 class="text-2xl font-semibold mb-4">Create your account</h1>
+  <div id="signup-alert" class="hidden mb-3 px-3 py-2 rounded-lg text-sm"></div>
+  <form id="signup-form" method="post" class="space-y-4 bg-white dark:bg-[#1f1f1f] border border-gray-200 dark:border-[#2a2a2a] rounded-2xl p-5 shadow-xl text-gray-900 dark:text-[#e5e5e5]">
     {% csrf_token %}
     <div>
-      <label class="block text-sm text-gray-700 dark:text-gray-300">Full name</label>
-      <input name="full_name" required class="mt-1 w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+      <label class="block text-sm text-gray-800 dark:text-[#e5e5e5]">Full name</label>
+      <input name="full_name" required class="mt-1 w-full border rounded-full px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333] text-gray-900 dark:text-[#eaeaea] focus:outline-none focus:ring-2 focus:ring-neutral-500/60" />
     </div>
     <div>
-      <label class="block text-sm text-gray-700 dark:text-gray-300">Phone</label>
-      <input name="phone" required class="mt-1 w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+      <label class="block text-sm text-gray-800 dark:text-[#e5e5e5]">Phone</label>
+      <input name="phone" required class="mt-1 w-full border rounded-full px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333] text-gray-900 dark:text-[#eaeaea] focus:outline-none focus:ring-2 focus:ring-neutral-500/60" />
     </div>
     <div>
-      <label class="block text-sm text-gray-700 dark:text-gray-300">Email (optional)</label>
-      <input type="email" name="email" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+      <label class="block text-sm text-gray-800 dark:text-[#e5e5e5]">Email (optional)</label>
+      <input type="email" name="email" class="mt-1 w-full border rounded-full px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333] text-gray-900 dark:text-[#eaeaea] focus:outline-none focus:ring-2 focus:ring-neutral-500/60" />
     </div>
     <div>
-      <label class="block text-sm text-gray-700 dark:text-gray-300">Password</label>
-      <input type="password" name="password" required class="mt-1 w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+      <label class="block text-sm text-gray-800 dark:text-[#e5e5e5]">Password</label>
+      <input type="password" name="password" required class="mt-1 w-full border rounded-full px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333] text-gray-900 dark:text-[#eaeaea] focus:outline-none focus:ring-2 focus:ring-neutral-500/60" />
     </div>
     <div>
-      <label class="block text-sm text-gray-700 dark:text-gray-300">Location (optional)</label>
-      <input name="location" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+      <label class="block text-sm text-gray-800 dark:text-[#e5e5e5]">Location (optional)</label>
+      <input name="location" class="mt-1 w-full border rounded-full px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333] text-gray-900 dark:text-[#eaeaea] focus:outline-none focus:ring-2 focus:ring-neutral-500/60" />
     </div>
     <div class="flex items-center gap-3">
-      <button class="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">Create account</button>
+      <button class="px-5 py-2.5 rounded-full bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100">Create account</button>
       <a class="underline" href="{% url 'client_portal:client_login' %}">Have an account? Login</a>
     </div>
   </form>
 </section>
+{% block scripts %}
+<script nonce="{{ csp_nonce }}">
+  (function(){
+    window.initStandaloneSignup = function(){
+      const form = document.getElementById('signup-form');
+      const alertBox = document.getElementById('signup-alert');
+      function showAlert(msg, ok){
+        if(!alertBox) return;
+        alertBox.textContent = msg || '';
+        alertBox.className = 'mb-3 px-3 py-2 rounded-lg text-sm ' + (ok ? 'bg-neutral-900/20 text-neutral-200 border border-neutral-600/40' : 'bg-red-600/20 text-red-200 border border-red-500/40');
+        alertBox.classList.remove('hidden');
+      }
+      if(form){
+        form.addEventListener('submit', async function(e){
+          e.preventDefault();
+          try{
+            const data = new FormData(form);
+            const res = await fetch(form.getAttribute('action') || window.location.href, {
+              method: 'POST', body: data, credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const json = await res.json().catch(()=>({ ok:false, error:'Invalid server response' }));
+            if(!res.ok || !json.ok){ throw new Error(json.error || ('HTTP '+res.status)); }
+            if(json.redirect){ showAlert('Account created. Redirecting…', true); setTimeout(()=>{ window.location.assign(json.redirect); }, 400); return; }
+            showAlert('Account created. Please sign in.', true);
+          }catch(err){ showAlert(err.message || 'Signup failed', false); }
+        });
+      }
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ try{ window.initStandaloneSignup && window.initStandaloneSignup(); }catch(_){} });
+    else { try{ window.initStandaloneSignup && window.initStandaloneSignup(); }catch(_){} }
+  })();
+</script>
+{% endblock %}
 {% endblock %}

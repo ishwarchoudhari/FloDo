@@ -3,74 +3,75 @@
 {% block content %}
 <section class="relative overflow-hidden">
   <div class="absolute inset-0 pointer-events-none bg-gradient-to-b from-emerald-50/70 to-transparent dark:from-emerald-900/10"></div>
-  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
-    <div class="grid lg:grid-cols-2 gap-8 items-center">
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+    <div class="grid lg:grid-cols-2 gap-10 items-center">
       <div>
         {% if request.session.client_id %}
           <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">Welcome, <span class="font-semibold">{{ request.session.client_full_name|default:'User' }}</span> 👋</p>
         {% endif %}
-        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">Discover & Book Talented Artists</h1>
+        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight">Discover & Book Talented Artists</h1>
         <p class="mt-4 text-gray-600 dark:text-gray-300 text-lg">Search verified artists, explore portfolios, and book with confidence. Want to join? Apply and get verified quickly.</p>
         <div class="mt-6">
-          <form action="{% url 'client_portal:browse_artists' %}" method="get" class="grid sm:grid-cols-6 gap-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 shadow-sm">
+          <form action="{% url 'client_portal:browse_artists' %}" method="get" class="grid sm:grid-cols-6 gap-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-full p-2 shadow-sm">
             <div class="sm:col-span-3">
               <label class="sr-only" for="q">Search</label>
-              <input id="q" name="q" placeholder="Search by name" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+              <input id="q" name="q" placeholder="Search by name" class="w-full border rounded-full px-4 py-2.5 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
             </div>
             <div class="sm:col-span-2">
               <label class="sr-only" for="city">City</label>
-              <input id="city" name="city" placeholder="City" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
+              <input id="city" name="city" placeholder="City" class="w-full border rounded-full px-4 py-2.5 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/60" />
             </div>
             <div class="sm:col-span-1">
-              <button class="w-full px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">Search</button>
+              <button class="w-full py-3 px-4 inline-flex items-center justify-center gap-x-2 text-sm font-medium rounded-full bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/60 disabled:opacity-50 disabled:pointer-events-none">Search</button>
             </div>
           </form>
           <div class="mt-3 flex flex-wrap gap-2 text-sm text-gray-600 dark:text-gray-300">
             {% if request.session.client_id %}
-              <a href="{% url 'client_portal:artist_apply' %}" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">Apply as Artist</a>
+              <a href="{% url 'client_portal:artist_apply' %}" class="py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-full border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800">Apply as Artist</a>
             {% else %}
-              <a href="{% url 'client_portal:client_auth' %}" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">Apply as Artist (Sign in)</a>
+              <a href="{% url 'client_portal:client_auth' %}" class="py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-full border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800">Apply as Artist (Sign in)</a>
             {% endif %}
-            <a href="{% url 'client_portal:customer_dashboard' %}" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">View Bookings</a>
+            <a href="{% url 'client_portal:customer_dashboard' %}" class="py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-full bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/60">View Bookings</a>
             <span class="text-sm text-emerald-600">Open →</span>
           </div>
           <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Browse verified artists, request bookings, and manage reservations.</p>
-        
-        <div class="space-y-3">
-          {% if is_verified_artist %}
-            <a href="{% url 'client_portal:artist_dashboard' %}" class="group rounded-xl border border-gray-200 dark:border-gray-700 p-5 bg-gray-50 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-800 transition block">
-              <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold">Artist</h2>
-                <span class="text-sm text-emerald-600">Open →</span>
-              </div>
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Manage services, calendar, and bookings. Communicate with customers.</p>
-            </a>
-          {% else %}
-            {% if request.session.client_id %}
-            <a href="{% url 'client_portal:artist_apply' %}" class="group rounded-xl border border-gray-200 dark:border-gray-700 p-5 bg-gray-50 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-800 transition block {% if has_application %}pointer-events-none opacity-60{% endif %}">
-              <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold">Apply as Artist</h2>
-                <span class="text-sm text-emerald-600">{% if has_application %}Pending{% else %}Apply →{% endif %}</span>
-              </div>
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Submit your application for super-admin review. You will be notified upon decision.</p>
-            </a>
+
+          <div class="space-y-3">
+            {% if is_verified_artist %}
+              <a href="{% url 'client_portal:artist_dashboard' %}" class="group rounded-2xl border border-gray-200 dark:border-gray-700 p-5 bg-gray-50 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-800 transition block">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-lg font-semibold">Artist</h2>
+                  <span class="text-sm text-emerald-600">Open →</span>
+                </div>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Manage services, calendar, and bookings. Communicate with customers.</p>
+              </a>
             {% else %}
-            <a href="{% url 'client_portal:client_auth' %}" class="group rounded-xl border border-gray-200 dark:border-gray-700 p-5 bg-gray-50 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-800 transition block">
-              <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold">Apply as Artist</h2>
-                <span class="text-sm text-emerald-600">Sign in →</span>
-              </div>
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Please sign in to apply as an artist.</p>
-            </a>
+              {% if request.session.client_id %}
+              <a href="{% url 'client_portal:artist_apply' %}" class="group rounded-2xl border border-gray-200 dark:border-gray-700 p-5 bg-gray-50 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-800 transition block {% if has_application %}pointer-events-none opacity-60{% endif %}">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-lg font-semibold">Apply as Artist</h2>
+                  <span class="text-sm text-emerald-600">{% if has_application %}Pending{% else %}Apply →{% endif %}</span>
+                </div>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Submit your application for super-admin review. You will be notified upon decision.</p>
+              </a>
+              {% else %}
+              <a href="{% url 'client_portal:client_auth' %}" class="group rounded-2xl border border-gray-200 dark:border-gray-700 p-5 bg-gray-50 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-800 transition block">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-lg font-semibold">Apply as Artist</h2>
+                  <span class="text-sm text-emerald-600">Sign in →</span>
+                </div>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Please sign in to apply as an artist.</p>
+              </a>
+              {% endif %}
+              <a href="{% url 'client_portal:artist_application_status' %}" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                <span class="w-2 h-2 rounded-full {% if has_application %}bg-amber-500{% else %}bg-gray-400{% endif %}"></span>
+                Check application status
+              </a>
             {% endif %}
-            <a href="{% url 'client_portal:artist_application_status' %}" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-              <span class="w-2 h-2 rounded-full {% if has_application %}bg-amber-500{% else %}bg-gray-400{% endif %}"></span>
-              Check application status
-            </a>
-          {% endif %}
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+</section>
 {% endblock %}

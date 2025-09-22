@@ -268,6 +268,15 @@
         if (city) { frag.append(' • ' + city); }
         if (phone) { frag.append(' • ' + phone); }
         line.appendChild(frag);
+      } else if (table === 'Client' && (actionRaw === 'LOGIN' || actionRaw === 'CREATE' || actionRaw === 'SIGNUP')) {
+        // For client login/signup events, show the client's name as subject instead of admin user
+        const frag = document.createDocumentFragment();
+        const clientSpan = document.createElement('span'); clientSpan.className = 'font-semibold'; clientSpan.textContent = name || 'Client'; frag.appendChild(clientSpan);
+        frag.append(' has login');
+        if (uid !== undefined && uid !== null) { frag.append(' - with ID '); const idSpan = document.createElement('span'); idSpan.className = 'font-normal'; idSpan.textContent = String(uid); frag.appendChild(idSpan); }
+        if (phone) { frag.append(' with Phone '); const phoneSpan = document.createElement('span'); phoneSpan.className = 'font-normal'; phoneSpan.textContent = phone; frag.appendChild(phoneSpan); }
+        frag.append('.');
+        line.appendChild(frag);
       } else {
         // Default: (Admin) has <action> <name> with ID ... from ... with Phone ...
         const action = isArtistApp ? (actionMap[actionRaw] || actionRaw.toLowerCase()) : actionRaw.toLowerCase();

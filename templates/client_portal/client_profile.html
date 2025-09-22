@@ -1,0 +1,127 @@
+{% extends "client_portal/base.html" %}
+{% block title %}• Profile{% endblock %}
+{% block content %}
+<section class="max-w-6xl mx-auto"> 
+  <header class="mb-6">
+    <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">Your Profile</h1>
+    <p class="mt-1 text-gray-600 dark:text-gray-300">Manage your account details. Sensitive information like passwords are never shown.</p>
+  </header>
+
+  <!-- Sidebar + Content Grid -->
+  <div class="grid md:grid-cols-12 gap-6">
+    {% include "client_portal/partials/_sidebar.html" %}
+
+    <!-- Main Content -->
+    <div class="md:col-span-9">
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Avatar + Summary -->
+        <div class="md:col-span-1">
+          <div class="p-5 rounded-2xl border border-gray-200 dark:border-[#2a2a2a] bg-white dark:bg-[#1f1f1f] shadow-sm">
+            <div class="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mx-auto">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" class="w-10 h-10 text-gray-700 dark:text-gray-200" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="mt-4 text-center">
+              <div id="pf-name" class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ client.full_name|default:"Client" }}</div> 
+              <div id="pf-status" class="text-sm text-gray-500 dark:text-gray-400">Status: {{ client.status|default:"Active" }}</div> 
+            </div>
+          </div>
+        </div>
+
+        <!-- Details Card -->
+        <div class="md:col-span-2">
+          <div class="p-6 rounded-2xl border border-gray-200 dark:border-[#2a2a2a] bg-white dark:bg-[#1f1f1f] shadow-sm">
+            <dl class="divide-y divide-gray-200 dark:divide-gray-800">
+              <div class="py-4 grid grid-cols-3 gap-3">
+                <dt class="text-sm font-semibold text-gray-600 dark:text-gray-300">Full Name</dt>
+                <dd id="pf-full" class="col-span-2 text-sm md:text-base text-gray-900 dark:text-gray-100">{{ client.full_name|default:"—" }}</dd>
+              </div>
+              <div class="py-4 grid grid-cols-3 gap-3">
+                <dt class="text-sm font-semibold text-gray-600 dark:text-gray-300">Phone</dt>
+                <dd id="pf-phone" class="col-span-2 text-sm md:text-base text-gray-900 dark:text-gray-100">{% if safe_phone %}{{ safe_phone }}{% else %}&mdash;{% endif %}</dd>
+              </div>
+              <div class="py-4 grid grid-cols-3 gap-3">
+                <dt class="text-sm font-semibold text-gray-600 dark:text-gray-300">Email</dt>
+                <dd id="pf-email" class="col-span-2 text-sm md:text-base text-gray-900 dark:text-gray-100">{% if safe_email %}{{ safe_email }}{% else %}&mdash;{% endif %}</dd>
+              </div>
+              <div class="py-4 grid grid-cols-3 gap-3">
+                <dt class="text-sm font-semibold text-gray-600 dark:text-gray-300">Location</dt>
+                <dd id="pf-location" class="col-span-2 text-sm md:text-base text-gray-900 dark:text-gray-100">{{ client.location|default:"—" }}</dd>
+              </div>
+              <div class="py-4 grid grid-cols-3 gap-3">
+                <dt class="text-sm font-semibold text-gray-600 dark:text-gray-300">Joined</dt>
+                <dd id="pf-joined" class="col-span-2 text-sm md:text-base text-gray-900 dark:text-gray-100">{% if client.created_at %}{{ client.created_at|date:'F j, Y, g:i a' }}{% else %}&mdash;{% endif %}</dd>
+              </div>
+            </dl>
+            <div class="mt-6 flex items-center justify-end gap-3">
+              <a href="{% url 'client_portal:artist_apply' %}" class="inline-flex items-center justify-center h-10 px-5 rounded-full bg-neutral-900 text-white font-semibold hover:bg-neutral-800 active:bg-neutral-950 transition dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100">Apply as Artist</a>
+              <a href="{% url 'client_portal:client_logout' %}" class="inline-flex items-center justify-center h-10 px-5 rounded-full border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-100 dark:hover:bg-gray-800">Logout</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<!-- Added: minimal AJAX hydration and sidebar toggle -->
+<script nonce="{{ csp_nonce }}">
+  (function(){
+    // Sidebar toggle for mobile
+    var btn = document.getElementById('sidebarToggle');
+    var list = document.getElementById('sidebarList');
+    if(btn && list){ btn.addEventListener('click', function(){ list.classList.toggle('hidden'); }); list.classList.add('hidden'); }
+
+    // AJAX hydrate profile (read-only). Uses same-origin cookies (CSRF not required for GET)
+    fetch('{% url "client_portal:client_api_profile" %}', {credentials: 'same-origin'})
+      .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function(json){
+        try{
+          if(!json || !json.ok) return;
+          var p = json.profile || {};
+          var el = function(id){ return document.getElementById(id); };
+          if(el('pf-name')) el('pf-name').textContent = p.full_name || 'Client';
+          if(el('pf-status')) el('pf-status').textContent = 'Status: ' + (p.status || 'Active');
+          if(el('pf-full')) el('pf-full').textContent = p.full_name || '—';
+          if(el('pf-phone')) el('pf-phone').textContent = p.phone || '—';
+          if(el('pf-email')) el('pf-email').textContent = p.email || '—';
+          if(el('pf-location')) el('pf-location').textContent = p.location || '—';
+          if(el('pf-joined') && p.created_at){
+            try { el('pf-joined').textContent = new Date(p.created_at).toLocaleString(); } catch(_){}
+          }
+        }catch(_){ }
+      }).catch(function(_){ /* ignore network errors for hydration */ });
+
+    // Mirror header notification dot to sidebar badge (production-safe, no deps)
+    try {
+      var headerDot = document.getElementById('notif-dot');
+      var headerDotMobile = document.getElementById('notif-dot-mobile');
+      var sideBadge = document.getElementById('badge-bookings');
+      var ariaToaster = document.getElementById('aria-toaster');
+      var lastVisible = false;
+      function setBadge(visible){
+        if(!sideBadge) return;
+        if(visible){ sideBadge.classList.remove('invisible'); if(ariaToaster) { ariaToaster.textContent = 'You have new notifications.'; } }
+        else { sideBadge.classList.add('invisible'); }
+      }
+      function computeVisible(){
+        var v = false;
+        if(headerDot && !headerDot.classList.contains('hidden')) v = true;
+        if(headerDotMobile && !headerDotMobile.classList.contains('hidden')) v = true;
+        return v;
+      }
+      function check(){ var now = computeVisible(); if(now !== lastVisible){ lastVisible = now; setBadge(now); } }
+      if(window.MutationObserver && (headerDot || headerDotMobile)){
+        var obs = new MutationObserver(check);
+        if(headerDot) obs.observe(headerDot, { attributes: true, attributeFilter: ['class'] });
+        if(headerDotMobile) obs.observe(headerDotMobile, { attributes: true, attributeFilter: ['class'] });
+      }
+      // Initial sync and periodic safety check
+      check();
+      setInterval(check, 5000);
+    } catch(_){}
+  })();
+  </script>
+{% endblock %}

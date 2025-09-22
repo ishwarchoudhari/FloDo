@@ -687,3 +687,113 @@ ActivityLog: (table_name, action, row_id, row_details, timestamp, admin_user)
 - CSP with per-request nonce enforced by custom middleware; templates honor `nonce="{{ csp_nonce }}"`.
 - WhiteNoise manifest storage configured; `staticfiles/` is a build artifact (keep in prod, regenerate in dev).
 - Rate limiting in auth endpoints is basic and session/IP-based; consider robust throttling for production.
+
+## Deep Schema & Wiring Audit (Django + SQLite + HTML/JS/CSS)
+
+This section summarizes the end-to-end audit of databases, models, migrations, views, templates, and static JS, tailored for production readiness.
+
+### Settings → Database
+
+- File: `django_admin_project/settings.py`
+- DATABASES: default SQLite unless overridden by env
+  - ENGINE: `django.db.backends.sqlite3`
+  - NAME: `BASE_DIR / "db.sqlite3"` (override with `DB_NAME`)
+- Channels: ASGI app configured; in-memory layer by default in DEBUG; Redis layer when `REDIS_URL` is set.
+- Security hardening auto-enabled in production (secure cookies, HSTS, optional SSL redirect).
+
+### Modeled Tables (from `apps/*/models.py`)
+
+| App | Model | Table | Notes |
+|---|---|---|---|
+| authentication | SuperAdmin | `authentication_superadmin` | 1:1 `auth_user`; conditional unique `is_super_admin=True` |
+| authentication | AdminProfile | `authentication_adminprofile` | Profile/Avatar/Social |
+| settings_app | AppSettings | `settings_app_appsettings` | App config; FK `updated_by` -> `auth_user` |
+| dashboard | Table1 | `dashboard_admin` | Admin directory; `user_name` unique; `password_hash` hashed via `make_password` |
+| dashboard | Table2 | `dashboard_user` | BaseTable fields |
+| dashboard | Table3 | `dashboard_verified_artist` | BaseTable fields |
+| dashboard | Table4 | `dashboard_payment` | BaseTable fields |
+| dashboard | Table5 | `dashboard_artist_service` | BaseTable fields |
+| dashboard | Table6 | `dashboard_artist_application` | Primary artist application entity + rich metadata |
+| dashboard | ArtistApplicationCertificate | `dashboard_artist_application_certificate` | FK to Table6; ext+size validators |
+| dashboard | Table7 | `dashboard_artist_availability` | BaseTable fields |
+| dashboard | Table8 | `dashboard_artist_calendar` | BaseTable fields |
+| dashboard | Table9 | `dashboard_booking` | BaseTable + FK `client` |
+| dashboard | Table10 | `dashboard_message` | BaseTable + FK `client` |
+| dashboard | Client | `dashboard_client` | UUID PK; email/phone unique; password should be hashed |
+| dashboard | ClientLog | `dashboard_client_log` | Audit log; indexes on action/timestamp |
+| dashboard | ActivityLog | `dashboard_activitylog` | Append-only admin actions; ordered by `-timestamp` |
+
+Password-like fields summary
+
+- `dashboard_admin.password_hash`: stored HASHED using Django `make_password` in admin flows. Do not assign plaintext directly.
+- `dashboard_client.password`: must be stored HASHED in all write paths (signup/reset). Verify `apps/client_portal/views.py` uses `make_password`.
+
+Key wiring (views → templates → JS)
+
+- `apps/dashboard/views.py::artist_applications_view`
+  - Template: `templates/dashboard/artist_applications.html`
+  - JS: `static/js/dashboard_artist_applications.js` (modals, approve/reject AJAX, summary chips, toasts)
+- Admin management APIs: `admin_list_create_api`, `admin_detail_api` (hashing, Channels notifications)
+- Settings: pagination size via `AppSettings.records_per_page` used by data APIs
+
+### Mermaid ER Diagram
+
+```mermaid
+erDiagram
+  auth_user ||--o{ authentication_superadmin : "user_id"
+  auth_user ||--o{ authentication_adminprofile : "user_id"
+
+  dashboard_client ||--o{ dashboard_artist_application : "client_id"
+  dashboard_client ||--o{ dashboard_client_log : "client_id"
+  dashboard_client ||--o{ dashboard_booking : "client_id"
+  dashboard_client ||--o{ dashboard_message : "client_id"
+  auth_user ||--o{ dashboard_artist_application : "approval_admin_id"
+  auth_user ||--o{ dashboard_artist_application : "user_id"
+  dashboard_artist_application ||--o{ dashboard_artist_application_certificate : "application_id"
+  auth_user ||--o{ dashboard_client_log : "performed_by_id"
+  auth_user ||--o{ dashboard_admin : "role_approvedby_id"
+```
+
+### schema_report.json (condensed)
+
+```json
+{
+  "databases": [
+    {
+      "name": "sqlite3",
+      "file_candidates": ["db.sqlite3", "django_admin_project/db.sqlite3"],
+      "tables": [
+        {"table":"dashboard_admin","password_like":["password_hash"]},
+        {"table":"dashboard_user"},
+        {"table":"dashboard_verified_artist"},
+        {"table":"dashboard_payment"},
+        {"table":"dashboard_artist_service"},
+        {"table":"dashboard_artist_application"},
+        {"table":"dashboard_artist_application_certificate"},
+        {"table":"dashboard_artist_availability"},
+        {"table":"dashboard_artist_calendar"},
+        {"table":"dashboard_booking"},
+        {"table":"dashboard_message"},
+        {"table":"dashboard_client","password_like":["password"]},
+        {"table":"dashboard_client_log"},
+        {"table":"authentication_superadmin"},
+        {"table":"authentication_adminprofile"},
+        {"table":"settings_app_appsettings"}
+      ]
+    }
+  ]
+}
+```
+
+### Security Findings
+
+- **LOW** — `dashboard_admin.password_hash` must always be set via `make_password`. Existing admin flows already enforce this.
+- **MEDIUM** — `dashboard_client.password` must be hashed; verify all client creation/update paths (signup/reset) call `make_password`. If any plaintext found in fixtures/tests, replace with hashed values and rotate credentials immediately.
+- **LOW** — File uploads are extension- and size-validated (10MB). Consider MIME sniffing and antivirus scanning in production.
+- **LOW** — Ensure `DJANGO_SECRET_KEY`, SMTP creds, and `REDIS_URL` are in environment; do not commit to repo.
+
+### Gaps & Next Steps
+
+- **Optional DB introspection**: run SQLite PRAGMA queries to enumerate actual tables, indexes, and row counts.
+- **Client hashing verification**: audit `apps/client_portal/views.py` for `make_password` usage; centralize hashing in a manager if needed.
+- **CSP/Headers in prod**: optional SecurityHeaders middleware is auto-detected; confirm presence and switch to enforce-mode after validating reports.

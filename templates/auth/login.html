@@ -2,33 +2,33 @@
 {% block title %} · Login{% endblock %}
 {% block content %}
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/login.css' %}">
-<div class="min-h-[calc(100vh-6rem)] md:min-h-[calc(100vh-8rem)] flex items-center justify-center py-8">
-  <!-- Login Card (simple, clean) -->
+{# Removed page-specific login.css to avoid 404 when static folder is missing. Global dist/app.min.css from base.html provides core styles. #}
+<div class="min-h-[calc(100vh-6rem)] md:min-h-[calc(100vh-8rem)] flex items-center justify-center py-8 font-semibold">
+  <!-- Login Card (modern, polished) -->
   <div class="w-full max-w-lg px-4 mx-auto">
-    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-8 border border-gray-200 dark:border-gray-700">
-      <h1 class="text-2xl font-semibold text-center text-gray-900 dark:text-gray-100 mb-6">Super-Admin Login</h1>
+    <div class="bg-white dark:bg-[#1f1f1f] shadow-xl rounded-2xl p-8 border border-gray-200 dark:border-[#2a2a2a] text-gray-900 dark:text-[#e5e5e5]">
+      <h1 class="text-2xl md:text-3xl font-semibold text-center mb-6">Super-Admin Login</h1>
       <form id="loginForm" method="post" class="space-y-4" aria-describedby="loginHelp">
         {% csrf_token %}
         {% if next %}
         <input type="hidden" name="next" value="{{ next }}" />
         {% endif %}
         <div>
-          <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Username</label>
+          <label for="username" class="block text-sm text-gray-800 dark:text-[#e5e5e5]/90 mb-1">Username</label>
           <input id="username" name="username" type="text" required autocomplete="username" placeholder="Please enter your username"
-                 class="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+                 class="w-full border border-gray-300 dark:border-[#333333] rounded-full px-4 py-2.5 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-[#222222] text-gray-900 dark:text-[#eaeaea] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
         </div>
         <div>
-          <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Password</label>
+          <label for="password" class="block text-sm text-gray-800 dark:text-[#e5e5e5]/90 mb-1">Password</label>
           <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="Please enter your password"
-                 class="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+                 class="w-full border border-gray-300 dark:border-[#333333] rounded-full px-4 py-2.5 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-[#222222] text-gray-900 dark:text-[#eaeaea] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
         </div>
 
         <!-- Error alert (hidden by default) -->
-        <div id="loginError" class="hidden rounded-md border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 text-sm px-3 py-2" role="alert"></div>
+        <div id="loginError" class="hidden rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 text-sm px-3 py-2" role="alert"></div>
 
         <button id="loginBtn" type="submit"
-                class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white rounded-md py-2.5 font-medium shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800">
+                class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white rounded-full py-3 text-base md:text-lg font-semibold shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-[#181818]">
           <svg id="btnSpinner" class="hidden h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle>
             <path class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" stroke-width="4"></path>
@@ -44,12 +44,12 @@
         </p>
 
         <!-- Forgot Password Panel (hidden by default) -->
-        <div id="forgotPwdWrap" class="hidden mt-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900">
+        <div id="forgotPwdWrap" class="hidden mt-4 p-4 border border-gray-200 dark:border-[#2a2a2a] rounded-2xl bg-gray-50 dark:bg-[#222222]">
           <div id="fpMsg" class="text-sm mb-2 hidden"></div>
           <!-- Step 1: Send OTP -->
           <div id="fpStepSend" class="space-y-3">
             <p class="text-sm text-gray-600 dark:text-gray-300">OTP will be sent to the Super‑Admin email configured in Settings.</p>
-            <button id="fpSendBtn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none">
+            <button id="fpSendBtn" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 focus:outline-none">
               <svg class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" stroke-width="4"></path></svg>
               <span data-text>Send OTP</span>
             </button>
@@ -57,7 +57,7 @@
           </div>
           <!-- Step 2: Verify OTP -->
           <div id="fpStepOtp" class="space-y-3 hidden">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Enter 6‑digit code</label>
+            <label class="block text-sm text-gray-800 dark:text-[#e5e5e5]">Enter 6‑digit code</label>
             <!-- Hidden original input to keep JS/API compatibility -->
             <input id="fpOtpInput" type="hidden" />
 
@@ -103,7 +103,7 @@
             <p class="hidden sm:block text-xs text-gray-500 dark:text-gray-400 text-center">Tip: You can paste the entire 6‑digit code.</p>
 
             <!-- Input progress (fills as digits typed) -->
-            <div class="w-full h-1 bg-gray-200 dark:bg-gray-800 rounded overflow-hidden">
+            <div class="w-full h-1 bg-gray-200 dark:bg-[#2a2a2a] rounded overflow-hidden">
               <div id="fpOtpFill" class="h-1 bg-emerald-500 transition-[width] duration-200 ease-linear" style="width:0%"></div>
             </div>
             <!-- OTP countdown helper and progress bar -->
@@ -111,24 +111,24 @@
               <span class="text-gray-600 dark:text-gray-300">Enter the code before it expires</span>
               <span id="fpCountdownOtp" class="text-green-600">Expires in 600s</span>
             </div>
-            <div class="w-full h-1 bg-gray-200 dark:bg-gray-800 rounded overflow-hidden">
+            <div class="w-full h-1 bg-gray-200 dark:bg-[#2a2a2a] rounded overflow-hidden">
               <div id="fpProgressOtp" class="h-1 bg-blue-600 transition-[width] duration-300 ease-linear" style="width:100%"></div>
             </div>
             <div class="flex items-center gap-2">
-              <button id="fpVerifyBtn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none">
+              <button id="fpVerifyBtn" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 focus:outline-none">
                 <svg class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" stroke-width="4"></path></svg>
                 <span data-text>Verify Code</span>
               </button>
-              <button id="fpResendBtn" type="button" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 cursor-not-allowed opacity-60" disabled>
+              <button id="fpResendBtn" type="button" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-gray-200 dark:bg-[#2a2a2a] text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-[#333333] cursor-not-allowed opacity-60" disabled>
                 <span id="fpResendLabel">Resend in 30s</span>
               </button>
             </div>
           </div>
           <!-- Step 3: Reset Password -->
           <div id="fpStepReset" class="space-y-3 hidden">
-            <label for="fpNewPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-200">New Password</label>
+            <label for="fpNewPassword" class="block text-sm text-gray-800 dark:text-[#e5e5e5]">New Password</label>
             <div class="relative">
-              <input id="fpNewPassword" type="password" minlength="8" placeholder="At least 8 characters" class="w-full pr-10 border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+              <input id="fpNewPassword" type="password" minlength="8" placeholder="At least 8 characters" class="w-full pr-10 border border-gray-300 dark:border-[#333333] rounded-full px-4 py-2.5 bg-white dark:bg-[#222222] text-gray-900 dark:text-[#eaeaea] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
               <!-- New password match/mismatch icons -->
               <svg id="fpPwNewIconOk" class="hidden absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414l2.293 2.293 6.543-6.543a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -137,9 +137,9 @@
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm2.828-10.828a1 1 0 10-1.414-1.414L10 7.172 8.586 5.758a1 1 0 00-1.414 1.414L8.586 8.586 7.172 10a1 1 0 101.414 1.414L10 9.828l1.414 1.586A1 1 0 0012.828 10l-1.414-1.414 1.414-1.414z" clip-rule="evenodd" />
               </svg>
             </div>
-            <label for="fpConfirmPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Confirm New Password</label>
+            <label for="fpConfirmPassword" class="block text-sm text-gray-800 dark:text-[#e5e5e5]">Confirm New Password</label>
             <div class="relative">
-              <input id="fpConfirmPassword" type="password" minlength="8" placeholder="Re-enter new password" class="w-full pr-10 border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+              <input id="fpConfirmPassword" type="password" minlength="8" placeholder="Re-enter new password" class="w-full pr-10 border border-gray-300 dark:border-[#333333] rounded-full px-4 py-2.5 bg-white dark:bg-[#222222] text-gray-900 dark:text-[#eaeaea] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
               <!-- Match icon (hidden until passwords match) -->
               <svg id="fpPwMatchIcon" class="hidden absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414l2.293 2.293 6.543-6.543a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -148,7 +148,7 @@
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm2.828-10.828a1 1 0 10-1.414-1.414L10 7.172 8.586 5.758a1 1 0 00-1.414 1.414L8.586 8.586 7.172 10a1 1 0 101.414 1.414L10 9.828l1.414 1.586A1 1 0 0012.828 10l-1.414-1.414 1.414-1.414z" clip-rule="evenodd" />
               </svg>
             </div>
-            <button id="fpResetBtn" disabled class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 focus:outline-none opacity-60 cursor-not-allowed">
+            <button id="fpResetBtn" disabled class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-green-600 text-white hover:bg-green-700 focus:outline-none opacity-60 cursor-not-allowed">
               <svg class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" stroke-width="4"></path></svg>
               <span data-text>Reset Password</span>
             </button>
@@ -165,6 +165,5 @@
 {% endblock %}
 
 {% block scripts %}
-{% load static %}
-<script src="{% static 'js/auth.js' %}"></script>
+{# Removed auth.js include to avoid 404. A minimal login handler is bound from static/js/base.js using fetchWithCSRF. #}
 {% endblock %}

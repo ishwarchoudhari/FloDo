@@ -1,0 +1,24 @@
+[
+  {
+    "application_id": 3,
+    "artist_application_id": "7f5642c7-77f9-43fd-8580-85c12dd9d44a",
+    "email": "Swat@gm.com",
+    "phone": "9876543217",
+    "name": "Ishu",
+    "candidates": [
+      "bbb02ff0-41a2-402d-b103-84a82466a96c",
+      "f327102c-2bbe-4aa2-84d9-d3c27dc2246f"
+    ]
+  },
+  {
+    "application_id": 1,
+    "artist_application_id": "081ed006-087d-46ca-9e0e-53bd617a3518",
+    "email": "raj@gm.com",
+    "phone": "9876543211",
+    "name": "Ishu",
+    "candidates": [
+      "ff7a265e-0b75-416b-94bd-3cdf1bcf0e1e",
+      "f327102c-2bbe-4aa2-84d9-d3c27dc2246f"
+    ]
+  }
+]

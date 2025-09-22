@@ -10,7 +10,7 @@ from django.views.generic import RedirectView
 from apps.authentication import views as auth_views
 from rest_framework.routers import DefaultRouter
 from apps.dashboard.api import ActivityLogViewSet
-from . import health as health_views
+from . import health as health_views  # Added: csp_report endpoint lives here
 
 urlpatterns = [
     # Admin site URL (includes its own /admin/login/)
@@ -42,6 +42,7 @@ urlpatterns = [
     # Health and readiness endpoints (lightweight, JSON)
     path("healthz", health_views.healthz, name="healthz"),
     path("readinessz", health_views.readinessz, name="readinessz"),
+    path("csp-report/", health_views.csp_report, name="csp_report"),  # Added: CSP report endpoint (report-only)
     # (Employees Administration routes have been removed)
 ]
 

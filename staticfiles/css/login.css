@@ -155,3 +155,299 @@ body {
   0% { left: 0%; }
   100% { left: 120%; }
 }
+
+/* ============================================================
+   MODERN SEARCH BAR STYLES WITH ANIMATED GRADIENTS & RADIANT EFFECTS
+   ============================================================ */
+
+/* Main search container */
+.modern-search-container {
+  border-radius: 9999px;
+  isolation: isolate;
+}
+
+/* Animated gradient border around entire search bar */
+.search-gradient-border {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  padding: 3px; /* synced with inner margin m-[3px] */
+  background: linear-gradient(90deg,
+    #10b981,
+    #84cc16,
+    #22d3ee,
+    #a78bfa,
+    #f59e0b,
+    #ef4444,
+    #10b981
+  );
+  background-size: 300% 100%;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: search-border-sweep 4s linear infinite; /* non-rotating sweep */
+  z-index: 1;
+  pointer-events: none; /* do not block clicks outside the input */
+}
+
+/* Radiant glow effect that appears on hover */
+.search-radiant-glow {
+  position: absolute;
+  inset: -8px;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle at center,
+    rgba(16, 185, 129, 0.3) 0%,
+    rgba(132, 204, 22, 0.2) 25%,
+    rgba(34, 211, 238, 0.15) 50%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  animation: search-radiant-pulse 2s ease-in-out infinite alternate;
+  z-index: 0;
+  pointer-events: none; /* decorative only */
+}
+
+.modern-search-container:hover .search-radiant-glow {
+  opacity: 1;
+}
+
+/* Search icon container with radiant effect */
+.search-icon-container {
+  position: relative;
+}
+
+.search-icon-radiant {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(16, 185, 129, 0.4) 0%,
+    rgba(16, 185, 129, 0.2) 40%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  animation: icon-radiant-pulse 1.5s ease-in-out infinite alternate;
+}
+
+.modern-search-container:hover .search-icon-radiant {
+  opacity: 1;
+}
+
+.modern-search-container:hover .search-icon-container svg {
+  color: #10b981;
+}
+
+/* Submit button with dark radiant effect */
+.search-submit-btn {
+  transition: all 0.3s ease;
+}
+
+.search-btn-radiant {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(15, 23, 42, 0.8) 0%,
+    rgba(6, 95, 70, 0.6) 30%,
+    rgba(15, 23, 42, 0.4) 60%,
+    transparent 80%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  animation: btn-radiant-pulse 2s ease-in-out infinite alternate;
+  z-index: 0;
+}
+
+.search-submit-btn:hover .search-btn-radiant {
+  opacity: 1;
+}
+
+.search-submit-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(15, 23, 42, 0.4);
+}
+
+/* Enhanced input field focus effects */
+.modern-search-container input:focus {
+  background: rgba(255, 255, 255, 0.95) !important;
+}
+
+.dark .modern-search-container input:focus {
+  background: rgba(31, 41, 55, 0.95) !important;
+}
+
+/* Keyframe animations */
+@keyframes search-border-sweep {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+@keyframes search-radiant-pulse {
+  0% { 
+    transform: scale(0.95);
+    filter: blur(8px);
+  }
+  100% { 
+    transform: scale(1.05);
+    filter: blur(12px);
+  }
+}
+
+@keyframes icon-radiant-pulse {
+  0% { 
+    transform: scale(0.8);
+    filter: blur(2px);
+  }
+  100% { 
+    transform: scale(1.2);
+    filter: blur(4px);
+  }
+}
+
+@keyframes btn-radiant-pulse {
+  0% { 
+    transform: scale(0.9);
+    filter: blur(4px);
+  }
+  100% { 
+    transform: scale(1.1);
+    filter: blur(6px);
+  }
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+  .search-radiant-glow {
+    inset: -4px;
+  }
+  
+  .search-gradient-border {
+    padding: 1.5px;
+  }
+}
+
+/* ============================================================
+   LEGACY STYLES (PRESERVED FROM ORIGINAL)
+   ============================================================ */
+
+/* Animated gradient border utility (rotates only the border, not the content) */
+.ag-border {
+  position: relative;
+  border-radius: 9999px; /* fully rounded by default; inherits nicely */
+  isolation: isolate;    /* create stacking context so ::before rotation never affects children */
+  transform: none !important; /* prevent any inherited transform */
+}
+.ag-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;                 /* cover full box */
+  border-radius: inherit;   /* match rounding */
+  padding: 1.5px;           /* border thickness */
+  background: conic-gradient(at top right, #10b981, #84cc16, #22d3ee, #a78bfa, #10b981);
+  mask: 
+    linear-gradient(#000 0 0) content-box, 
+    linear-gradient(#000 0 0);
+  -webkit-mask: 
+    linear-gradient(#000 0 0) content-box, 
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; /* Safari/Chrome */
+  mask-composite: exclude;     /* Firefox */
+  pointer-events: none;
+  z-index: 0;                 /* behind content */
+  display: block;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  animation: ag_spin 8s linear infinite;
+}
+@keyframes ag_spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Smooth animated gradient sweep (moves colors along the border) */
+.ag-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #10b981, #84cc16, #22d3ee, #a78bfa, #10b981);
+  background-size: 300% 100%;
+  animation: ag_sweep 3s linear infinite;
+}
+@keyframes ag_sweep {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* Modern dark gradient animated button */
+.btn-gradient-dark {
+  background-image: linear-gradient(135deg, #0f172a, #0b3b2c, #065f46, #10b981);
+  background-size: 200% 200%;
+  transition: filter 200ms ease, box-shadow 200ms ease;
+  animation: ag_btn_flow 5s linear infinite;
+}
+.btn-gradient-dark:hover {
+  filter: brightness(1.05);
+}
+.btn-gradient-dark:active {
+  filter: brightness(0.95);
+}
+@keyframes ag_btn_flow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* ============================================================
+   Global Portal Dark Theme (fixed #181818 background)
+   Applies when the 'dark' class is present on html/body
+   ============================================================ */
+:root {
+  --portal-dark-bg: #181818;       /* page background */
+  --portal-dark-surface: #1f1f1f;  /* cards/containers */
+  --portal-dark-border: #2a2a2a;   /* subtle borders */
+  --portal-dark-text: #e5e5e5;     /* primary text */
+}
+
+.dark { color-scheme: dark; }
+.dark body {
+  background-color: var(--portal-dark-bg) !important;
+  color: var(--portal-dark-text);
+}
+.dark header,
+.dark footer {
+  background-color: var(--portal-dark-bg) !important;
+}
+
+/* Normalize common Tailwind utility colors under dark mode */
+.dark .bg-white { background-color: var(--portal-dark-surface) !important; }
+.dark .text-gray-900 { color: var(--portal-dark-text) !important; }
+.dark .border-gray-200 { border-color: var(--portal-dark-border) !important; }
+.dark .border-gray-300 { border-color: var(--portal-dark-border) !important; }
+.dark .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.6) !important; }
+
+/* Links: inherit by default; rely on existing hover states */
+.dark a { color: inherit; }
+
+/* PJAX fade-in animation for swapped content */
+.pjax-fade { animation: pjax_fade 180ms ease-out; }
+@keyframes pjax_fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Extended dark normalization for common Tailwind utilities */
+.dark .bg-gray-50 { background-color: #1c1c1c !important; }
+.dark .bg-gray-100 { background-color: #1d1d1d !important; }
+.dark .bg-gray-200 { background-color: #202020 !important; }
+.dark .bg-neutral-50 { background-color: #1c1c1c !important; }
+.dark .bg-neutral-100 { background-color: #1d1d1d !important; }
+.dark .text-gray-800 { color: #d9d9d9 !important; }
+.dark .text-gray-700 { color: #cccccc !important; }
+.dark .text-neutral-900 { color: #e5e5e5 !important; }
+.dark .border-gray-100 { border-color: #262626 !important; }
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: #2a2a2a !important; }
+.dark .ring-gray-200 { --tw-ring-color: #2a2a2a !important; }
