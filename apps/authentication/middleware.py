@@ -30,7 +30,10 @@ class ServerRestartSessionInvalidateMiddleware:
         # If the session was issued before this process started, invalidate it
         if request.user.is_authenticated:
             session_boot_id = request.session.get("server_boot_id")
-            if session_boot_id != self.current_boot_id:
+            # Only invalidate when a boot id is present and mismatched.
+            # On first authenticated request (no stamp yet), do NOT force logout;
+            # we will stamp the current boot id after the response.
+            if session_boot_id is not None and session_boot_id != self.current_boot_id:
                 # Flush auth state to force re-login
                 logout(request)
                 # Do not redirect here; allow normal flow. Protected views will

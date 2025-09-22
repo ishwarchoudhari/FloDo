@@ -6,6 +6,7 @@ settings toggled via environment variables. Each line is commented for clarity.
 from pathlib import Path  # Path utility for filesystem paths
 import os  # OS utilities for environment variables
 import uuid  # For generating a unique server boot identifier
+import importlib.util  # For optional middleware detection
 from dotenv import load_dotenv  # Load .env files for environment configuration
 
 # Load environment variables from a .env file if present in project root.
@@ -76,6 +77,8 @@ MIDDLEWARE = [
     "apps.authentication.middleware.AdminLoginNextParamMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # Added: enforce single active session per portal client
+    "django_admin_project.middleware.one_session.OneSessionPerUserMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # Custom middleware to invalidate sessions after server restarts
@@ -198,21 +201,16 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
+# Unified configuration (no duplication):
 STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
-    BASE_DIR / "static/dist",  # Add optimized assets directory
+    BASE_DIR / "static",           # Source static files
+    BASE_DIR / "static/dist",      # Optimized/bundled assets (if present)
 ]
-
-# Enable WhiteNoise compression and caching
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATIC_ROOT = BASE_DIR / "staticfiles"  # Where collectstatic gathers files for production
 
 # Cache control headers for static files
 WHITENOISE_MAX_AGE = 31536000  # 1 year in seconds
-STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]  # Where we store our source static files
-STATIC_ROOT = BASE_DIR / "staticfiles"  # Where collectstatic will gather files for production
 
 # Static files storage
 # In development on Windows, Manifest storage can fail when files are locked by other processes (e.g., OneDrive/Explorer).
@@ -303,15 +301,25 @@ if not DEBUG:
 # ---------------------------------------------------------------------------
 FEATURE_ENFORCE_ADMIN_API_PERMS = os.getenv("FEATURE_ENFORCE_ADMIN_API_PERMS", "False").lower() in ("1", "true", "yes")
 FEATURE_EXPORT_SUPERADMIN_ONLY = os.getenv("FEATURE_EXPORT_SUPERADMIN_ONLY", "False").lower() in ("1", "true", "yes")
-FEATURE_SECURITY_HEADERS = os.getenv("FEATURE_SECURITY_HEADERS", "False").lower() in ("1", "true", "yes")
+_ENV_SEC_HDR = os.getenv("FEATURE_SECURITY_HEADERS", "").lower()
+FEATURE_SECURITY_HEADERS = (
+    (_ENV_SEC_HDR in ("1", "true", "yes")) or (not DEBUG and _ENV_SEC_HDR == "")
+)
 # Enable client auth portal by default in development (to avoid 404 on /portal/login/)
 _ENV_CLIENT_AUTH = os.getenv("FEATURE_CLIENT_AUTH", "").lower()
 FEATURE_CLIENT_AUTH = (_ENV_CLIENT_AUTH in ("1", "true", "yes")) or (DEBUG and _ENV_CLIENT_AUTH == "")
 FEATURE_ENFORCE_CLIENT_FKS = os.getenv("FEATURE_ENFORCE_CLIENT_FKS", "False").lower() in ("1", "true", "yes")
 
 # Conditionally enable security headers middleware (CSP report-only + modern headers)
+# Only insert if the target middleware module exists to avoid import errors.
 if FEATURE_SECURITY_HEADERS:
-    MIDDLEWARE.insert(1, "django_admin_project.middleware.security_headers.SecurityHeadersMiddleware")
+    try:
+        spec = importlib.util.find_spec("django_admin_project.middleware.security_headers")
+        if spec is not None:
+            MIDDLEWARE.insert(1, "django_admin_project.middleware.security_headers.SecurityHeadersMiddleware")
+    except Exception:
+        # Never break startup due to optional middleware
+        pass
 
 # Simple console logging in development; console + rotating file logging in production
 if DEBUG:
@@ -330,6 +338,12 @@ else:
     LOGGING = {
         "version": 1,
         "disable_existing_loggers": False,
+        "formatters": {
+            # Added: verbose formatter for security logs (timestamp + level + logger name)
+            "verbose": {  # Added
+                "format": "%(asctime)s %(levelname)s %(name)s %(message)s",  # Added
+            },  # Added
+        },
         "handlers": {
             "console": {"class": "logging.StreamHandler"},
             "file": {
@@ -338,9 +352,55 @@ else:
                 "maxBytes": int(os.getenv("DJANGO_LOG_MAX_BYTES", 1_000_000)),  # ~1MB
                 "backupCount": int(os.getenv("DJANGO_LOG_BACKUP_COUNT", 5)),
             },
+            # Added: rotating file handler for security logs (production only)
+            "security_file": {  # Added
+                "class": "logging.handlers.RotatingFileHandler",  # Added
+                "filename": str((BASE_DIR / "logs" / "security.log")),  # Added: safe location under project
+                "maxBytes": 5 * 1024 * 1024,  # Added: 5 MB
+                "backupCount": 5,  # Added
+                "formatter": "verbose",  # Added
+            },  # Added
+        },
+        "loggers": {
+            # Added: dedicated security loggers (CSP + honeypot) writing to security_file
+            "security.csp": {  # Added
+                "handlers": ["security_file", "console"],  # Added: also echo to console
+                "level": "WARNING",  # Added
+                "propagate": False,  # Added
+            },  # Added
+            "security.honeypot": {  # Added
+                "handlers": ["security_file", "console"],  # Added
+                "level": "WARNING",  # Added
+                "propagate": False,  # Added
+            },  # Added
+            # Added: dedicated logger for session enforcement/concurrent login events
+            "security.session": {  # Added
+                "handlers": ["security_file", "console"],  # Added
+                "level": "WARNING",  # Added
+                "propagate": False,  # Added
+            },  # Added
         },
         "root": {
             "handlers": ["console", "file"],
             "level": "INFO",
         },
     }
+
+    # Added: ensure logs directory exists in production (non-breaking safeguard)
+    try:
+        os.makedirs(BASE_DIR / "logs", exist_ok=True)
+    except Exception:
+        # Never break startup due to logging directory errors
+        pass
+
+    # Added: define CSP report-only header string with extended sources (optional)
+    # This is used by SecurityHeadersMiddleware if present; keeps report-only to avoid blocking.
+    CSP_RO_HEADER = (
+        "default-src 'self'; "
+        "img-src 'self' data: blob:; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
+        "script-src 'self'; "
+        "connect-src 'self' ws: wss:; "
+        "report-uri /csp-report/"
+    )

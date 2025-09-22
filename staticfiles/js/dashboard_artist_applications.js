@@ -175,6 +175,19 @@
   }
 
   function openModal(el) {
+    // Move modal to document.body to avoid being clipped or positioned relative to transformed ancestors
+    try {
+      if (!el._movedToBody) {
+        el._origParent = el.parentNode;
+        el._origNext = el.nextSibling;
+        el._placeholder = document.createComment('modal-placeholder');
+        if (el._origParent) {
+          el._origParent.insertBefore(el._placeholder, el._origNext || null);
+        }
+        document.body.appendChild(el);
+        el._movedToBody = true;
+      }
+    } catch(_){}
     el.classList.remove('hidden');
     el.classList.add('flex');
     document.body.classList.add('overflow-hidden');
@@ -231,6 +244,17 @@
     el.classList.remove('flex');
     document.body.classList.remove('overflow-hidden');
     try { if (el._keyHandler){ document.removeEventListener('keydown', el._keyHandler); delete el._keyHandler; } } catch(_){ }
+    // Restore to original DOM position to preserve template structure
+    try {
+      if (el._movedToBody && el._origParent && el._placeholder) {
+        el._origParent.insertBefore(el, el._placeholder);
+        el._placeholder.remove();
+        el._placeholder = null;
+        el._origParent = null;
+        el._origNext = null;
+        el._movedToBody = false;
+      }
+    } catch(_){}
   }
 
   // Main click event handler
@@ -254,8 +278,8 @@
     }
 
     const modalEl = e.target.closest('[data-modal]');
-    if (modalEl && (e.target === modalEl || e.target.closest('[data-modal-overlay]'))) {
-      // click on the dark overlay or on the overlay container
+    if (modalEl && (e.target === modalEl)) {
+      // Click only on the dark backdrop closes; clicks inside overlay content do not
       closeModal(modalEl);
       return;
     }
@@ -380,6 +404,14 @@
           // Big ribbon
           const rib = card.querySelector('[data-ribbon]');
           if (rib){ rib.innerHTML = `<span class=\"inline-flex items-center px-10 py-2 rounded-md text-base font-semibold ${isApprove?'bg-green-500/90':'bg-red-600/90'} text-white shadow-lg\">${isApprove?'Approved':'Rejected'}</span>`; }
+          // Modal header status chip (pending/under review/processing only) -> remove on final state
+          try {
+            const openModal = document.querySelector('[data-modal].flex');
+            if (openModal){
+              const modalChip = openModal.querySelector('[data-modal-status-chip]');
+              if (modalChip) modalChip.remove();
+            }
+          } catch(_){ }
           // Inline toast (prefer overlay if present)
           const overlay = form.closest('[data-card-overlay]') || document.body;
           showToast(isApprove ? 'APPROVED' : 'REJECTED', isApprove ? 'success' : 'error', overlay);
@@ -406,6 +438,75 @@
       const spinner = refreshLink.querySelector('[data-spinner]');
       if (spinner) spinner.classList.remove('hidden');
     });
+  }
+
+  // ---------- Tab badges based on summary chips (moved from template)
+  function updateTabCounts(){
+    try {
+      const sum = document.getElementById('apps-summary');
+      const bar = document.getElementById('apps-tabs-bar');
+      if (!sum || !bar) return;
+      const map = {};
+      Array.prototype.forEach.call(sum.querySelectorAll('span'), function(s){
+        const t = (s.textContent||'').trim();
+        const parts = t.split(':');
+        if (parts.length >= 2){
+          const key = parts[0].toLowerCase();
+          const val = parseInt(parts[1], 10);
+          if (!isNaN(val)) map[key] = val;
+        }
+      });
+      const setBadge = function(anchor, count){
+        if (!anchor) return;
+        const old = anchor.querySelector('[data-count]'); if (old) old.remove();
+        const b = document.createElement('span');
+        b.setAttribute('data-count','1');
+        b.className = 'ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[11px] border bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700';
+        b.textContent = count;
+        anchor.appendChild(b);
+      };
+      const allA = bar.querySelector('a[data-tab="all"]'); if (allA && map['total'] != null) setBadge(allA, map['total']);
+      const pA = bar.querySelector('a[data-tab="pending"]'); if (pA && map['pending'] != null) setBadge(pA, map['pending']);
+      const urA = bar.querySelector('a[data-tab="under_review"]'); if (urA && map['under review'] != null) setBadge(urA, map['under review']);
+      const prA = bar.querySelector('a[data-tab="processing"]'); if (prA && map['processing'] != null) setBadge(prA, map['processing']);
+      const apA = bar.querySelector('a[data-tab="approved"]'); if (apA && map['approved'] != null) setBadge(apA, map['approved']);
+      const rA = bar.querySelector('a[data-tab="rejected"]'); if (rA && map['rejected'] != null) setBadge(rA, map['rejected']);
+    } catch(_) { /* noop */ }
+  }
+
+  // ---------- AJAX tab switching (moved from template)
+  (function bindTabs(){
+    const bar = document.getElementById('apps-tabs-bar');
+    if (!bar || bar.getAttribute('data-bound')) return;
+    bar.setAttribute('data-bound','1');
+    bar.addEventListener('click', async function(ev){
+      const a = ev.target && (ev.target.closest && ev.target.closest('a[href]'));
+      if (!a) return;
+      try {
+        ev.preventDefault();
+        const url = new URL(a.getAttribute('href'), window.location.href);
+        const res = await fetch(url.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const text = await res.text();
+        const doc = new DOMParser().parseFromString(text, 'text/html');
+        const gridNew = doc.getElementById('apps-grid');
+        const grid = document.getElementById('apps-grid');
+        if (gridNew && grid){ grid.innerHTML = gridNew.innerHTML; }
+        const sumNew = doc.getElementById('apps-summary');
+        const sum = document.getElementById('apps-summary');
+        if (sumNew && sum){ sum.innerHTML = sumNew.innerHTML; }
+        // Update active tab styling
+        bar.querySelectorAll('a[aria-current]')?.forEach(function(x){ x.removeAttribute('aria-current'); });
+        a.setAttribute('aria-current','page');
+        // Recompute summary + badges after DOM swap
+        renderAppSummary();
+        updateTabCounts();
+      } catch(_){ }
+    });
+  })();
+
+  // ---------- Sidebar activation (moved from template)
+  function activateSidebar(){
+    try { if (typeof window.setActiveSidebar === 'function') { window.setActiveSidebar('/Super-Admin/artist-applications/'); } } catch(_){ }
   }
 
   // ---------- Summary chips (Total / Pending / Under Review / Processing / Approved / Rejected)
@@ -491,9 +592,11 @@
 
   // Kick in enhancements after DOM is ready
   if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){ showInitialSkeleton(); renderAppSummary(); });
+    document.addEventListener('DOMContentLoaded', function(){ showInitialSkeleton(); renderAppSummary(); updateTabCounts(); activateSidebar(); });
   } else {
     showInitialSkeleton();
     renderAppSummary();
+    updateTabCounts();
+    activateSidebar();
   }     
 })();

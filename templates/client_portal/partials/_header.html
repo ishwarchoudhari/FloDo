@@ -1,81 +1,216 @@
 {% load static %}
-<header class="fixed inset-x-0 top-0 z-50 bg-white backdrop-blur supports-[backdrop-filter]:bg-white/90 border-b border-gray-200 shadow-sm">
-  <div class="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-5">
+<header class="fixed inset-x-0 top-0 z-50 bg-white dark:bg-gray-900 backdrop-blur supports-[backdrop-filter]:bg-white/90 dark:supports-[backdrop-filter]:bg-gray-900/90">
+  <div class="w-full px-6 sm:px-8 md:px-[0.6in] lg:px-[1.2in] h-24 md:h-28 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4">
     
     <!-- Brand + Navigation -->
-    <div class="flex items-center gap-6 min-w-0">
-      <a href="{% url 'client_portal:home' %}" class="inline-flex items-center gap-3 font-extrabold tracking-tight text-2xl">
-        <span class="inline-flex w-10 h-10 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-500 to-lime-500 text-white shadow-sm">F</span>
-        <span class="text-black">FloDo</span>
+    <div class="flex items-center gap-7 lg:gap-8 min-w-0">
+      <a href="{% url 'client_portal:home' %}" class="inline-flex items-center gap-2.5 font-extrabold tracking-tight text-4xl md:text-5xl text-gray-900 dark:text-white">
+        <!-- Stylized F logo -->
+        <svg class="w-7 h-7 shadow-sm" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="logoG" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#10b981"/>
+              <stop offset="100%" stop-color="#84cc16"/>
+            </linearGradient>
+          </defs>
+          <!-- Rounded background -->
+          <rect x="1.5" y="1.5" width="21" height="21" rx="5" ry="5" fill="url(#logoG)"/>
+          <!-- F mark -->
+          <path d="M8 7h8v3h-5v2.5h4.5V16H8z" fill="#ffffff"/>
+        </svg>
+        <span style="font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial;">FloDo</span>
       </a>
-      <nav class="hidden md:flex items-center gap-6 text-base font-semibold text-black">
-        <a class="h-10 px-3 inline-flex items-center hover:text-emerald-700 transition" href="{% url 'client_portal:home' %}">Home</a>
-        <a class="h-10 px-3 inline-flex items-center hover:text-emerald-700 transition" href="{% url 'client_portal:browse_artists' %}">Browse Artists</a>
-        <a class="h-10 px-3 inline-flex items-center hover:text-emerald-700 transition" href="{% url 'client_portal:customer_dashboard' %}">Bookings</a>
+      {% with rm=request.resolver_match %}
+      <nav class="hidden md:flex items-center gap-4 lg:gap-5 text-xl md:text-2xl font-semibold text-gray-900 dark:text-gray-100">
+        <!-- Home merged into brand link above; removed explicit Home item -->
+        <a class="h-10 px-2.5 inline-flex items-center transition {% if rm and rm.namespace == 'client_portal' and rm.url_name == 'browse_artists' %}text-emerald-700 underline underline-offset-4{% else %}hover:text-emerald-700{% endif %}" href="{% url 'client_portal:browse_artists' %}">Browse Artists</a>
+        <a class="h-10 px-2.5 inline-flex items-center transition {% if rm and rm.namespace == 'client_portal' and rm.url_name == 'customer_dashboard' %}text-emerald-700 underline underline-offset-4{% else %}hover:text-emerald-700{% endif %}" href="{% url 'client_portal:customer_dashboard' %}">Bookings</a>
         {% if request.session.client_id %}
-          <a class="h-10 px-3 inline-flex items-center hover:text-emerald-700 transition" href="{% url 'client_portal:artist_apply' %}">Apply</a>
+          <a class="h-10 px-2.5 inline-flex items-center transition {% if rm and rm.namespace == 'client_portal' and rm.url_name == 'artist_apply' %}text-emerald-700 underline underline-offset-4{% else %}hover:text-emerald-700{% endif %}" href="{% url 'client_portal:artist_apply' %}">Apply</a>
         {% endif %}
       </nav>
+      {% endwith %}
     </div>
 
-    <!-- Center Search -->
-    <form action="{% url 'client_portal:browse_artists' %}" method="get" class="hidden lg:flex flex-1 justify-center max-w-xl mx-6">
-      <div class="relative flex-1">
-        <input name="q" placeholder="Search artists" class="h-10 w-full pl-10 pr-4 rounded-full bg-white text-black placeholder:text-gray-500 border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" />
-        <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M12.9 14.32a8 8 0 111.414-1.414l3.387 3.387a1 1 0 11-1.414 1.414l-3.387-3.387zM14 8a6 6 0 11-12 0 6 6 0 0112 0z" clip-rule="evenodd"/>
-        </svg>
+    <!-- Center Search (desktop) -->
+    <form action="{% url 'client_portal:browse_artists' %}" method="get" 
+          class="hidden lg:block justify-self-center mx-0 w-[clamp(20rem,36vw,32rem)]">
+      <!-- Modern Animated Search Bar (masked sweep full-perimeter ring) -->
+      <div class="relative w-full rounded-full modern-search-container">
+        <!-- Masked animated gradient border -->
+        <div aria-hidden="true" class="search-gradient-border"></div>
+        <!-- Inner content with uniform margin to reveal the ring on all sides -->
+        <div class="relative z-[3] m-[3px] flex w-[calc(100%-6px)] items-center h-12 md:h-14 rounded-full border border-transparent shadow-[0_2px_10px_rgba(0,0,0,0.1)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.3)] overflow-hidden bg-white dark:bg-gray-800 backdrop-blur-sm">
+          <!-- Left search icon -->
+          <span class="pl-4 text-gray-500 dark:text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+              <path fill-rule="evenodd" d="M12.9 14.32a8 8 0 111.414-1.414l3.387 3.387a1 1 0 11-1.414 1.414l-3.387-3.387zM14 8a6 6 0 11-12 0 6 6 0 0112 0z" clip-rule="evenodd"/>
+            </svg>
+          </span>
+          <!-- Input field -->
+          <input name="q" placeholder="Search artists" aria-label="Search artists"
+                 class="flex-1 h-12 md:h-14 px-4 md:px-6 text-base md:text-lg bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-0" />
+          <!-- Plain arrow submit -->
+          <button type="submit" aria-label="Search" class="h-10 md:h-12 w-12 md:w-12 inline-flex items-center justify-center bg-transparent text-emerald-600 hover:text-emerald-700 active:text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4 md:h-5 md:w-5" fill="currentColor" aria-hidden="true">
+              <path d="M13.172 11.999l-3.89-3.889a1 1 0 111.414-1.415l5.303 5.304a1 1 0 010 1.414l-5.303 5.303a1 1 0 11-1.414-1.414l3.89-3.889H4a1 1 0 110-2h9.172z"/>
+            </svg>
+          </button>
+        </div>
       </div>
-      <button class="ml-2 h-10 px-5 inline-flex items-center justify-center rounded-full text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500">Search</button>
     </form>
 
     <!-- Actions -->
-    <div class="flex items-center gap-2 md:gap-3">
+    <div class="flex items-center gap-4 md:gap-4 font-semibold">
       <!-- Theme toggle -->
-      <button id="btn-theme" type="button" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 hover:bg-gray-100" aria-label="Toggle dark mode">
-        <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3a1 1..."/></svg>
-        <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 dark:hidden" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293..."/></svg>
+      <button id="btn-theme" type="button" class="inline-flex items-center justify-center w-[3.75rem] h-10 rounded-full border border-gray-200 dark:border-gray-700 hover:bg-gray-100/60 dark:hover:bg-gray-800/60 transition" aria-label="Toggle dark mode">
+        <!-- Keep legacy icons for compatibility, but hide visually -->
+        <span class="sr-only">
+          <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-0 w-0" fill="currentColor" aria-hidden="true"><path d="M12 4.5a1 1 0 0 1 1 1V7a1 1 0 1 1-2 0V5.5a1 1 0 0 1 1-1Z"/></svg>
+          <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-0 w-0" fill="currentColor" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3"/></svg>
+        </span>
+        <!-- Sliding switch -->
+        <span class="relative inline-flex items-center select-none">
+          <!-- Track -->
+          <span class="w-14 h-8 rounded-full bg-gray-200 dark:bg-gray-700 transition-colors"></span>
+          <!-- Sun icon on left -->
+          <span class="absolute left-1 text-amber-500 dark:text-gray-400" aria-hidden="true">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 6a6 6 0 1 1 0 12 6 6 0 0 1 0-12Z"/></svg>
+          </span>
+          <!-- Moon icon on right -->
+          <span class="absolute right-1 text-gray-500 dark:text-emerald-400" aria-hidden="true">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+          </span>
+          <!-- Knob -->
+          <span class="absolute inline-block w-6 h-6 rounded-full bg-white dark:bg-gray-900 shadow-sm transform translate-x-1 dark:translate-x-7 transition-transform"></span>
+        </span>
       </button>
 
-      <!-- Notification bell -->
-      <a href="#" id="btn-bell" class="relative inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 hover:bg-gray-100" aria-label="Notifications">
-        <span id="notif-dot" class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-pink-500 hidden"></span>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6..."/></svg>
-      </a>
-
-      <!-- Auth/User (unchanged, preserved IDs + behavior) -->
       {% if request.session.client_id %}
-        {# ... user menu code unchanged ... #}
+      <!-- Notification bell -->
+      <a href="#" id="btn-bell" class="relative inline-flex items-center justify-center w-12 h-12 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 font-semibold" aria-label="Notifications">
+        <span id="notif-dot" class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-pink-500 hidden"></span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-6 w-6" fill="currentColor" aria-hidden="true">
+          <path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2Zm6-6V11a6 6 0 1 0-12 0v5l-1.707 1.707A1 1 0 0 0 5 19h14a1 1 0 0 0 .707-1.707L18 16Z"/>
+        </svg>
+      </a>
+      {% endif %}
+
+      {% if request.session.client_id %}
+      <!-- Profile avatar (links to client profile) -->
+      <a href="{% url 'client_portal:client_profile' %}" class="inline-flex items-center justify-center w-12 h-12 rounded-full border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="Profile">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" class="h-6 w-6 text-gray-700 dark:text-gray-200" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+        </svg>
+      </a>
+      {% endif %}
+
+      <!-- Auth/User -->
+      {% if request.session.client_id %}
+        {# ... user menu unchanged ... #}
       {% else %}
-        <a href="{% url 'client_portal:client_login' %}" class="hidden sm:inline-flex items-center gap-x-2 px-5 py-2 text-sm font-semibold rounded-full bg-emerald-600 text-white hover:bg-emerald-700">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="..."/></svg>
+        <a href="{% url 'client_portal:client_login' %}"
+           class="hidden sm:inline-flex items-center gap-x-2 h-10 px-5 text-lg md:text-xl font-bold rounded-full bg-neutral-900 text-white ring-1 ring-white/5 hover:bg-neutral-800 active:bg-neutral-950 transition dark:bg-white dark:text-neutral-900 dark:ring-black/10 dark:hover:bg-neutral-100 dark:active:bg-neutral-200">
           <span>Sign in</span>
         </a>
       {% endif %}
 
-      <!-- Mobile menu button -->
-      <button id="btn-mobile" class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path d="M3 5h14..."/></svg>
+      <!-- Mobile menu -->
+      <button id="btn-mobile" class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path d="M3 5h14M3 10h14M3 15h14"/></svg>
       </button>
     </div>
   </div>
 
-  <!-- Mobile nav (unchanged except spacing cleanup) -->
-  <div id="mobile-nav" class="md:hidden hidden border-t border-gray-200 bg-white">
-    <nav class="px-4 py-3 grid gap-2 text-sm text-black">
-      <a class="hover:text-emerald-700" href="{% url 'client_portal:home' %}">Home</a>
+  <!-- Mobile nav -->
+  <div id="mobile-nav" class="md:hidden hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+    <nav class="px-4 sm:px-6 md:px-[0.5in] lg:px-[1in] py-3 grid gap-2 text-lg text-gray-900 dark:text-gray-100 font-semibold">
+      <!-- Mobile drawer header actions (responsive) -->
+      <div class="flex items-center justify-end gap-3 sm:gap-4 pb-2">
+        <!-- Mobile theme toggle (separate ID to avoid collision) -->
+        <button id="btn-theme-mobile" type="button" class="inline-flex items-center justify-center w-[3.5rem] h-10 rounded-full border border-gray-200 dark:border-gray-700 hover:bg-gray-100/60 dark:hover:bg-gray-800/60 transition" aria-label="Toggle dark mode">
+          <!-- Keep legacy icons for compatibility, but hide visually -->
+          <span class="sr-only">
+            <svg id="icon-sun-mobile" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-0 w-0" fill="currentColor" aria-hidden="true"><path d="M12 4.5a1 1 0 0 1 1 1V7"/></svg>
+            <svg id="icon-moon-mobile" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-0 w-0" fill="currentColor" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3"/></svg>
+          </span>
+          <!-- Sliding switch -->
+          <span class="relative inline-flex items-center select-none">
+            <!-- Track -->
+            <span class="w-14 h-8 rounded-full bg-gray-200 dark:bg-gray-700 transition-colors"></span>
+            <!-- Sun icon on left -->
+            <span class="absolute left-1 text-amber-500 dark:text-gray-400" aria-hidden="true">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 6a6 6 0 1 1 0 12 6 6 0 0 1 0-12Z"/></svg>
+            </span>
+            <!-- Moon icon on right -->
+            <span class="absolute right-1 text-gray-500 dark:text-emerald-400" aria-hidden="true">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+            </span>
+            <!-- Knob -->
+            <span class="absolute inline-block w-6 h-6 rounded-full bg-white dark:bg-gray-900 shadow-sm transform translate-x-1 dark:translate-x-7 transition-transform"></span>
+          </span>
+        </button>
+
+        {% if request.session.client_id %}
+        <!-- Mobile notification bell (only when logged in) -->
+        <a href="#" id="btn-bell-mobile" class="relative inline-flex items-center justify-center w-12 h-12 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 font-semibold" aria-label="Notifications">
+          <span id="notif-dot-mobile" class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-pink-500 hidden"></span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-6 w-6" fill="currentColor" aria-hidden="true">
+            <path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2Zm6-6V11a6 6 0 1 0-12 0v5l-1.707 1.707A1 1 0 0 0 5 19h14a1 1 0 0 0 .707-1.707L18 16Z"/>
+          </svg>
+        </a>
+        {% endif %}
+        {% if request.session.client_id %}
+        <!-- Mobile profile avatar -->
+        <a href="{% url 'client_portal:client_profile' %}" class="inline-flex items-center justify-center w-12 h-12 rounded-full border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="Profile">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" class="h-6 w-6 text-gray-700 dark:text-gray-200" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+          </svg>
+        </a>
+        {% endif %}
+      </div>
+      
       <a class="hover:text-emerald-700" href="{% url 'client_portal:browse_artists' %}">Browse Artists</a>
       <a class="hover:text-emerald-700" href="{% url 'client_portal:customer_dashboard' %}">Bookings</a>
       {% if request.session.client_id %}
         <a class="hover:text-emerald-700" href="{% url 'client_portal:artist_apply' %}">Apply</a>
       {% endif %}
+
+      <!-- Mobile Search -->
+      <form action="{% url 'client_portal:browse_artists' %}" method="get" class="mt-2">
+        <div class="flex w-full items-center rounded-full border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden bg-white dark:bg-gray-900">
+          
+          <!-- Left icon -->
+          <span class="pl-3 text-gray-500 dark:text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+              <path fill-rule="evenodd" d="M12.9 14.32a8 8 0 111.414-1.414l3.387 
+                3.387a1 1 0 11-1.414 1.414l-3.387-3.387zM14 
+                8a6 6 0 11-12 0 6 6 0 0112 0z" clip-rule="evenodd"/>
+            </svg>
+          </span>
+
+          <!-- Input -->
+          <input name="q" placeholder="Search artists"
+                 class="flex-1 h-11 px-4 text-base bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-500 
+                        focus:outline-none focus:ring-0" aria-label="Search artists" />
+
+          <!-- Button -->
+          <button type="submit" aria-label="Search" 
+                  class="h-11 w-12 inline-flex items-center justify-center rounded-full btn-gradient-dark text-white focus:ring-2 focus:ring-emerald-500 hover:shadow-md active:brightness-95">
+            <!-- Arrow icon (smaller, modern) -->
+          </button>
+        </div>
+      </form>
+
       <div class="flex gap-2 pt-2">
         {% if request.session.client_id %}
           {# ... user mobile menu unchanged ... #}
         {% else %}
-          <a href="{% url 'client_portal:client_login' %}" class="inline-flex items-center justify-center h-10 px-4 rounded-full bg-emerald-600 text-white hover:bg-emerald-700">Sign in</a>
+          <a href="{% url 'client_portal:client_login' %}" class="inline-flex items-center justify-center h-10 px-5 rounded-full bg-neutral-900 text-white font-bold text-lg md:text-xl ring-1 ring-white/5 hover:bg-neutral-800 active:bg-neutral-950 transition dark:bg-white dark:text-neutral-900 dark:ring-black/10 dark:hover:bg-neutral-100 dark:active:bg-neutral-200">Sign in</a>
         {% endif %}
       </div>
     </nav>
   </div>
+  <!-- Accessible live region for notifications (polite) -->
+  <div id="aria-toaster" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 </header>

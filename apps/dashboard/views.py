@@ -272,7 +272,6 @@ def admin_mgmt_view(request: HttpRequest):
 
 @login_required
 @ensure_csrf_cookie  # send csrftoken cookie on GET list responses
-@csrf_exempt  # DEV: temporarily disable CSRF for Admin Management API (re-enable in prod)
 @require_http_methods(["GET", "POST"])  # list or create
 @transaction.atomic
 def admin_list_create_api(request: HttpRequest):
@@ -426,7 +425,6 @@ def admin_list_create_api(request: HttpRequest):
 
 @login_required
 @ensure_csrf_cookie  # send csrftoken cookie on GET detail (if any future GET) and consistent responses
-@csrf_exempt  # DEV: temporarily disable CSRF for Admin Management API (re-enable in prod)
 @require_http_methods(["PUT", "DELETE", "POST"])  # support _method override via POST
 @transaction.atomic
 def admin_detail_api(request: HttpRequest, user_id: int):
@@ -619,6 +617,17 @@ def admin_detail_api(request: HttpRequest, user_id: int):
 
     return JsonResponse({"success": False, "error": "Unsupported method."}, status=405)
 
+# In development, keep previous behavior by exempting Admin Management APIs from CSRF
+# to ease manual testing with tools that don't send CSRF tokens. In production, CSRF
+# protection remains enabled by default.
+try:
+    if settings.DEBUG:
+        admin_list_create_api = csrf_exempt(admin_list_create_api)
+        admin_detail_api = csrf_exempt(admin_detail_api)
+except Exception:
+    # Never fail at import time for optional wrapping
+    pass
+
 
 # ---------------------------------------------------------------------------
 # Super-admin: Artist Applications overview (read-only page)
@@ -666,14 +675,40 @@ def artist_applications_view(request: HttpRequest):
     # Lightweight counts for header chips
     total = paginator.count
 
+    # Separate rejected list (full, non-paginated) for the bottom section
+    rejected_qs = models.Table6.objects.filter(application_status="rejected").select_related("approval_admin").prefetch_related("certificates").annotate(cert_count=Count("certificates")).order_by("-created_at")
+    rejected_count = rejected_qs.count()
+
     ctx: Dict[str, Any] = {
         "applications": applications_page.object_list,
         "page_obj": applications_page,
         "total": total,
+        "rejected_applications": list(rejected_qs),
+        "rejected_count": rejected_count,
         "table_label": TABLE_LABELS.get(6, "Artist Application"),
         "filters": {"status": status, "city": city, "q": q, "per_page": per_page},
     }
     return render(request, "dashboard/artist_applications.html", ctx)
+
+
+@login_required
+@require_http_methods(["GET"])  # read-only
+def artist_applications_pending_count(request: HttpRequest):
+    """Return precise count of pending/under-review artist applications.
+
+    This keeps the sidebar badge accurate without changing any existing UI or routes.
+    """
+    # Optional: enforce super-admin for admin APIs when feature flag is enabled
+    if getattr(settings, "FEATURE_ENFORCE_ADMIN_API_PERMS", False):
+        if not _is_super_admin(request.user):
+            return JsonResponse({"success": False, "error": "Forbidden"}, status=403)
+
+    Model = models.Table6
+    try:
+        cnt = Model.objects.filter(application_status__in=["pending", "under_review"]).count()
+    except Exception:
+        cnt = 0
+    return JsonResponse({"success": True, "count": int(cnt)})
 
 
 # ---------------------------------------------------------------------------
@@ -698,6 +733,12 @@ def clients_list_api(request: HttpRequest):
 
     q = (request.GET.get("q") or "").strip()
     qs = Client.objects.all().order_by("-created_at")
+    # Optional filter: allow_reapply=1 to fetch clients with override enabled (for count chip)
+    try:
+        if (request.GET.get("allow_reapply") or "").strip() in ("1", "true", "True"):
+            qs = qs.filter(allow_reapply=True)
+    except Exception:
+        pass
     if q:
         cond = Q(full_name__icontains=q) | Q(phone__icontains=q) | Q(email__icontains=q) | Q(location__icontains=q)
         qs = qs.filter(cond)
@@ -723,6 +764,7 @@ def clients_list_api(request: HttpRequest):
             "email": c.email,
             "location": c.location,
             "status": c.status,
+            "allow_reapply": bool(getattr(c, "allow_reapply", False)),
             "created_at": c.created_at.isoformat() if c.created_at else None,
         })
     return JsonResponse({
@@ -801,6 +843,116 @@ def artist_application_approve_view(request: HttpRequest, app_id: int):
 
     # Redirect back to listing for UX
     return redirect("dashboard:artist_applications")
+
+
+@login_required
+@csrf_protect
+@require_http_methods(["POST"])  # Strictly allow reapply for rejected application only
+@transaction.atomic
+def artist_application_allow_reapply_view(request: HttpRequest, app_id: int):
+    if not _is_super_admin(request.user):
+        return HttpResponseForbidden("Forbidden")
+    try:
+        app = models.Table6.objects.select_for_update().get(pk=app_id)
+    except models.Table6.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Application not found"}, status=404)
+    # Only allow for rejected applications
+    if str(app.application_status).lower() != "rejected":
+        return JsonResponse({"success": False, "error": "Reapply allowed only for rejected applications"}, status=400)
+    # Toggle allow_reapply for matching client(s) by unique identifiers (phone/email)
+    from django.db.models import Q as _Q
+    cond = _Q()
+    if app.phone:
+        cond |= _Q(phone=app.phone)
+    if app.email:
+        cond |= _Q(email=app.email)
+    updated_clients = []
+    for c in Client.objects.select_for_update().filter(cond):
+        if not c.allow_reapply:
+            c.allow_reapply = True
+            c.save(update_fields=["allow_reapply", "updated_at"])
+            updated_clients.append(c)
+    # Audit log for each affected client
+    for c in updated_clients:
+        try:
+            models.ActivityLog.objects.create(
+                table_name=TABLE_LABELS.get(9, "Client"),
+                action="UPDATE",
+                row_id=c.pk if hasattr(c, "pk") else None,
+                row_details={"allow_reapply": True, "full_name": c.full_name, "phone": c.phone},
+                admin_user=request.user,
+            )
+        except Exception:
+            pass
+    # Broadcast WS notification for each client so their session can refresh availability
+    try:
+        layer = get_channel_layer()
+        if layer:
+            for c in updated_clients:
+                async_to_sync(layer.group_send)(
+                    "notifications",
+                    {
+                        "type": "notify",
+                        "payload": {
+                            "event": "reapply_toggle",
+                            "client_id": str(c.client_id),
+                            "allow": True,
+                            "timestamp": timezone.now().isoformat(),
+                        },
+                    },
+                )
+    except Exception:
+        pass
+    return redirect("dashboard:artist_applications")
+
+
+@login_required
+@csrf_protect
+@require_http_methods(["POST"])  # per-client override toggle
+@transaction.atomic
+def client_allow_reapply_api(request: HttpRequest, client_id):
+    # Optional kill switch to ensure per-client toggles are disabled in production if desired
+    if not getattr(settings, "FEATURE_ALLOW_REAPPLY_PER_CLIENT", False):
+        return JsonResponse({"success": False, "error": "Disabled by feature flag"}, status=403)
+    if not _is_super_admin(request.user):
+        return JsonResponse({"success": False, "error": "Forbidden"}, status=403)
+    allow = (request.POST.get("allow") or "1").strip() in ("1", "true", "True")
+    try:
+        c = Client.objects.select_for_update().get(client_id=client_id)
+    except Client.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Client not found"}, status=404)
+    c.allow_reapply = bool(allow)
+    c.save(update_fields=["allow_reapply", "updated_at"])
+    # Audit log
+    try:
+        models.ActivityLog.objects.create(
+            table_name=TABLE_LABELS.get(9, "Client"),
+            action="UPDATE",
+            row_id=c.pk if hasattr(c, "pk") else None,
+            row_details={"allow_reapply": c.allow_reapply, "full_name": c.full_name, "phone": c.phone},
+            admin_user=request.user,
+        )
+    except Exception:
+        pass
+    # Broadcast
+    try:
+        layer = get_channel_layer()
+        if layer:
+            async_to_sync(layer.group_send)(
+                "notifications",
+                {
+                    "type": "notify",
+                    "payload": {
+                        "event": "reapply_toggle",
+                        "client_id": str(c.client_id),
+                        "allow": bool(allow),
+                        "timestamp": timezone.now().isoformat(),
+                    },
+                },
+            )
+    except Exception:
+        pass
+    return JsonResponse({"success": True, "client_id": str(c.client_id), "allow_reapply": c.allow_reapply})
 
 
 @login_required
@@ -1053,7 +1205,8 @@ def get_logs(request: HttpRequest):
             "action": x.action,
             "row_id": x.row_id,
             "row_details": x.row_details,
-            "name": (x.row_details or {}).get("name"),
+            # Prefer 'full_name' (used by client portal logging) and fall back to 'name'
+            "name": (x.row_details or {}).get("full_name") or (x.row_details or {}).get("name"),
             "city": (x.row_details or {}).get("city"),
             "phone": (x.row_details or {}).get("phone"),
             "timestamp": x.timestamp.isoformat(),

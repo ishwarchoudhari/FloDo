@@ -22,4 +22,6 @@ urlpatterns = [
     path("api/login/", views.client_api_login, name="client_api_login"),
     path("api/signup/", views.client_api_signup, name="client_api_signup"),
     path("profile/", views.client_profile, name="client_profile"),
+    path("api/profile/", views.client_api_profile, name="client_api_profile"),  # Added: JSON profile for AJAX
+    path("api/can-apply/", views.client_api_can_apply, name="client_api_can_apply"),  # Added: form availability
 ]

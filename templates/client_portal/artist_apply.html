@@ -1,7 +1,7 @@
 {% extends "client_portal/base.html" %}
 {% block title %}Apply as Artist{% endblock %}
 {% block content %}
-<section class="relative overflow-hidden">
+<section class="relative overflow-hidden font-semibold">
   <div class="absolute inset-0 pointer-events-none bg-gradient-to-b from-emerald-50/60 to-transparent dark:from-emerald-900/10"></div>
   <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
     <div class="grid md:grid-cols-5 gap-8 items-start">
@@ -24,37 +24,92 @@
 
       <!-- Form Card -->
       <div class="md:col-span-3 order-1 md:order-2">
-        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm">
-          <div class="border-b border-gray-200 dark:border-gray-700 p-4 md:p-6">
+        <div class="bg-white dark:bg-[#1f1f1f] border border-gray-200 dark:border-[#2a2a2a] rounded-2xl shadow-xl text-gray-900 dark:text-[#e5e5e5]">
+          <div class="border-b border-gray-200 dark:border-[#2a2a2a] p-4 md:p-6">
             <h2 class="text-xl font-semibold">Application Form</h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400">All fields marked with <span class="text-red-600">*</span> are required.</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300">All fields marked with <span class="text-red-600">*</span> are required.</p>
           </div>
           <form method="post" enctype="multipart/form-data" class="p-4 md:p-6 space-y-5" aria-describedby="apply-help">
             {% csrf_token %}
             <div class="grid md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm text-gray-700 dark:text-gray-300" for="city">City</label>
-                <input id="city" name="city" autocomplete="address-level2" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/60" placeholder="City" />
+                <label class="block text-sm text-gray-800 dark:text-[#e5e5e5]" for="city">City</label>
+                <input id="city" name="city" value="{{ initial.city }}" autocomplete="address-level2" class="mt-1 w-full border rounded-full px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333] text-gray-900 dark:text-[#eaeaea] focus:outline-none focus:ring-2 focus:ring-emerald-500/60" placeholder="City" />
               </div>
               <div>
-                <label class="block text-sm text-gray-700 dark:text-gray-300" for="phone">Phone</label>
-                <input id="phone" name="phone" inputmode="tel" autocomplete="tel" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/60" placeholder="Phone" />
+                <label class="block text-sm text-gray-800 dark:text-[#e5e5e5]" for="phone">Phone</label>
+                <input id="phone" name="phone" value="{{ initial.phone }}" inputmode="tel" autocomplete="tel" class="mt-1 w-full border rounded-full px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333] text-gray-900 dark:text-[#eaeaea] focus:outline-none focus:ring-2 focus:ring-emerald-500/60" placeholder="Phone" />
               </div>
               <div class="md:col-span-1">
-                <label class="block text-sm text-gray-700 dark:text-gray-300" for="email">Email <span class="text-red-600">*</span></label>
-                <input id="email" type="email" name="email" required autocomplete="email" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/60" placeholder="you@example.com" />
+                <label class="block text-sm text-gray-800 dark:text-[#e5e5e5]" for="email">Email <span class="text-red-600">*</span></label>
+                <input id="email" type="email" name="email" value="{{ initial.email }}" required autocomplete="email" class="mt-1 w-full border rounded-full px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333] text-gray-900 dark:text-[#eaeaea] focus:outline-none focus:ring-2 focus:ring-emerald-500/60" placeholder="you@example.com" />
               </div>
               <div class="md:col-span-1">
-                <label class="block text-sm text-gray-700 dark:text-gray-300" for="years_experience">Years of experience <span class="text-red-600">*</span></label>
-                <input id="years_experience" type="number" min="0" max="80" name="years_experience" required class="mt-1 w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/60" placeholder="e.g., 5" />
+                <label class="block text-sm text-gray-800 dark:text-[#e5e5e5]" for="years_experience">Years of experience <span class="text-red-600">*</span></label>
+                <input id="years_experience" type="number" min="0" max="80" name="years_experience" required class="mt-1 w-full border rounded-full px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333] text-gray-900 dark:text-[#eaeaea] focus:outline-none focus:ring-2 focus:ring-emerald-500/60" placeholder="e.g., 5" />
               </div>
             </div>
 
+            <!-- Additional Profile Fields -->
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm" for="gender">Gender</label>
+                <select id="gender" name="gender" class="mt-1 w-full border rounded-full px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333]">
+                  <option value="">Prefer not to say</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm" for="dob">Date of Birth</label>
+                <input id="dob" type="date" name="dob" class="mt-1 w-full border rounded-full px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333]" />
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm" for="specialization">Specialization</label>
+                <input id="specialization" name="specialization" class="mt-1 w-full border rounded-full px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333]" placeholder="e.g., Bridal Makeup, Hair Styling" />
+              </div>
+              <div>
+                <label class="block text-sm" for="instagram_url">Instagram URL</label>
+                <input id="instagram_url" type="url" name="instagram_url" class="mt-1 w-full border rounded-full px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333]" placeholder="https://instagram.com/username" />
+              </div>
+              <div>
+                <label class="block text-sm" for="instagram_username">Instagram Username</label>
+                <input id="instagram_username" name="instagram_username" class="mt-1 w-full border rounded-full px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333]" placeholder="username" />
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm" for="beauty_studio_location">Beauty Studio Location</label>
+                <textarea id="beauty_studio_location" name="beauty_studio_location" rows="2" class="mt-1 w-full border rounded-lg px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333]"></textarea>
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm" for="additional_notes">Additional Notes</label>
+                <textarea id="additional_notes" name="additional_notes" rows="2" class="mt-1 w-full border rounded-lg px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333]"></textarea>
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm" for="reapply_reason">If reapplying, tell us why</label>
+                <textarea id="reapply_reason" name="reapply_reason" rows="2" class="mt-1 w-full border rounded-lg px-4 py-2.5 bg-white dark:bg-[#222222] border-gray-300 dark:border-[#333333]"></textarea>
+              </div>
+            </div>
+
+            <!-- Profile picture -->
             <div>
-              <label class="block text-sm text-gray-700 dark:text-gray-300" for="certificates">Certificates (PDF/Images)</label>
-              <input id="certificates" type="file" name="certificates" multiple accept=".pdf,.png,.jpg,.jpeg,.webp" class="mt-1 w-full text-sm file:mr-3 file:px-4 file:py-2 file:rounded-lg file:border-0 file:bg-gray-100 dark:file:bg-gray-800 file:text-gray-900 dark:file:text-gray-100" />
+              <label class="block text-sm" for="profile_picture">Profile Picture (PNG/JPG/WEBP)</label>
+              <input id="profile_picture" type="file" name="profile_picture" accept=".png,.jpg,.jpeg,.webp" class="mt-1 w-full text-sm file:mr-3 file:px-4 file:py-2 file:rounded-full file:border-0 file:bg-gray-100 dark:file:bg-[#2a2a2a] file:text-gray-900 dark:file:text-[#e5e5e5]" />
+              <ul id="profile-preview" class="mt-2 text-sm text-gray-700 dark:text-gray-300 space-y-1"></ul>
+            </div>
+
+            <div>
+              <label class="block text-sm text-gray-800 dark:text-[#e5e5e5]" for="certificates">Certificates (PDF/Images)</label>
+              <input id="certificates" type="file" name="certificates" multiple accept=".pdf,.png,.jpg,.jpeg,.webp" class="mt-1 w-full text-sm file:mr-3 file:px-4 file:py-2 file:rounded-full file:border-0 file:bg-gray-100 dark:file:bg-[#2a2a2a] file:text-gray-900 dark:file:text-[#e5e5e5]" />
               <p class="mt-1 text-xs text-gray-500" id="apply-help">Max 10MB per file. Supported: PDF, PNG, JPG, JPEG, WEBP.</p>
               <ul id="file-preview" class="mt-2 text-sm text-gray-700 dark:text-gray-300 space-y-1"></ul>
+            </div>
+
+            <!-- Supporting pictures -->
+            <div>
+              <label class="block text-sm" for="supporting_pictures">Supporting Pictures (PNG/JPG/WEBP)</label>
+              <input id="supporting_pictures" type="file" name="supporting_pictures" multiple accept=".png,.jpg,.jpeg,.webp" class="mt-1 w-full text-sm file:mr-3 file:px-4 file:py-2 file:rounded-full file:border-0 file:bg-gray-100 dark:file:bg-[#2a2a2a] file:text-gray-900 dark:file:text-[#e5e5e5]" />
+              <ul id="supporting-preview" class="mt-2 text-sm text-gray-700 dark:text-gray-300 space-y-1"></ul>
             </div>
 
             <!-- Subtle anti-bot honeypot (ignored by backend) -->
@@ -64,8 +119,8 @@
             </div>
 
             <div class="flex items-center gap-3 pt-2">
-              <button class="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400">Submit Application</button>
-              <a href="{% url 'client_portal:artist_application_status' %}" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300">Check Status</a>
+              <button class="px-5 py-2.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400">Submit Application</button>
+              <a href="{% url 'client_portal:artist_application_status' %}" class="px-5 py-2.5 rounded-full bg-gray-100 dark:bg-[#2a2a2a] hover:bg-gray-200 dark:hover:bg-[#333333] focus:outline-none focus:ring-2 focus:ring-gray-300">Check Status</a>
             </div>
           </form>
         </div>

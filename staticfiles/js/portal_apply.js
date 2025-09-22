@@ -9,6 +9,10 @@ No backend behavior changes.
   const byId = (id) => document.getElementById(id);
   const certificates = byId('certificates');
   const preview = byId('file-preview');
+  const profInput = byId('profile_picture');
+  const profPreview = byId('profile-preview');
+  const suppInput = byId('supporting_pictures');
+  const suppPreview = byId('supporting-preview');
   const hp = byId('website'); // honeypot — we do not submit this
 
   function formatBytes(bytes) {
@@ -33,9 +37,10 @@ No backend behavior changes.
     } catch (_) {}
   }
 
-  function renderPreview(files) {
-    if (!preview) return;
-    preview.innerHTML = '';
+  function renderPreview(files, containerEl) {
+    const container = containerEl || preview;
+    if (!container) return;
+    container.innerHTML = '';
     const maxPerFile = 10 * 1024 * 1024; // 10MB
     const allowed = ['pdf', 'png', 'jpg', 'jpeg', 'webp'];
     const list = document.createDocumentFragment();
@@ -60,7 +65,7 @@ No backend behavior changes.
       }
       list.appendChild(li);
     });
-    preview.appendChild(list);
+    container.appendChild(list);
     announce(`${(files && files.length) || 0} file(s) selected`);
   }
 
@@ -76,11 +81,9 @@ No backend behavior changes.
   }
 
   function init() {
-    if (certificates) {
-      certificates.addEventListener('change', function () {
-        renderPreview(this.files);
-      });
-    }
+    if (certificates) certificates.addEventListener('change', function(){ renderPreview(this.files, preview); });
+    if (profInput) profInput.addEventListener('change', function(){ renderPreview(this.files, profPreview); });
+    if (suppInput) suppInput.addEventListener('change', function(){ renderPreview(this.files, suppPreview); });
     blockBots();
   }
 

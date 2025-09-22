@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["../../js/tailwind-config.js"],
-  "sourcesContent": ["// Tailwind CDN configuration to enable class-based dark mode\n// This must be loaded BEFORE https://cdn.tailwindcss.com\n(function(){\n  try {\n    window.tailwind = window.tailwind || {};\n    window.tailwind.config = Object.assign({}, window.tailwind.config || {}, {\n      darkMode: 'class'\n    });\n  } catch (_) { /* no-op */ }\n})();\n"],
+  "sourcesContent": ["// Tailwind CDN configuration to enable class-based dark mode\r\n// This must be loaded BEFORE https://cdn.tailwindcss.com\r\n(function(){\r\n  try {\r\n    window.tailwind = window.tailwind || {};\r\n    window.tailwind.config = Object.assign({}, window.tailwind.config || {}, {\r\n      darkMode: 'class'\r\n    });\r\n  } catch (_) { /* no-op */ }\r\n})();\r\n"],
   "mappings": "OAEC,UAAU,CACT,GAAI,CACF,OAAO,SAAW,OAAO,UAAY,CAAC,EACtC,OAAO,SAAS,OAAS,OAAO,OAAO,CAAC,EAAG,OAAO,SAAS,QAAU,CAAC,EAAG,CACvE,SAAU,OACZ,CAAC,CACH,MAAY,CAAc,CAC5B,GAAG",
   "names": []
 }

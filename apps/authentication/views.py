@@ -21,6 +21,10 @@ from django.core.cache import caches
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.urls import reverse
+from urllib.parse import urlparse
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Optional: Redis-backed rate limiting (enabled only if REDIS_URL present)
 try:
@@ -101,8 +105,11 @@ def signup_view(request: HttpRequest):
 @require_http_methods(["GET", "POST"])
 def login_view(request: HttpRequest):
     if request.method == "GET":
-        # Surface ?next=/... so the template can include it as a hidden input
+        # If already authenticated, don't show the login form; redirect to next or default
         next_url = request.GET.get("next", "")
+        if request.user.is_authenticated:
+            return redirect(next_url or settings.LOGIN_REDIRECT_URL)
+        # Surface ?next=/... so the template can include it as a hidden input
         return render(request, "auth/login.html", {"form": LoginForm(), "next": next_url})
 
     # POST
@@ -135,12 +142,17 @@ def login_view(request: HttpRequest):
     return JsonResponse({"success": True, "redirect": next_url or settings.LOGIN_REDIRECT_URL})
 
 
-@require_http_methods(["POST"])  # CSRF protected by default since middleware is enabled
+@ensure_csrf_cookie
+@require_http_methods(["GET", "POST"])  # GET for compatibility, POST remains CSRF-protected by middleware
 @login_required
 def logout_view(request: HttpRequest):
+    # Perform logout for both GET and POST; POST remains CSRF-protected by middleware
     logout(request)
-    # Respect configured LOGOUT_REDIRECT_URL
-    return JsonResponse({"success": True, "redirect": settings.LOGOUT_REDIRECT_URL})
+    # If request is AJAX, return JSON; otherwise perform a normal redirect.
+    is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest"
+    if is_ajax:
+        return JsonResponse({"success": True, "redirect": settings.LOGOUT_REDIRECT_URL})
+    return redirect(settings.LOGOUT_REDIRECT_URL)
 
 
 @require_http_methods(["GET"])  # Lightweight auth status endpoint for frontend polling
@@ -175,6 +187,7 @@ def profile_view(request: HttpRequest) -> HttpResponse:
             supers = list(User.objects.filter(is_superuser=True).values("id", "username", "email", "is_active"))
         except Exception:
             supers = []
+            logger.exception("Failed to load superusers for profile_view")
         try:
             from apps.authentication.models import SuperAdmin
             sa_count = SuperAdmin.objects.count()
@@ -185,10 +198,11 @@ def profile_view(request: HttpRequest) -> HttpResponse:
                     SuperAdmin.objects.exclude(pk=sa.pk).delete()
                     sa_count = 1
                 except Exception:
-                    pass
+                    logger.exception("Failed to self-heal SuperAdmin duplicates")
         except Exception:
             sa = None
             sa_count = 0
+            logger.exception("Failed to load SuperAdmin status")
         context.update({
             "supers": supers,
             "superadmin": sa,
@@ -228,8 +242,33 @@ def profile_update(request: HttpRequest) -> JsonResponse:
         user.email = email
         user.save(update_fields=["email"])
 
-    # Social links (whitelisted keys only)
-    social = {k: v for k, v in data.items() if k in SOCIAL_LINK_KEYS and v}
+    # Social links (whitelisted keys only) with server-side URL validation
+    def _is_allowed_social_url(url: str) -> bool:
+        try:
+            s = (url or '').strip()
+            if not s:
+                return False
+            p = urlparse(s)
+            scheme = (p.scheme or '').lower()
+            if scheme in ('http', 'https'):
+                return bool(p.netloc)
+            if scheme == 'mailto':
+                # basic sanity: path should contain '@'
+                return '@' in (p.path or '')
+            return False
+        except Exception:
+            return False
+
+    social = {}
+    for k, v in data.items():
+        if k in SOCIAL_LINK_KEYS and v:
+            sv = str(v).strip()
+            if _is_allowed_social_url(sv):
+                social[k] = sv
+            else:
+                # silently drop invalid schemes to avoid breaking behavior
+                # and do not overwrite existing stored valid values
+                pass
     if social:
         merged = dict(profile.social_links or {})
         merged.update(social)
@@ -312,6 +351,7 @@ def profile_avatar_delete(request: HttpRequest) -> JsonResponse:
 
 
 @login_required
+@csrf_protect
 @require_http_methods(["POST"])  # form-encoded
 def profile_password_change(request: HttpRequest) -> JsonResponse:
     user = request.user
@@ -459,6 +499,7 @@ def superadmin_password_reset_request(request: HttpRequest) -> JsonResponse:
                 login_url = request.build_absolute_uri(login_path)
             except Exception:
                 login_url = None
+                logger.exception("Failed building absolute login URL for OTP email")
             context = {
                 "code": payload["code"],
                 "expiry_minutes": 10,
@@ -472,7 +513,7 @@ def superadmin_password_reset_request(request: HttpRequest) -> JsonResponse:
             msg.attach_alternative(html_body, "text/html")
             msg.send(fail_silently=True)
     except Exception:
-        pass
+        logger.exception("Failed sending Super-Admin OTP email")
 
     return JsonResponse({"ok": True})
 

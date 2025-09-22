@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %} • Clients{% endblock %}
+{% block title %} · Clients{% endblock %}
 {% block content %}
 <section class="max-w-7xl mx-auto">
   <header class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
     <div>
-      <h1 class="typo-h1">Clients</h1>
-      <p class="typo-body text-gray-600 dark:text-gray-300">All customer signups from the Client Portal.</p>
+      <h1 class="text-2xl font-semibold text-blue-700 dark:text-blue-300 mb-1">Clients</h1>
+      <p class="text-sm text-gray-600 dark:text-gray-300">All customer signups from the Client Portal.</p>
     </div>
     <div class="flex items-center gap-2">
       <input id="cliSearch" type="search" placeholder="Search name, phone, email, location" class="w-72 max-w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800" />
@@ -16,6 +16,7 @@
         <option value="50">50</option>
       </select>
       <button id="cliRefresh" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">Refresh</button>
+      
     </div>
   </header>
 
@@ -78,7 +79,7 @@
 
   function fmtDate(iso){ try { return new Date(iso).toLocaleString(); } catch(_){ return iso||''; } }
 
-  function render(rows){
+  async function render(rows){
     body.innerHTML = '';
     if (!rows || !rows.length){
       const tr = document.createElement('tr');
@@ -153,9 +154,14 @@
           // Refresh list quickly when a new client is created
           refresh();
         }
+            if (msg && msg.type === 'notify' && msg.payload && msg.payload.event === 'reapply_toggle'){
+          // Reapply toggles no longer reflected on this page; just refresh list to stay in sync
+          refresh();
+        }
       } catch(_){ }
     };
   } catch(_){ }
+  // Cleanup: chip-related functions removed.
 })();
 </script>
 {% endblock %}
